@@ -11,8 +11,11 @@ win32 {
     # Support Windows Vista and above only
     DEFINES += WIN32_LEAN_AND_MEAN NTDDI_VERSION=0x06000000 _WIN32_WINNT=0x0600
     DEFINES += HAVE_REMOTE WPCAP
+    # Newer Npcap SDK bpf.h no longer defines this; packet32.h needs it to
+    # avoid redefining struct bpf_program/bpf_insn
+    DEFINES += BPF_MAJOR_VERSION=1
     CONFIG += console
-    QMAKE_LFLAGS += -static
+    QMAKE_LFLAGS += -static-libgcc -static-libstdc++
     LIBS += -lwpcap -lpacket -liphlpapi
     CONFIG(debug, debug|release) {
         LIBS += -L"../common/debug" -lostproto

@@ -5,18 +5,25 @@ APP_REVISION = $(shell git rev-parse --short=12 --verify HEAD)
 
 ver_info {
     APP_VERSION_FILE = version.cpp
-    revtarget.target = $$APP_VERSION_FILE
-    win32:revtarget.commands = echo "const char *version = \"$$APP_VERSION\";" \
-            "const char *revision = \"$$APP_REVISION\";" \
-            > $$APP_VERSION_FILE
-    unix:revtarget.commands = echo \
+    win32 {
+        # Generate at qmake time: the cmd-style echo recipe produces an empty
+        # file when make runs recipes through MSYS sh
+        WIN_REVISION = $$system(git rev-parse --short=12 --verify HEAD)
+        VERSION_LINES = "const char *version = \"$$APP_VERSION\";"
+        VERSION_LINES += "const char *revision = \"$$WIN_REVISION\";"
+        write_file($$OUT_PWD/$$APP_VERSION_FILE, VERSION_LINES)
+    }
+    unix {
+        revtarget.target = $$APP_VERSION_FILE
+        revtarget.commands = echo \
             "\"const char *version = \\\"$$APP_VERSION\\\";" \
             "const char *revision = \\\"$$APP_REVISION\\\";\"" \
             > $$APP_VERSION_FILE
-    revtarget.depends = $$SOURCES $$HEADERS $$FORMS $$POST_TARGETDEPS
+        revtarget.depends = $$SOURCES $$HEADERS $$FORMS $$POST_TARGETDEPS
+        QMAKE_EXTRA_TARGETS += revtarget
+        POST_TARGETDEPS += $$APP_VERSION_FILE
+    }
 
     SOURCES += $$APP_VERSION_FILE
-    QMAKE_EXTRA_TARGETS += revtarget
-    POST_TARGETDEPS += $$APP_VERSION_FILE 
     QMAKE_DISTCLEAN += $$APP_VERSION_FILE
 }

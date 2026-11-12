@@ -94,6 +94,23 @@ MainWindow::MainWindow(QWidget *parent)
                 SLOT(onLocalServerError(QProcess::ProcessError)));
 #endif
         localServer_->setProcessChannelMode(QProcess::ForwardedChannels);
+#ifdef Q_OS_WIN32
+        {
+            // Npcap installed without "WinPcap API-compatible mode" puts
+            // wpcap.dll/Packet.dll only in System32\Npcap, which is not on
+            // the DLL search path - add it so that drone.exe can start
+            wchar_t sysDir[MAX_PATH];
+            UINT len = GetSystemDirectoryW(sysDir, MAX_PATH);
+            if (len > 0 && len < MAX_PATH) {
+                QString npcapDir = QString::fromWCharArray(sysDir, int(len))
+                                    + "\\Npcap";
+                QProcessEnvironment env =
+                    QProcessEnvironment::systemEnvironment();
+                env.insert("PATH", npcapDir + ";" + env.value("PATH"));
+                localServer_->setProcessEnvironment(env);
+            }
+        }
+#endif
         localServer_->start(serverApp, QStringList());
         QTimer::singleShot(5000, this, SLOT(stopLocalServerMonitor()));
     }

@@ -36,3 +36,6 @@ pkg_info.json
 # ctags/cscope
 tags
 cscope.out
+/build-win/
+/dist/
+target_wrapper.sh
