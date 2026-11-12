@@ -29,6 +29,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QApplication>
 #include <QDateTime>
 #include <QFile>
+#include <QFont>
+#include <QLibraryInfo>
+#include <QLocale>
+#include <QTranslator>
 #include <QSettings>
 #include <QtGlobal>
 
@@ -79,13 +83,46 @@ int main(int argc, char* argv[])
         appSettings = new QSettings();
     qDebug("Settings: %s", qPrintable(appSettings->fileName()));
 
+    // UI font - Segoe UI for latin text, Yu Gothic UI/Meiryo UI for Japanese
+    // (Qt's Windows default for Japanese, MS UI Gothic, looks dated)
+    {
+        QFont font("Segoe UI", 9);
+        font.setFamilies(QStringList() << "Segoe UI" << "Yu Gothic UI"
+                                       << "Meiryo UI");
+        app.setFont(font);
+    }
+
+    // UI language - must be installed before any widget is created
+    {
+        QString lang = appSettings->value(kLanguageKey,
+                                          kLanguageDefaultValue).toString();
+        if (lang == "auto")
+            lang = QLocale::system().name().startsWith("ja") ? "ja" : "en";
+        if (lang != "en") {
+            QTranslator *qtTr = new QTranslator(&app);
+            if (qtTr->load("qtbase_" + lang,
+                        QCoreApplication::applicationDirPath()
+                            + "/translations")
+                    || qtTr->load("qtbase_" + lang,
+                        QLibraryInfo::location(
+                            QLibraryInfo::TranslationsPath)))
+                app.installTranslator(qtTr);
+            QTranslator *appTr = new QTranslator(&app);
+            if (appTr->load(":/i18n/riff_" + lang + ".qm"))
+                app.installTranslator(appTr);
+            else
+                qDebug("No translation found for %s", qPrintable(lang));
+        }
+    }
+
     OstProtoLib::setExternalApplicationPaths(
         appSettings->value(kTsharkPathKey, kTsharkPathDefaultValue).toString(),
         appSettings->value(kGzipPathKey, kGzipPathDefaultValue).toString(),
         appSettings->value(kDiffPathKey, kDiffPathDefaultValue).toString(),
         appSettings->value(kAwkPathKey, kAwkPathDefaultValue).toString());
 
-    ThemeManager::instance()->setTheme(appSettings->value(kThemeKey).toString());
+    ThemeManager::instance()->setTheme(
+            appSettings->value(kThemeKey, kThemeDefaultValue).toString());
 
     qsrand(QDateTime::currentDateTime().toTime_t());
 

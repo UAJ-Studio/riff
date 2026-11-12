@@ -168,7 +168,7 @@
      <item>
       <widget class="QLabel" name="label_6">
        <property name="text">
-        <string>Theme (Experimental)</string>
+        <string>Theme</string>
        </property>
       </widget>
      </item>
@@ -176,6 +176,30 @@
       <widget class="QComboBox" name="theme"/>
      </item>
     </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="languageLayout">
+     <item>
+      <widget class="QLabel" name="languageLabel">
+       <property name="text">
+        <string>Language</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QComboBox" name="language"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="languageNote">
+     <property name="text">
+      <string>A language change takes effect the next time Riff starts.</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">

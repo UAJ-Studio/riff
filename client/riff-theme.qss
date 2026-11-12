@@ -1,0 +1,275 @@
+/*
+ * Riff theme - applied on top of the Fusion style + a matching QPalette.
+ * @tokens are replaced with the light/dark colour set by ThemeManager.
+ * Keep it light-touch: spacing, borders, accents. Widgets keep their
+ * native behaviour so that nothing becomes harder to use.
+ */
+
+QMainWindow::separator {
+    background: @border;
+    width: 1px;
+    height: 1px;
+}
+
+/* ---- Tool bars & tool buttons ---------------------------------------- */
+QToolBar {
+    background: @window;
+    border: none;
+    spacing: 3px;
+    padding: 3px;
+}
+QToolButton {
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 3px;
+}
+QToolButton:hover {
+    background: @hover;
+    border-color: @border;
+}
+QToolButton:pressed, QToolButton:checked {
+    background: @accentSoft;
+    border-color: @accent;
+}
+
+/* ---- Buttons --------------------------------------------------------- */
+QPushButton {
+    border: 1px solid @border;
+    border-radius: 6px;
+    padding: 5px 14px;
+    background: @base;
+    min-height: 18px;
+}
+QPushButton:hover {
+    border-color: @accent;
+    background: @hover;
+}
+QPushButton:pressed {
+    background: @accentSoft;
+}
+QPushButton:default {
+    background: @accent;
+    border-color: @accent;
+    color: @accentText;
+    font-weight: 600;
+}
+QPushButton:default:hover {
+    background: @accentStrong;
+}
+QPushButton:disabled {
+    color: @mutedText;
+    background: @window;
+    border-color: @border;
+}
+
+/* ---- Inputs ---------------------------------------------------------- */
+QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox, QPlainTextEdit, QTextEdit {
+    border: 1px solid @border;
+    border-radius: 5px;
+    padding: 3px 6px;
+    background: @base;
+    selection-background-color: @accent;
+    selection-color: @accentText;
+}
+QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus,
+QPlainTextEdit:focus, QTextEdit:focus {
+    border-color: @accent;
+}
+QLineEdit:disabled, QSpinBox:disabled, QComboBox:disabled {
+    background: @window;
+    color: @mutedText;
+}
+QComboBox::drop-down {
+    border: none;
+    width: 18px;
+}
+QComboBox QAbstractItemView {
+    border: 1px solid @border;
+    background: @base;
+    selection-background-color: @accentSoft;
+    selection-color: @text;
+}
+
+/* ---- Item views ------------------------------------------------------ */
+QTableView, QTreeView, QListView {
+    border: 1px solid @border;
+    border-radius: 6px;
+    background: @base;
+    alternate-background-color: @alt;
+    gridline-color: @grid;
+    selection-background-color: @accentSoft;
+    selection-color: @text;
+}
+QTableView::item:hover, QTreeView::item:hover, QListView::item:hover {
+    background: @hover;
+}
+QTableView::item:selected, QTreeView::item:selected,
+QListView::item:selected {
+    background: @accentSoft;
+    color: @text;
+}
+QHeaderView::section {
+    background: @header;
+    color: @text;
+    border: none;
+    border-right: 1px solid @border;
+    border-bottom: 1px solid @border;
+    padding: 4px 6px;
+    font-weight: 600;
+}
+QTableCornerButton::section {
+    background: @header;
+    border: none;
+    border-bottom: 1px solid @border;
+    border-right: 1px solid @border;
+}
+
+/* ---- Tabs ------------------------------------------------------------ */
+QTabWidget::pane {
+    border: 1px solid @border;
+    border-radius: 6px;
+    top: -1px;
+    background: @window;
+}
+QTabBar::tab {
+    padding: 6px 14px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: @mutedText;
+}
+QTabBar::tab:selected {
+    color: @text;
+    border-bottom: 2px solid @accent;
+    font-weight: 600;
+}
+QTabBar::tab:hover:!selected {
+    color: @text;
+    background: @hover;
+}
+
+/* ---- Docks, group boxes, splitters, status bar ----------------------- */
+QDockWidget {
+    font-weight: 600;
+}
+QDockWidget::title {
+    background: @header;
+    padding: 6px 8px;
+    border-bottom: 1px solid @border;
+}
+QGroupBox {
+    border: 1px solid @border;
+    border-radius: 6px;
+    margin-top: 14px;
+    padding-top: 6px;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 10px;
+    padding: 0 4px;
+    color: @accentStrong;
+    font-weight: 600;
+}
+QSplitter::handle {
+    background: @window;
+}
+QSplitter::handle:hover {
+    background: @accentSoft;
+}
+QStatusBar {
+    border-top: 1px solid @border;
+    color: @mutedText;
+}
+
+/* ---- Menus ----------------------------------------------------------- */
+QMenuBar {
+    background: @window;
+    border-bottom: 1px solid @border;
+}
+QMenuBar::item {
+    padding: 4px 10px;
+    background: transparent;
+    border-radius: 4px;
+}
+QMenuBar::item:selected {
+    background: @hover;
+}
+QMenu {
+    background: @base;
+    border: 1px solid @border;
+    padding: 4px;
+}
+QMenu::item {
+    padding: 5px 26px 5px 24px;
+    border-radius: 4px;
+}
+QMenu::item:selected {
+    background: @accentSoft;
+    color: @text;
+}
+QMenu::item:disabled {
+    color: @mutedText;
+}
+QMenu::separator {
+    height: 1px;
+    background: @border;
+    margin: 4px 6px;
+}
+
+/* ---- Scroll bars ----------------------------------------------------- */
+QScrollBar:vertical {
+    width: 11px;
+    background: transparent;
+    margin: 0;
+}
+QScrollBar::handle:vertical {
+    background: @scroll;
+    border-radius: 4px;
+    min-height: 28px;
+    margin: 2px;
+}
+QScrollBar:horizontal {
+    height: 11px;
+    background: transparent;
+    margin: 0;
+}
+QScrollBar::handle:horizontal {
+    background: @scroll;
+    border-radius: 4px;
+    min-width: 28px;
+    margin: 2px;
+}
+QScrollBar::handle:hover {
+    background: @accent;
+}
+QScrollBar::add-line, QScrollBar::sub-line {
+    width: 0;
+    height: 0;
+}
+QScrollBar::add-page, QScrollBar::sub-page {
+    background: none;
+}
+
+/* ---- Tooltips -------------------------------------------------------- */
+QToolTip {
+    background: @base;
+    color: @text;
+    border: 1px solid @border;
+    border-radius: 4px;
+    padding: 4px 6px;
+}
+
+/* ---- Hex packet editor ----------------------------------------------- */
+QLabel#hexEditorHint {
+    color: @mutedText;
+}
+QLabel#hexEditorStatus {
+    color: @mutedText;
+    padding: 2px 4px;
+}
+QFrame#hexEditorErrorBar {
+    background: #FDECEC;
+    border: 1px solid #F3B5B5;
+    border-radius: 5px;
+}

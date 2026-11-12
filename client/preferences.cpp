@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "thememanager.h"
 
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QtGlobal>
 #include <QXmlStreamReader>
 
@@ -54,8 +55,22 @@ Preferences::Preferences()
             kAwkPathDefaultValue).toString());
 
     // Theme
-    theme->addItems(ThemeManager::instance()->themeList());
-    theme->setCurrentText(appSettings->value(kThemeKey).toString());
+    ThemeManager *tm = ThemeManager::instance();
+    for (const QString &id : tm->themeList())
+        theme->addItem(tm->displayName(id), id);
+    int idx = theme->findData(appSettings->value(kThemeKey,
+                                                 kThemeDefaultValue));
+    theme->setCurrentIndex(idx >= 0 ? idx : 0);
+
+    // Language - language names are shown in their own language so that a
+    // user who can't read the current UI language can still find theirs
+    language->addItem(tr("Automatic (follow Windows)"), "auto");
+    language->addItem("English", "en");
+    language->addItem(QString::fromUtf8("日本語 (Japanese)"), "ja");
+    idx = language->findData(appSettings->value(kLanguageKey,
+                                                kLanguageDefaultValue));
+    language->setCurrentIndex(idx >= 0 ? idx : 0);
+    languageNote->setEnabled(false); // render as secondary text
 
     // TODO(only if required): kUserKey
 }
@@ -98,7 +113,17 @@ void Preferences::accept()
         appSettings->value(kAwkPathKey, kAwkPathDefaultValue).toString());
 
     // Theme
-    ThemeManager::instance()->setTheme(theme->currentText());
+    ThemeManager::instance()->setTheme(theme->currentData().toString());
+
+    // Language
+    QString newLang = language->currentData().toString();
+    if (newLang != appSettings->value(kLanguageKey,
+                                      kLanguageDefaultValue).toString()) {
+        appSettings->setValue(kLanguageKey, newLang);
+        QMessageBox::information(this, tr("Language"),
+                tr("The new language will be used the next time you "
+                   "start Riff."));
+    }
 
     QDialog::accept();
 }

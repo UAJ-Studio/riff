@@ -11,6 +11,14 @@ cp "$ROOT/client/release/riff.exe" "$ROOT/server/release/riff-agent.exe" "$OUT/"
 windeployqt-qt5 --release --no-translations --no-compiler-runtime --no-angle --no-opengl-sw \
     "$OUT/riff.exe" "$OUT/riff-agent.exe" >/dev/null
 
+# Qt's own translations (standard buttons, file dialogs) for the UI
+# languages Riff ships; Riff's own .qm files are embedded in riff.exe
+mkdir -p "$OUT/translations"
+for lang in ja; do
+    cp "$MINGW_PREFIX/share/qt5/translations/qtbase_$lang.qm" \
+       "$OUT/translations/"
+done
+
 # Remaining MinGW runtime / third-party DLLs from the MSYS2 prefix.
 # Npcap's wpcap.dll/Packet.dll are deliberately NOT bundled: they come from
 # the Npcap driver install (C:\Windows\System32\Npcap).

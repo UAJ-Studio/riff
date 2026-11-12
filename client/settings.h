@@ -75,6 +75,11 @@ const QString kAwkPathDefaultValue("/usr/bin/awk");
 #endif
 
 const QString kThemeKey("Theme");
+const QString kThemeDefaultValue("riff-light");
+
+// UI language: "auto" (follow Windows), "en" or "ja"
+const QString kLanguageKey("Language");
+const QString kLanguageDefaultValue("auto");
 
 const QString kUserKey("User");
 extern QString kUserDefaultValue;

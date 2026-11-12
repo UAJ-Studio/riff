@@ -220,6 +220,11 @@ public:
      */
     void ensureVisible();
 
+    /*! (Riff) Select count bytes starting at byte pos, move the cursor
+     * there and scroll it into view. count == 0 just clears the selection.
+     */
+    void selectRange(qint64 pos, qint64 count);
+
     /*! Find first occurence of ba in QHexEdit data
      * \param ba Data to find
      * \param from Point where the search starts

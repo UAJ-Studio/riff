@@ -21,10 +21,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "clipboardhelper.h"
 #include "findreplace.h"
+#include "hexpacketeditor.h"
 #include "portgrouplist.h"
 #include "streamconfigdialog.h"
 #include "streamfileformat.h"
 #include "streamlistdelegate.h"
+
+#include "stream.h"
+#include "hexdump.pb.h"
 
 #include <QInputDialog>
 #include <QItemSelectionModel>
@@ -44,8 +48,25 @@ StreamsWidget::StreamsWidget(QWidget *parent)
             tvStreamList->verticalHeader()->minimumSectionSize());
 
     // Populate StreamList Context Menu Actions
+    // Riff: raw hex streams
+    actionNewHexStream_ = new QAction(tr("New Stream from Hex..."), this);
+    actionNewHexStream_->setToolTip(tr("Create a stream by typing or "
+                                       "pasting the packet bytes as hex"));
+    actionNewHexStream_->setShortcut(QKeySequence("Ctrl+Shift+N"));
+    actionNewHexStream_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(actionNewHexStream_, SIGNAL(triggered()), SLOT(newHexStream()));
+
+    actionEditAsHex_ = new QAction(tr("Edit as Hex..."), this);
+    actionEditAsHex_->setToolTip(tr("Edit the selected stream's packet "
+                                    "bytes directly"));
+    actionEditAsHex_->setShortcut(QKeySequence("Ctrl+Shift+E"));
+    actionEditAsHex_->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(actionEditAsHex_, SIGNAL(triggered()), SLOT(editStreamAsHex()));
+
     tvStreamList->addAction(actionNew_Stream);
+    tvStreamList->addAction(actionNewHexStream_);
     tvStreamList->addAction(actionEdit_Stream);
+    tvStreamList->addAction(actionEditAsHex_);
     tvStreamList->addAction(actionDuplicate_Stream);
     tvStreamList->addAction(actionDelete_Stream);
 
@@ -182,6 +203,10 @@ void StreamsWidget::updateStreamViewActions()
         // Duplicate/Delete are always enabled as long as we have a selection
         actionDuplicate_Stream->setEnabled(true);
         actionDelete_Stream->setEnabled(true);
+
+        actionNewHexStream_->setEnabled(actionNew_Stream->isEnabled());
+        actionEditAsHex_->setEnabled(
+                tvStreamList->selectionModel()->selectedRows().size() == 1);
     }
     else
     {
@@ -193,6 +218,9 @@ void StreamsWidget::updateStreamViewActions()
         actionEdit_Stream->setDisabled(true);
         actionDuplicate_Stream->setDisabled(true);
         actionDelete_Stream->setDisabled(true);
+
+        actionNewHexStream_->setEnabled(actionNew_Stream->isEnabled());
+        actionEditAsHex_->setDisabled(true);
     }
 
     actionFind_Replace->setEnabled(tvStreamList->model()->rowCount() > 0);
@@ -517,3 +545,104 @@ _exit:
     return;
 }
 
+
+// ---- Riff: raw hex streams ---------------------------------------------
+
+void StreamsWidget::setHexContent(Stream *stream, const QByteArray &bytes)
+{
+    OstProto::Stream s;
+    stream->protoDataCopyInto(s);
+
+    s.clear_protocol();
+    OstProto::Protocol *proto = s.add_protocol();
+    proto->mutable_protocol_id()->set_id(
+            OstProto::Protocol::kHexDumpFieldNumber);
+    OstProto::HexDump *hexDump = proto->MutableExtension(OstProto::hexDump);
+    hexDump->set_content(bytes.constData(), size_t(bytes.size()));
+    hexDump->set_pad_until_end(true); // zero-pad short frames to 60 bytes
+
+    // Fixed length = the bytes (min. Ethernet size) + 4 byte FCS
+    s.mutable_core()->set_len_mode(OstProto::StreamCore::e_fl_fixed);
+    s.mutable_core()->set_frame_len(quint32(qMax(bytes.size(), 60) + 4));
+
+    stream->protoDataCopyFrom(s);
+}
+
+void StreamsWidget::newHexStream()
+{
+    if (!plm->isPort(currentPortIndex_))
+        return;
+
+    StreamModel *streamModel = plm->getStreamModel();
+    int row = streamModel->rowCount();
+    QItemSelectionModel *selectionModel = tvStreamList->selectionModel();
+    if (selectionModel->selection().size() == 1)
+        row = selectionModel->selection().at(0).top();
+
+    HexPacketEditor editor(HexPacketEditor::templatePacket(0), this);
+    editor.setWindowTitle(tr("New Stream from Hex"));
+    if (editor.exec() != QDialog::Accepted)
+        return;
+
+    Stream *stream = new Stream;
+    setHexContent(stream, editor.packet());
+    stream->setName(tr("Hex packet"));
+
+    QList<Stream*> streams;
+    streams.append(stream);
+    streamModel->insert(row, streams);
+}
+
+void StreamsWidget::editStreamAsHex()
+{
+    QModelIndexList rows = tvStreamList->selectionModel()->selectedRows();
+    if (rows.size() != 1 || !plm->isPort(currentPortIndex_))
+        return;
+
+    Port &curPort = plm->port(currentPortIndex_);
+    Stream *stream = curPort.mutableStreamByIndex(rows.at(0).row(), false);
+
+    OstProto::Stream s;
+    stream->protoDataCopyInto(s);
+    bool pureHex = s.protocol_size() == 1
+        && s.protocol(0).protocol_id().id()
+                == OstProto::Protocol::kHexDumpFieldNumber;
+
+    QByteArray bytes;
+    if (pureHex) {
+        bytes = QByteArray::fromStdString(
+                    s.protocol(0).GetExtension(OstProto::hexDump).content());
+    }
+    else {
+        if (QMessageBox::question(this, tr("Edit as Hex"),
+                tr("This stream is defined field by field. Editing it as "
+                   "hex turns it into a fixed sequence of bytes taken from "
+                   "its first packet - protocol settings, variable fields "
+                   "and changing frame lengths are replaced.\n\n"
+                   "Use \"Edit Stream\" instead if you want to keep them.\n\n"
+                   "Continue?"),
+                QMessageBox::Yes | QMessageBox::No, QMessageBox::No)
+                != QMessageBox::Yes)
+            return;
+
+        QByteArray buf(HexPacketEditor::kMaxLength, 0);
+        int n = stream->frameValue(reinterpret_cast<uchar*>(buf.data()),
+                                   buf.size(), 0);
+        bytes = buf.left(qMax(n, 0));
+    }
+
+    HexPacketEditor editor(bytes, this);
+    editor.setWindowTitle(tr("Edit Stream as Hex"));
+    if (editor.exec() != QDialog::Accepted)
+        return;
+
+    setHexContent(stream, editor.packet());
+    curPort.recalculateAverageRates();
+    curPort.setLocalConfigChanged(true);
+
+    StreamModel *streamModel = plm->getStreamModel();
+    emit streamModel->dataChanged(
+            streamModel->index(rows.at(0).row(), 0),
+            streamModel->index(rows.at(0).row(),
+                               streamModel->columnCount() - 1));
+}

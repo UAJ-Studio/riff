@@ -5,7 +5,7 @@ win32: TARGET = riff
 win32:RC_FILE = ostinato.rc
 macx:ICON = icons/logo.icns
 QT += widgets network script xml svg
-INCLUDEPATH += "../rpc/" "../common/"
+INCLUDEPATH += "../rpc/" "../common/" "../extra/qhexedit2/src"
 win32 {
     QMAKE_LFLAGS += -static-libgcc -static-libstdc++
     CONFIG(debug, debug|release) {
@@ -33,8 +33,10 @@ win32 {
 }
 LIBS += -lprotobuf
 LIBS += -L"../extra/qhexedit2/$(OBJECTS_DIR)/" -lqhexedit2
-RESOURCES += ostinato.qrc 
+RESOURCES += ostinato.qrc riff.qrc
 HEADERS += \
+    hexpacketeditor.h \
+    packetdecoder.h \
     arpstatusmodel.h \
     clipboardhelper.h \
     devicegroupdialog.h \
@@ -93,6 +95,8 @@ FORMS += \
     variablefieldswidget.ui
 
 SOURCES += \
+    hexpacketeditor.cpp \
+    packetdecoder.cpp \
     arpstatusmodel.cpp \
     clipboardhelper.cpp \
     devicegroupdialog.cpp \

@@ -39,3 +39,4 @@ cscope.out
 /build-win/
 /dist/
 target_wrapper.sh
+win/tests/build/

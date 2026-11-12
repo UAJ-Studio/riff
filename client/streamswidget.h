@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 class PortGroupList;
 class QAbstractItemDelegate;
+class Stream;
 
 class StreamsWidget : public QWidget, private Ui::StreamsWidget
 {
@@ -56,7 +57,15 @@ private slots:
 
     void streamModelDataChanged();
 
+    void newHexStream();
+    void editStreamAsHex();
+
 private:
+    static void setHexContent(Stream *stream, const QByteArray &bytes);
+
+    QAction *actionNewHexStream_{nullptr};
+    QAction *actionEditAsHex_{nullptr};
+
     PortGroupList *plm{nullptr}; // FIXME: rename to portGroups_?
     QModelIndex currentPortIndex_;
 

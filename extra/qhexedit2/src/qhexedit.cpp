@@ -364,6 +364,16 @@ void QHexEdit::replace(qint64 pos, qint64 len, const QByteArray &ba)
 }
 
 // ********************************************************************** Utility functions
+void QHexEdit::selectRange(qint64 pos, qint64 count)
+{
+    setCursorPosition(pos * 2);
+    resetSelection(pos * 2);
+    if (count > 0)
+        setSelection((pos + count) * 2);
+    ensureVisible();
+    viewport()->update();
+}
+
 void QHexEdit::ensureVisible()
 {
     if (_cursorPosition < (_bPosFirst * 2))

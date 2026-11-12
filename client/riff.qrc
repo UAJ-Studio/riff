@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="riff/theme.qss">riff-theme.qss</file>
+        <file alias="i18n/riff_ja.qm">../i18n/riff_ja.qm</file>
+    </qresource>
+</RCC>

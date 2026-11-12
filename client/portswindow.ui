@@ -51,13 +51,15 @@
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
-           <string>&lt;p&gt;&lt;b&gt;Welcome to Ostinato!&lt;/b&gt;&lt;/p&gt;
-&lt;p&gt;The port list on the left contains all the ports on which you can transmit packets.&lt;/p&gt;
-&lt;p&gt;Ports belong to a port group. Make sure the Port Group has a &lt;img src=&quot;:/icons/bullet_green.png&quot;/&gt; next to it, then double click the port group to show or hide the ports in the port group.&lt;/p&gt;
-&lt;p&gt;To generate packets, you need to create and configure packet streams. A stream is a sequence of one or more packets.&lt;/p&gt;
-&lt;p&gt;To create a stream, select the port on which you want to send packets.&lt;/p&gt;
+           <string>&lt;p style=&quot;font-size:15pt; font-weight:600;&quot;&gt;Welcome to Riff&lt;/p&gt;
+&lt;p&gt;Build packets and send them from your network ports in three steps:&lt;/p&gt;
+&lt;table cellspacing=&quot;6&quot;&gt;
+&lt;tr&gt;&lt;td&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Pick a port&lt;/b&gt; &amp;mdash; select the port to send from in the list on the left. Ports marked &lt;img src=&quot;:/icons/bullet_green.png&quot;/&gt; are up. (Double-click a port group to show or hide its ports.)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;b&gt;2&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Create a stream&lt;/b&gt; &amp;mdash; a stream is a packet (or a series of packets). Right-click the stream list and choose &lt;i&gt;New Stream&lt;/i&gt; to set protocols field by field, or &lt;i&gt;New Stream from Hex&lt;/i&gt; to type the bytes directly.&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;b&gt;3&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Send&lt;/b&gt; &amp;mdash; select the port's column in &lt;i&gt;Port Statistics&lt;/i&gt; below and press the &lt;i&gt;Transmit&lt;/i&gt; start button. Sent and received counters update live.&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
 &lt;hr/&gt;
-&lt;p&gt;Don't see the port that you want (or any ports at all) inside the port group? &lt;a href=&quot;https://jump.ostinato.org/noports&quot;&gt;Get Help!&lt;/a&gt;&lt;/p&gt;</string>
+&lt;p&gt;Don't see the port you want? Make sure Npcap is installed, and try running Riff as Administrator.&lt;/p&gt;</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>

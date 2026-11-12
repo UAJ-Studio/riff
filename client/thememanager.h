@@ -1,7 +1,8 @@
 /*
 Copyright (C) 2021 Srivats P.
+Copyright (C) 2026 Riff contributors
 
-This file is part of "Ostinato"
+This file is part of "Riff", derived from "Ostinato"
 
 This is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,23 +21,38 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #ifndef _THEME_MANAGER_H
 #define _THEME_MANAGER_H
 
+#include <QPalette>
+#include <QString>
 #include <QStringList>
 
+/*
+ * Themes are identified by an id string -
+ *   "riff-light", "riff-dark" : built-in Riff themes (Fusion + palette + qss)
+ *   "default"                 : the platform's native look
+ *   anything else             : <appdir>/themes/<id>.qss (+ optional .rcc)
+ */
 class ThemeManager
 {
 public:
     ThemeManager();
 
     QStringList themeList();
+    QString displayName(const QString &theme) const;
     void setTheme(QString theme);
+    bool isDark() const { return dark_; }
 
     static ThemeManager* instance();
 
 private:
+    void applyRiffTheme(bool dark);
+
     QString themeDir_;
+    QString nativeStyle_;
+    QPalette nativePalette_;
+    QString registeredRcc_;
+    bool dark_{false};
 
     static ThemeManager *instance_;
 };
 
 #endif
-
