@@ -189,14 +189,27 @@ pcap_if_t* PortManager::GetPortList()
 
             oldDescriptions_.append(device->description);
             newDescriptions_.append(new QByteArray());
+            // Port descriptions travel to the client in protobuf string
+            // fields, which the client decodes as UTF-8 - so always hand out
+            // UTF-8 here (toLocal8Bit() garbled non-ASCII names, e.g. on
+            // Japanese Windows where the local codepage is CP932)
+            bool converted = false;
             if (guid2Luid(&guid, &luid) == NO_ERROR) {
                 WCHAR conn[256];
                 if (luid2Alias(&luid, conn, 256) == NO_ERROR) {
                     *(newDescriptions_.last()) = QString().fromWCharArray(conn)
-                                                            .toLocal8Bit();
-                    device->description = newDescriptions_.last()->data();
+                                                            .toUtf8();
+                    converted = true;
                 }
             }
+            if (!converted && device->description) {
+                // Npcap's own description is in the local ANSI codepage
+                *(newDescriptions_.last()) =
+                        QString::fromLocal8Bit(device->description).toUtf8();
+                converted = true;
+            }
+            if (converted)
+                device->description = newDescriptions_.last()->data();
         }
     }
 #endif

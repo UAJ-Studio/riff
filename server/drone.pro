@@ -1,4 +1,5 @@
 TEMPLATE = app
+win32: TARGET = riff-agent
 CONFIG += qt ver_info c++11
 addon: CONFIG -= ver_info
 QT += network script xml

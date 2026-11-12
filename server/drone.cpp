@@ -34,8 +34,6 @@ extern const char* revision;
 Drone::Drone(QObject *parent)
      : QObject(parent)
 {
-    Updater *updater = new Updater();
-
 #ifdef QT_DEBUG
     bool enableLogs = true;
 #else
@@ -45,9 +43,7 @@ Drone::Drone(QObject *parent)
     rpcServer = new RpcServer(enableLogs);
     service = new MyService();
 
-    connect(updater, SIGNAL(newVersionAvailable(QString)),
-            this, SLOT(onNewVersion(QString)));
-    updater->checkForNewVersion();
+    // Riff: no automatic update check against ostinato.org
 
 }
 

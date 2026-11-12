@@ -54,8 +54,8 @@ int main(int argc, char *argv[])
     int exitCode = 0;
     QCoreApplication app(argc, argv);
 
-    app.setApplicationName("Drone");
-    app.setOrganizationName("Ostinato");
+    app.setApplicationName("RiffAgent");
+    app.setOrganizationName("Riff");
 
     appParams.parseCommandLine(argc, argv);
 
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
        executable, we use that instead of the platform specific location
        and format for the settings */
     QString portableIni = QCoreApplication::applicationDirPath() 
-            + "/drone.ini";
+            + "/riff-agent.ini";
     if (QFile::exists(portableIni))
         appSettings = new QSettings(portableIni, QSettings::IniFormat);
     else

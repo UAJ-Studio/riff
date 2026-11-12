@@ -213,8 +213,8 @@ void PortGroup::processVersionCompatibility(PbRpcController *controller)
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.setTextFormat(Qt::RichText);
         msgBox.setStyleSheet("messagebox-text-interaction-flags: 5");
-        msgBox.setText(tr("The Drone agent at %1:%2 is incompatible with this "
-                          "Ostinato version - %3")
+        msgBox.setText(tr("The agent at %1:%2 is incompatible with this "
+                          "Riff version - %3")
                               .arg(serverName())
                               .arg(int(serverPort()))
                               .arg(version));
@@ -287,7 +287,7 @@ void PortGroup::on_rpcChannel_error(QAbstractSocket::SocketError socketError)
         logWarn(id(), QString("Bad data received from portgroup, "
                               "aborting connection; "
                               "who is listening on %1:%2 "
-                              " - is it drone or some other process?")
+                              " - is it riff-agent or some other process?")
                             .arg(rpcChannel->serverName())
                             .arg(rpcChannel->serverPort()));
         reconnect = false;
@@ -365,12 +365,12 @@ void PortGroup::when_portListChanged(quint32 /*portGroupId*/)
         msgBox.setStyleSheet("messagebox-text-interaction-flags: 5");
         QString msg = tr("<p>The portgroup %1:%2 does not contain any ports!<p>"
                "<p>Packet Transmit/Capture requires special privileges. "
-               "Please ensure that you are running 'drone' - the agent "
-               "component of Ostinato with required privileges.<p>")
+               "Please ensure that you are running 'riff-agent' - the agent "
+               "component of Riff with required privileges.<p>")
                 .arg(serverName())
                 .arg(int(serverPort()));
         msgBox.setText(msg);
-        msgBox.setInformativeText(tr("See the <a href='%1'>Ostinato FAQ</a> "
+        msgBox.setInformativeText(tr("See the <a href='%1'>(upstream) Ostinato FAQ</a> "
                 "for instructions to fix this problem").arg(jumpUrl("noports")));
         msgBox.exec();
     }

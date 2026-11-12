@@ -51,8 +51,8 @@ int main(int argc, char* argv[])
     QApplication app(argc, argv);
     int exitCode;
 
-    app.setApplicationName("Ostinato");
-    app.setOrganizationName("Ostinato");
+    app.setApplicationName("Riff");
+    app.setOrganizationName("Riff");
     app.setProperty("version", version);
     app.setProperty("revision", revision);
 
@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
        executable, we use that instead of the platform specific location
        and format for the settings */
     QString portableIni = QCoreApplication::applicationDirPath() 
-            + "/ostinato.ini";
+            + "/riff.ini";
     if (QFile::exists(portableIni))
         appSettings = new QSettings(portableIni, QSettings::IniFormat);
     else

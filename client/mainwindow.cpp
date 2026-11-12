@@ -66,8 +66,6 @@ ClipboardHelper  *clipboardHelper;
 MainWindow::MainWindow(QWidget *parent) 
     : QMainWindow (parent)
 {
-    Updater *updater = new Updater();
-
     if (appParams.optLocalDrone()) {
         QString serverApp = QCoreApplication::applicationDirPath();
 #ifdef Q_OS_MAC
@@ -76,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
         serverApp.replace("Ostinato.app", "drone.app");
 #endif
 #ifdef Q_OS_WIN32
-        serverApp.append("/drone.exe");
+        serverApp.append("/riff-agent.exe");
 #else
         serverApp.append("/drone");
 #endif
@@ -98,7 +96,7 @@ MainWindow::MainWindow(QWidget *parent)
         {
             // Npcap installed without "WinPcap API-compatible mode" puts
             // wpcap.dll/Packet.dll only in System32\Npcap, which is not on
-            // the DLL search path - add it so that drone.exe can start
+            // the DLL search path - add it so that riff-agent.exe can start
             wchar_t sysDir[MAX_PATH];
             UINT len = GetSystemDirectoryW(sysDir, MAX_PATH);
             if (len > 0 && len < MAX_PATH) {
@@ -187,9 +185,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(actionViewShowMyReservedPortsOnly, SIGNAL(toggled(bool)),
             statsWindow, SLOT(showMyReservedPortsOnly(bool)));
 
-    connect(updater, SIGNAL(newVersionAvailable(QString)), 
-            this, SLOT(onNewVersion(QString)));
-    updater->checkForNewVersion();
+    // Riff: no automatic update check - upstream (ostinato.org) releases
+    // are a different product line
 
     // TODO: If session file specified (and valid?), don't add local drone PG
     // Add the "Local" Port Group
@@ -465,19 +462,19 @@ void MainWindow::reportLocalServerError()
     msgBox.setIcon(QMessageBox::Warning);
     msgBox.setTextFormat(Qt::RichText);
     msgBox.setStyleSheet("messagebox-text-interaction-flags: 5"); // mouse copy
-    QString errorStr = tr("<p>Failed to start the local drone agent - "
+    QString errorStr = tr("<p>Failed to start the local Riff agent (riff-agent) - "
                           "error 0x%1, exit status 0x%2 exit code 0x%3.</p>")
             .arg(localServer_->error(), 0, 16)
             .arg(localServer_->exitStatus(), 0, 16)
             .arg(localServer_->exitCode(), 0, 16);
     if (localServer_->error() == QProcess::FailedToStart)
-        errorStr.append(tr("<p>The drone program does not exist at %1 or you "
+        errorStr.append(tr("<p>The riff-agent program does not exist at %1 or you "
                            "don't have sufficient permissions to execute it."
                            "</p>")
                         .arg(QCoreApplication::applicationDirPath()));
     if (localServer_->exitCode() == 1)
-        errorStr.append(tr("<p>The drone program was not able to bind to "
-                           "TCP port 7878 - maybe a drone process is already "
+        errorStr.append(tr("<p>The riff-agent program was not able to bind to "
+                           "TCP port 7878 - maybe another agent process is already "
                            "running?</p>"));
 #ifdef Q_OS_WIN32
     if (localServer_->exitCode() == STATUS_DLL_NOT_FOUND)
@@ -488,15 +485,15 @@ void MainWindow::reportLocalServerError()
                                 .arg(jumpUrl("winpcap")));
 #endif
     msgBox.setText(errorStr);
-    msgBox.setInformativeText(tr("Try running drone directly."));
+    msgBox.setInformativeText(tr("Try running riff-agent.exe directly."));
     msgBox.exec();
 
     QMessageBox::information(this, QString(),
-        tr("<p>If you have remote drone agents running, you can still add "
+        tr("<p>If you have remote agents running, you can still add "
            "and connect to them.</p>"
-           "<p>If you don't want to start the local drone agent at startup, "
-           "provide the <b>-c</b> option to Ostinato on the command line.</p>"
-           "<p>Learn about Ostinato's <a href='%1'>Controller-Agent "
+           "<p>If you don't want to start the local Riff agent (riff-agent) at startup, "
+           "provide the <b>-c</b> option to Riff on the command line.</p>"
+           "<p>Learn about the (upstream Ostinato) <a href='%1'>Controller-Agent "
            "architecture</a></p>").arg(jumpUrl("arch")));
 }
 

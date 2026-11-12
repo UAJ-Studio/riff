@@ -1,15 +1,15 @@
 #!/bin/bash
-# Collect ostinato.exe, drone.exe and all non-system DLLs into dist/Ostinato.
+# Collect riff.exe, riff-agent.exe and all non-system DLLs into dist/Riff.
 # Run inside an MSYS2 UCRT64 shell after win/build.sh.
 set -e
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
-OUT="$ROOT/dist/Ostinato"
+OUT="$ROOT/dist/Riff"
 rm -rf "$OUT" && mkdir -p "$OUT"
-cp "$ROOT/client/release/ostinato.exe" "$ROOT/server/release/drone.exe" "$OUT/"
+cp "$ROOT/client/release/riff.exe" "$ROOT/server/release/riff-agent.exe" "$OUT/"
 
 # Qt plugins (platforms, styles, imageformats, ...) and Qt DLLs
 windeployqt-qt5 --release --no-translations --no-compiler-runtime --no-angle --no-opengl-sw \
-    "$OUT/ostinato.exe" "$OUT/drone.exe" >/dev/null
+    "$OUT/riff.exe" "$OUT/riff-agent.exe" >/dev/null
 
 # Remaining MinGW runtime / third-party DLLs from the MSYS2 prefix.
 # Npcap's wpcap.dll/Packet.dll are deliberately NOT bundled: they come from
@@ -30,5 +30,5 @@ while :; do
     [ $added -eq 0 ] && break
 done
 cp "$ROOT/COPYING" "$OUT/"
-cp "$ROOT/win/README-windows.txt" "$OUT/" 2>/dev/null || true
+cp "$ROOT/win/README-windows.txt" "$OUT/README.txt" 2>/dev/null || true
 echo "Packaged into $OUT"

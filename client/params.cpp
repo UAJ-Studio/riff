@@ -45,7 +45,8 @@ int Params::parseCommandLine(int argc, char* argv[])
             logsDisabled_ = false;
             break;
         case 'v':
-            printf("Ostinato %s rev %s\n", version, revision);
+            printf("Riff %s rev %s (based on Ostinato 1.3.0)\n",
+                    version, revision);
             exit(0);
         case 'h':
         default:

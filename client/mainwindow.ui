@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle" >
-   <string>Ostinato</string>
+   <string>Riff</string>
   </property>
   <property name="windowIcon" >
    <iconset resource="ostinato.qrc" >:/icons/about.png</iconset>
@@ -58,8 +58,6 @@
     </property>
     <addaction name="actionHelpOnline" />
     <addaction name="separator" />
-    <addaction name="actionDonate" />
-    <addaction name="actionCheckForUpdates" />
     <addaction name="separator" />
     <addaction name="actionHelpAbout" />
     <addaction name="actionAboutQt" />
