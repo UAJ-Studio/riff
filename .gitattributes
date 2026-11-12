@@ -1,0 +1,3 @@
+*.sh eol=lf
+*.pri eol=lf
+*.pro eol=lf
