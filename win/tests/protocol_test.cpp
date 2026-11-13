@@ -94,13 +94,13 @@ void addIp4(OstProto::Stream &s, quint32 src, quint32 dst)
     ip->set_dst_ip(dst);
 }
 
-QByteArray build(const OstProto::Stream &s)
+QByteArray build(const OstProto::Stream &s, int frameIndex = 0)
 {
     StreamBase stream(0);
     stream.protoDataCopyFrom(s);
     QByteArray buf(2048, 0);
     int n = stream.frameValue(reinterpret_cast<uchar*>(buf.data()),
-                              buf.size(), 0);
+                              buf.size(), frameIndex);
     return buf.left(n);
 }
 
@@ -214,6 +214,72 @@ int main(int argc, char **argv)
         check(names.contains("EtherIP") && names.contains("Inner Ethernet"),
               "etherip: layers " + names.join(" > "));
         check(!err, "etherip: no decode errors / bad checksums");
+    }
+
+    // 4. Variable field on CAPWAP (fragment ID, counter16 at offset 4):
+    //    must change per frame
+    {
+        OstProto::Stream s = baseStream(128);
+        addMac(s, true, 0x001b21000001ULL, 0);
+        addIp4(s, 0xc0a8000a, 0xc0a80014);
+        add(s, OstProto::Protocol::kUdpFieldNumber);
+        OstProto::Protocol *cp = add(s, OstProto::Protocol::kCapwapFieldNumber);
+        OstProto::VariableField *vf = cp->add_variable_field();
+        vf->set_type(OstProto::VariableField::kCounter16);
+        vf->set_offset(4);
+        vf->set_mask(0xffff);
+        vf->set_value(100);
+        vf->set_count(3);
+        add(s, OstProto::Protocol::kPayloadFieldNumber);
+
+        QByteArray f0 = build(s, 0), f1 = build(s, 1), f2 = build(s, 2);
+        check(f0.mid(46, 2) == QByteArray::fromHex("0064")
+                  && f1.mid(46, 2) == QByteArray::fromHex("0065")
+                  && f2.mid(46, 2) == QByteArray::fromHex("0066"),
+              "capwap: variable field changes the fragment ID per frame "
+              "(100, 101, 102)");
+        check(f0.mid(42, 4) == QByteArray::fromHex("00104200"),
+              "capwap: rest of header unaffected by the variable field");
+    }
+
+    // 5. CAPWAP DTLS (type 1): 4-byte preamble only
+    {
+        OstProto::Stream s = baseStream(64);
+        addMac(s, true, 0x001b21000001ULL, 0);
+        addIp4(s, 0xc0a8000a, 0xc0a80014);
+        add(s, OstProto::Protocol::kUdpFieldNumber);
+        OstProto::Capwap *c = add(s, OstProto::Protocol::kCapwapFieldNumber)
+                                  ->MutableExtension(OstProto::capwap);
+        c->set_type(1);
+        c->set_is_control(true);
+        add(s, OstProto::Protocol::kPayloadFieldNumber);
+
+        QByteArray f = build(s);
+        frames << f;
+        const quint32 udpLen = (quint8(f.at(38)) << 8) | quint8(f.at(39));
+        check(f.mid(42, 4) == QByteArray::fromHex("01000000"),
+              "capwap dtls: preamble 01 00 00 00");
+        check(udpLen == quint32(f.size() - 34),
+              "capwap dtls: UDP length consistent with 4-byte preamble");
+    }
+
+    // 6. EtherIP with a variable field on the reserved bits
+    {
+        OstProto::Stream s = baseStream(128);
+        addMac(s, true, 0x001b21000001ULL, 0);
+        addIp4(s, 0xc0a8000a, 0xc0a80014);
+        OstProto::Protocol *ep = add(s, OstProto::Protocol::kEtherIpFieldNumber);
+        OstProto::VariableField *vf = ep->add_variable_field();
+        vf->set_type(OstProto::VariableField::kCounter8);
+        vf->set_offset(1);
+        vf->set_value(1);
+        vf->set_count(4);
+        addMac(s, false, 0x020000000002ULL, 0x020000000001ULL);
+        add(s, OstProto::Protocol::kPayloadFieldNumber);
+        QByteArray f0 = build(s, 0), f2 = build(s, 2);
+        check(f0.mid(34, 2) == QByteArray::fromHex("3001")
+                  && f2.mid(34, 2) == QByteArray::fromHex("3003"),
+              "etherip: variable field applied (30 01, 30 03)");
     }
 
     if (argc == 3 && QByteArray(argv[1]) == "--pcap") {

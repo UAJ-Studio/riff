@@ -36,6 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QMenu>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QShortcut>
 #include <QRegularExpression>
 #include <QSet>
 #include <QSplitter>
@@ -74,61 +75,7 @@ QByteArray HexPacketEditor::templatePacket(int index)
 bool HexPacketEditor::parseHexText(const QString &text, QByteArray *out,
                                    QString *error)
 {
-    // Hex dump line: offset, 2+ spaces (or ':'), then 2-digit byte tokens,
-    // optionally followed by an ASCII column which we ignore
-    static const QRegularExpression dumpLine(
-            "^\\s*(?:0x)?[0-9A-Fa-f]{4,8}(?::\\s*|\\s{2,})(.*)$");
-    static const QRegularExpression byteToken("^[0-9A-Fa-f]{2}$");
-    static const QRegularExpression separators("(0x|\\\\x|[\\s:,;\\-])",
-            QRegularExpression::CaseInsensitiveOption);
-    static const QRegularExpression hexOnly("^[0-9A-Fa-f]*$");
-
-    QByteArray result;
-    int lineNo = 0;
-    for (QString line : text.split('\n')) {
-        lineNo++;
-        line = line.trimmed();
-        if (line.isEmpty())
-            continue;
-
-        QRegularExpressionMatch m = dumpLine.match(line);
-        if (m.hasMatch()) {
-            QStringList tokens = m.captured(1).split(
-                    QRegularExpression("\\s+"), Qt::SkipEmptyParts);
-            QByteArray bytes;
-            for (const QString &t : tokens) {
-                if (!byteToken.match(t).hasMatch())
-                    break; // start of the ASCII column
-                bytes.append(char(t.toInt(nullptr, 16)));
-            }
-            if (!bytes.isEmpty()) {
-                result.append(bytes);
-                continue;
-            }
-        }
-
-        QString digits = line;
-        digits.remove(separators);
-        if (!hexOnly.match(digits).hasMatch()) {
-            *error = tr("Line %1 contains characters that are not hex "
-                        "digits.").arg(lineNo);
-            return false;
-        }
-        if (digits.size() % 2) {
-            *error = tr("Line %1 has an odd number of hex digits.")
-                         .arg(lineNo);
-            return false;
-        }
-        result.append(QByteArray::fromHex(digits.toLatin1()));
-    }
-
-    if (result.size() > kMaxLength) {
-        *error = tr("The packet is too long (%1 bytes, maximum %2).")
-                     .arg(result.size()).arg(kMaxLength);
-        return false;
-    }
-    *out = result;
-    return true;
+    return PacketDecoder::parseHexText(text, out, error, kMaxLength);
 }
 
 // ------------------------------------------------------------------------
@@ -145,7 +92,8 @@ HexPacketEditor::HexPacketEditor(const QByteArray &packet, QWidget *parent)
     QLabel *hint = new QLabel(tr(
         "Type hex digits in the right pane to edit the packet bytes. "
         "The decode on the left follows along: click a field to highlight "
-        "its bytes, double-click a value to change it."), this);
+        "its bytes, double-click a value to change it. Template MAC and IP "
+        "addresses are examples - change them before sending."), this);
     hint->setObjectName("hexEditorHint");
     hint->setWordWrap(true);
     layout->addWidget(hint);
@@ -208,8 +156,10 @@ HexPacketEditor::HexPacketEditor(const QByteArray &packet, QWidget *parent)
     autoChecksum_ = new QCheckBox(tr("Update checksums after field edits"),
                                   this);
     autoChecksum_->setToolTip(tr("When you change a value in the decode "
-            "tree, recalculate checksums automatically. (Typing in the hex "
-            "pane never changes other bytes.)"));
+            "tree, checksums that were correct are kept correct. Checksums "
+            "that were already wrong - or that you set yourself - are left "
+            "as they are. (Typing in the hex pane never changes other "
+            "bytes.)"));
     autoChecksum_->setChecked(true);
     tools->addWidget(autoChecksum_);
 
@@ -284,6 +234,12 @@ HexPacketEditor::HexPacketEditor(const QByteArray &packet, QWidget *parent)
             QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     connect(buttons, SIGNAL(accepted()), SLOT(accept()));
     connect(buttons, SIGNAL(rejected()), SLOT(reject()));
+    // Enter is taken by the hex pane - Ctrl+Enter confirms from anywhere
+    buttons->button(QDialogButtonBox::Ok)->setToolTip(tr("Ctrl+Enter"));
+    QShortcut *okShortcut = new QShortcut(QKeySequence("Ctrl+Return"), this);
+    connect(okShortcut, SIGNAL(activated()), SLOT(accept()));
+    QShortcut *okShortcut2 = new QShortcut(QKeySequence("Ctrl+Enter"), this);
+    connect(okShortcut2, SIGNAL(activated()), SLOT(accept()));
     layout->addWidget(buttons);
 
     // setData() (not setPacket()) so that the initial bytes are the
@@ -507,8 +463,14 @@ void HexPacketEditor::onTreeItemDoubleClicked(QTreeWidgetItem *item,
         QString error;
         QByteArray newPkt = pkt;
         if (PacketDecoder::writeText(newPkt, f, text, &error)) {
-            if (autoChecksum_->isChecked())
-                PacketDecoder::fixChecksums(newPkt);
+            if (autoChecksum_->isChecked()) {
+                // Keep correct checksums correct - but leave deliberately
+                // wrong ones alone, including the one just typed in
+                QSet<int> keep = PacketDecoder::correctChecksums(pkt);
+                for (int off = f.offset - 1; off < f.offset + f.length; off++)
+                    keep.remove(off);
+                PacketDecoder::fixChecksums(newPkt, keep);
+            }
             setPacket(newPkt);
             hexEdit_->selectRange(f.offset, f.length);
             return;

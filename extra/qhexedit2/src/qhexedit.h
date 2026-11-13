@@ -398,6 +398,7 @@ private:
     QBrush _brushHighlighted;
     QPen _penHighlighted;
     bool _readOnly;
+    bool _softSelection = false;   // (Riff) set by selectRange()
     bool _hexCaps;
     bool _dynamicBytesPerLine;
 

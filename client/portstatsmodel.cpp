@@ -138,7 +138,9 @@ QVariant PortStatsModel::data(const QModelIndex &index, int role) const
             // States
             case e_COMBO_STATE:
                 return QString("Link %1%2%3")
-                    .arg(LinkStateName.at(stats.state().link_state()))
+                    .arg(QCoreApplication::translate("PortStatsModel",
+                        LinkStateName.at(stats.state().link_state())
+                            .toUtf8().constData()))
                     .arg(stats.state().is_transmit_on() ? ";Tx On" : "")
                     .arg(stats.state().is_capture_on() ? ";Cap On" : "");
 
@@ -237,8 +239,11 @@ QVariant PortStatsModel::data(const QModelIndex &index, int role) const
             // but style='vertical-align:middle for the img tag doesn't work
             QString tooltip = QString("<img src='%1'/> Link %2")
                                 .arg(linkIcon)
-                                .arg(LinkStateName.at(
-                                            stats.state().link_state()));
+                                .arg(QCoreApplication::translate(
+                                        "PortStatsModel",
+                                        LinkStateName.at(
+                                            stats.state().link_state())
+                                            .toUtf8().constData()));
             if (stats.state().is_transmit_on())
                 tooltip.prepend("<img src=':/icons/transmit_on.png'/>"
                                 " Transmit On<br/>");
@@ -285,7 +290,7 @@ QVariant PortStatsModel::headerData(int section, Qt::Orientation orientation, in
                     palette.alternateBase() : palette.base();
     }
 
-    if (role != Qt::DisplayRole)
+    if (role != Qt::DisplayRole && role != Qt::ToolTipRole)
         return QVariant();
 
     if (orientation == Qt::Horizontal)
@@ -296,23 +301,36 @@ QVariant PortStatsModel::headerData(int section, Qt::Orientation orientation, in
         if (numPorts.isEmpty() || section >= numPorts.last())
             return QVariant();
 
-        getDomainIndexes(index(0, section), portGroupIdx, portIdx);    
+        getDomainIndexes(index(0, section), portGroupIdx, portIdx);
 
+        if (portGroupIdx >= (uint) pgl->mPortGroups.size())
+            return QVariant();
         PortGroup *portGroup = pgl->mPortGroups.at(portGroupIdx);
+        if (portIdx >= (uint) portGroup->mPorts.size())
+            return QVariant();
         Port *port = portGroup->mPorts.at(portIdx);
 
-        portName = QString("Port %1-%2")
-            .arg(portGroup->id())
-            .arg(port->id());
-        if (portGroupIdx < (uint) pgl->mPortGroups.size() 
-            && portIdx < (uint) portGroup->mPorts.size())
-        {
+        // Riff: show the connection name (e.g. "Ethernet", "Wi-Fi") rather
+        // than the internal interface name (if0, if1 ...) - the full text
+        // and any port notes go into the tooltip
+        QString desc = port->description();
+        if (desc.isEmpty())
+            desc = port->userAlias();
+
+        if (role == Qt::ToolTipRole) {
+            QString tip = QString("<b>%1</b> (%2)").arg(desc.toHtmlEscaped(),
+                                                       port->userAlias());
             if (!port->notes().isEmpty())
-                portName += " *";
-            portName += "\n";
-            portName += port->userDescription().isEmpty() ?
-                port->userAlias() : port->userDescription();
+                tip += "<br>" + port->notes();
+            return tip;
         }
+
+        portName = tr("Port %1-%2").arg(portGroup->id()).arg(port->id());
+        if (!port->notes().isEmpty())
+            portName += " *";
+        portName += "\n";
+        portName += desc.size() > 20
+            ? desc.left(19) + QString::fromUtf8("\xE2\x80\xA6") : desc;
         return portName;
     }
     else

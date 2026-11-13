@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QByteArray>
 #include <QCoreApplication>
 #include <QList>
+#include <QSet>
 #include <QString>
 
 /*
@@ -91,6 +92,16 @@ public:
     // Overwrite every known checksum with its correct value.
     // Returns the number of checksums that changed.
     static int fixChecksums(QByteArray &pkt);
+    // Same, but only touches checksums at the given offsets
+    static int fixChecksums(QByteArray &pkt, const QSet<int> &onlyAt);
+    // Offsets of the checksums that are currently correct
+    static QSet<int> correctChecksums(const QByteArray &pkt);
+
+    // Parse hex text in common formats (plain, spaced, 0x.., hex dumps
+    // with offsets from Wireshark, tcpdump or xxd). Returns false with
+    // *error set if the text is not hex or longer than maxLength bytes.
+    static bool parseHexText(const QString &text, QByteArray *out,
+                             QString *error, int maxLength);
 
 private:
     // Every decodeXxx() decodes the bytes [off, end) and appends one or
@@ -152,12 +163,20 @@ private:
     DecodedField macField(const QString &name, int off);
     DecodedField ipv4Field(const QString &name, int off);
     DecodedField ipv6Field(const QString &name, int off);
-    DecodedField checksumField(const QString &name, int off, quint16 correct);
+    DecodedField checksumField(const QString &name, int off, quint16 correct,
+                               bool verifiable = true);
+    // L4 checksums can only be checked when the whole datagram is here
+    DecodedField l4ChecksumField(const QString &name, int off,
+                                 quint16 correct) {
+        return checksumField(name, off, correct, l4Complete_);
+    }
 
     bool has(int off, int len) const {
         return off >= 0 && len >= 0 && off + len <= pkt_.size();
     }
     static const int kMaxDepth = 6;
+    bool l4Complete_{true};   // current IP payload is complete
+    bool inQuote_{false};     // decoding the packet quoted in ICMP
     quint32 u8(int off) const { return quint8(pkt_.at(off)); }
     quint32 u16(int off) const { return (u8(off) << 8) | u8(off + 1); }
     quint32 u32(int off) const { return (u16(off) << 16) | u16(off + 2); }

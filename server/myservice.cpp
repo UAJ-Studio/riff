@@ -1279,15 +1279,20 @@ QString MyService::frameValueErrorNotes(int portId, int error)
     // and report only that so as not to confuse users (they may not realize
     // that without a source device, we have no ARP table to lookup for dmac)
 
+    QString notes;
+    if (errorFlags & FrameValueAttrib::UnknownPortMacError)
+        notes += pfx + "Source mac is 00:00:00:00:00:00 for one or more "
+                       "streams - the port's own MAC address is unknown\n";
+
     if (errorFlags & FrameValueAttrib::UnresolvedSrcMacError)
-        return pfx + "Source mac resolve failed for one or more "
+        return notes + pfx + "Source mac resolve failed for one or more "
                      "streams - Device matching stream's source IP not found\n";
 
     if (errorFlags & FrameValueAttrib::UnresolvedDstMacError)
-        return pfx + "Destination mac resolve failed for one or more "
+        return notes + pfx + "Destination mac resolve failed for one or more "
                      "streams - possible ARP/ND failure\n";
 
-    return QString();
+    return notes;
 }
 
 /*

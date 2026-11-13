@@ -37,6 +37,7 @@ RESOURCES += ostinato.qrc riff.qrc
 HEADERS += \
     hexpacketeditor.h \
     logtranslator.h \
+    protocolnames.h \
     packetdecoder.h \
     packettemplates.h \
     arpstatusmodel.h \
@@ -99,6 +100,7 @@ FORMS += \
 SOURCES += \
     hexpacketeditor.cpp \
     logtranslator.cpp \
+    protocolnames.cpp \
     packetdecoder.cpp \
     packettemplates.cpp \
     arpstatusmodel.cpp \

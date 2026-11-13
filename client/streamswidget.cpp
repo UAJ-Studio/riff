@@ -29,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "stream.h"
 #include "hexdump.pb.h"
+#include "mac.pb.h"
 
 #include <QInputDialog>
 #include <QItemSelectionModel>
@@ -614,13 +615,32 @@ void StreamsWidget::editStreamAsHex()
                     s.protocol(0).GetExtension(OstProto::hexDump).content());
     }
     else {
-        if (QMessageBox::question(this, tr("Edit as Hex"),
-                tr("This stream is defined field by field. Editing it as "
-                   "hex turns it into a fixed sequence of bytes taken from "
+        // MACs in "Resolve"/"Self" mode are only known to the agent when it
+        // builds the packets - here they come out as 00:00:00:00:00:00
+        bool autoMac = false;
+        for (int i = 0; i < s.protocol_size(); i++) {
+            const OstProto::Protocol &p = s.protocol(i);
+            if (p.protocol_id().id() != OstProto::Protocol::kMacFieldNumber
+                    || !p.HasExtension(OstProto::mac))
+                continue;
+            const OstProto::Mac &m = p.GetExtension(OstProto::mac);
+            if (m.dst_mac_mode() == OstProto::Mac::e_mm_resolve
+                    || m.src_mac_mode() == OstProto::Mac::e_mm_resolve
+                    || m.src_mac_mode() == OstProto::Mac::e_mm_self)
+                autoMac = true;
+        }
+        QString msg = tr("This stream is defined field by field. Editing it "
+                   "as hex turns it into a fixed sequence of bytes taken from "
                    "its first packet - protocol settings, variable fields "
                    "and changing frame lengths are replaced.\n\n"
-                   "Use \"Edit Stream\" instead if you want to keep them.\n\n"
-                   "Continue?"),
+                   "Use \"Edit Stream\" instead if you want to keep them.");
+        if (autoMac)
+            msg += "\n\n" + tr("Its MAC addresses are set to \"Resolve\" or "
+                   "\"Self\", which only the agent can fill in - they will "
+                   "become 00:00:00:00:00:00. Enter the real MAC addresses "
+                   "in the hex editor.");
+        msg += "\n\n" + tr("Continue?");
+        if (QMessageBox::question(this, tr("Edit as Hex"), msg,
                 QMessageBox::Yes | QMessageBox::No, QMessageBox::No)
                 != QMessageBox::Yes)
             return;

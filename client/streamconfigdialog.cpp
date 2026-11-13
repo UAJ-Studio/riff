@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QHostAddress>
 
 #include "streamconfigdialog.h"
+#include "protocolnames.h"
 #include "stream.h"
 #include "abstractprotocol.h"
 #include "abstractprotocolconfig.h"
@@ -657,7 +658,7 @@ void StreamConfigDialog::on_twTopLevel_currentChanged(int index)
                     w->loadWidget(p);
                     _protocolWidgets.insert(p, w);
                 }
-                tbProtocolData->addItem(w, p->name());
+                tbProtocolData->addItem(w, translatedProtocolName(p->name()));
             }
 
             if (lastProtocolDataIndex < tbProtocolData->count())

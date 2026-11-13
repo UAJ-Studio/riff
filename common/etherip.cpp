@@ -158,16 +158,6 @@ bool EtherIpProtocol::setFieldData(int index, const QVariant &value,
     return true;
 }
 
-QByteArray EtherIpProtocol::protocolFrameValue(int /*streamIndex*/,
-        bool /*forCksum*/, FrameValueAttrib* /*attrib*/) const
-{
-    QByteArray fv(2, 0);
-    quint16 word = quint16(((data.version() & 0xF) << 12)
-                           | (data.reserved() & 0xFFF));
-    qToBigEndian(word, reinterpret_cast<uchar*>(fv.data()));
-    return fv;
-}
-
 int EtherIpProtocol::protocolFrameSize(int /*streamIndex*/) const
 {
     return 2;

@@ -28,6 +28,7 @@ struct FrameValueAttrib
         UnresolvedSrcMacError = 0x1,
         UnresolvedDstMacError = 0x2,
         OutOfMemoryError      = 0x4,
+        UnknownPortMacError   = 0x8,  // Riff: src mode Self, port MAC unknown
     };
     Q_DECLARE_FLAGS(ErrorFlags, ErrorFlag);
     ErrorFlags errorFlags{0};

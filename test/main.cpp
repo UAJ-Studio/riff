@@ -128,3 +128,8 @@ int main(int argc, char* argv[])
     return exitCode;
 }
 
+
+quint64 getPortMacAddress(int /*portId*/)
+{
+    return 0;
+}

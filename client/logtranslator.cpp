@@ -61,6 +61,12 @@ QString LogTranslator::translate(const QString &message)
                 "streams - no device has the stream's source IP. Set the "
                 "source MAC mode to \"Self\" to use the port's own MAC, or "
                 "add a device with that IP on the Devices tab.")},
+            {rx("Port (\\d+): Source mac is 00:00:00:00:00:00 for one or "
+                "more streams - the port's own MAC address is unknown"),
+             tr("Port %1: The source MAC of one or more streams is "
+                "00:00:00:00:00:00 - this port's own MAC address is unknown "
+                "(e.g. a loopback adapter). Set the source MAC to \"Fixed\" "
+                "and enter it.")},
             {rx("Port (\\d+): Destination mac resolve failed for one or "
                 "more streams - possible ARP/ND failure"),
              tr("Port %1: Could not resolve the destination MAC of one or "

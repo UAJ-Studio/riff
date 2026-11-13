@@ -6,6 +6,8 @@
 #include <QCoreApplication>
 #include <QStringList>
 #include <cstdio>
+#include <functional>
+#include <QSet>
 
 // Template and hex parser live in the GUI dialog; the test re-declares the
 // pieces it needs instead of pulling in widgets.
@@ -280,6 +282,104 @@ int main(int argc, char **argv)
         dns[qoff + 1] = char(qoff - 42); // points to itself (DNS at 42)
         PacketDecoder d(dns);
         check(true, "dns: compression pointer loop terminates");
+    }
+
+    // ---- Review fixes ----
+    {
+        // IPv4 first fragment (MF set): the UDP checksum covers the whole
+        // datagram, so it must be neither flagged nor "fixed"
+        QByteArray frag = PacketTemplates::build(0);
+        frag[14 + 6] = char(0x20);   // flags: MF, offset 0
+        frag[14 + 7] = char(0x00);
+        int udpCk = 14 + 20 + 6;
+        frag[udpCk] = char(0x12);
+        frag[udpCk + 1] = char(0x34);
+        QByteArray fixedFrag = frag;
+        PacketDecoder::fixChecksums(fixedFrag);
+        check(fixedFrag.mid(udpCk, 2) == QByteArray::fromHex("1234"),
+              "fragment: UDP checksum of a first fragment is left alone");
+        PacketDecoder d(fixedFrag);
+        const DecodedField *ck = find(d.fields(), "Checksum");
+        check(ck && !ck->error && ck->value.contains("not checked"),
+              "fragment: UDP checksum shown as not checked");
+        const DecodedField *hc = find(d.fields(), "Header checksum");
+        check(hc && !hc->error, "fragment: IPv4 header checksum still fixed");
+    }
+    {
+        // ICMP destination unreachable quoting IPv4+UDP (8 bytes of UDP):
+        // the quoted UDP checksum must not be rewritten
+        QByteArray inner = PacketTemplates::build(0).mid(14, 28);
+        QByteArray icmp = QByteArray::fromHex("0303000000000000") + inner;
+        QByteArray ip = QByteArray::fromHex("45000000") + QByteArray::fromHex(
+                "00004000400100000a0000010a000002");
+        int total = 20 + icmp.size();
+        ip[2] = char(total >> 8);
+        ip[3] = char(total & 0xFF);
+        QByteArray pkt = QByteArray::fromHex("00112233445500aabbccddee0800")
+                         + ip + icmp;
+        int quotedUdpCk = 14 + 20 + 8 + 20 + 6;
+        QByteArray before = pkt.mid(quotedUdpCk, 2);
+        PacketDecoder::fixChecksums(pkt);
+        check(pkt.mid(quotedUdpCk, 2) == before,
+              "icmp quote: quoted UDP checksum not rewritten");
+        PacketDecoder d(pkt);
+        bool err = false;
+        QStringList n;
+        std::function<void(const QList<DecodedField>&)> walk =
+            [&](const QList<DecodedField> &fs) {
+                for (const DecodedField &f : fs) {
+                    if (f.error) err = true;
+                    walk(f.children);
+                }
+            };
+        walk(d.fields());
+        check(!err, "icmp quote: no errors after fix");
+    }
+    {
+        // Selective fixing keeps a deliberately wrong checksum wrong
+        QByteArray p = PacketTemplates::build(0);
+        int ipCk = 14 + 10;
+        p[ipCk] = char(0xDE);
+        p[ipCk + 1] = char(0xAD);
+        QSet<int> keep = PacketDecoder::correctChecksums(p);
+        check(!keep.contains(ipCk), "selective: wrong IPv4 checksum detected");
+        p[14 + 8] = char(1);   // TTL edit
+        PacketDecoder::fixChecksums(p, keep);
+        check(p.mid(ipCk, 2) == QByteArray::fromHex("dead"),
+              "selective: deliberately wrong checksum kept");
+    }
+    {
+        QByteArray out;
+        QString err;
+        // Wireshark "Copy as Hex Dump" with a short last line
+        check(PacketDecoder::parseHexText(
+                  "0000   00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff   "
+                  "..\"3DUfw........\n"
+                  "0010   62 65            be", &out, &err, 100)
+              && out.size() == 18
+              && out.right(2) == QByteArray::fromHex("6265"),
+              "paste: Wireshark dump, short last line, ASCII ignored");
+        // tcpdump -xx (4-digit groups)
+        check(PacketDecoder::parseHexText(
+                  "0x0000:  4500 0054 1234 4000\n"
+                  "0x0008:  4001 0000", &out, &err, 100)
+              && out == QByteArray::fromHex("450000541234400040010000"),
+              "paste: tcpdump -xx");
+        // xxd with ASCII column
+        check(PacketDecoder::parseHexText(
+                  "00000000: 4865 6c6c 6f21  Hello!", &out, &err, 100)
+              && out == QByteArray("Hello!"),
+              "paste: xxd with ASCII column");
+        // plain hex with a double space is not mistaken for a dump
+        check(PacketDecoder::parseHexText("0011  2233", &out, &err, 100)
+              && out == QByteArray::fromHex("00112233"),
+              "paste: plain hex with double space");
+        check(PacketDecoder::parseHexText("0x45 0x00, 0x00:54", &out, &err,
+                                          100)
+              && out == QByteArray::fromHex("45000054"),
+              "paste: 0x prefixes and separators");
+        check(!PacketDecoder::parseHexText("zz", &out, &err, 100),
+              "paste: garbage rejected");
     }
 
     std::printf("\n%s (%d failure(s))\n", failures ? "FAILED" : "ALL PASSED",

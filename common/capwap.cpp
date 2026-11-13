@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "capwap.h"
 
+#include "variablefields.h"
+
 #include <QtEndian>
 
 namespace {
@@ -211,6 +213,20 @@ QVariant CapwapProtocol::fieldData(int index, FieldAttrib attrib,
         return QVariant();
     };
 
+    // DTLS (type 1): just the 4-byte preamble - version, type and 24
+    // reserved bits - followed by the (encrypted) DTLS record
+    const bool dtls = (data.type() & 0xF) == 1;
+    if (dtls) {
+        if (index == capwap_hlen)
+            return numeric("Reserved", 0, 24, false, QString());
+        if (index > capwap_hlen && index <= capwap_msgFlags
+                && attrib != FieldName && attrib != FieldValue) {
+            if (attrib == FieldTextValue)
+                return QObject::tr("<not-included>");
+            return QVariant();
+        }
+    }
+
     switch (index) {
     case capwap_version:
         return numeric("Version", data.version() & 0xF, 4, false, QString());
@@ -356,35 +372,48 @@ bool CapwapProtocol::setFieldData(int index, const QVariant &value,
     return true;
 }
 
+int CapwapProtocol::protocolFrameSize(int /*streamIndex*/) const
+{
+    if ((data.type() & 0xF) == 1)
+        return 4;   // DTLS preamble
+    return kHeaderLen + (data.is_control() ? kControlHeaderLen : 0);
+}
+
+// Built here rather than by AbstractProtocol's generic bit packer, which
+// gets the 5-bit fields that straddle byte boundaries wrong
 QByteArray CapwapProtocol::protocolFrameValue(int streamIndex,
         bool /*forCksum*/, FrameValueAttrib* /*attrib*/) const
 {
     QByteArray fv(protocolFrameSize(streamIndex), 0);
     uchar *p = reinterpret_cast<uchar*>(fv.data());
 
-    quint32 w0 = ((data.version() & 0xF) << 28)
-               | ((data.type() & 0xF) << 24)
-               | ((hlen() & 0x1F) << 19)
-               | ((data.rid() & 0x1F) << 14)
-               | ((data.wbid() & 0x1F) << 9)
-               | ((data.flags() & 0x3F) << 3)
-               | (data.rsvd_flags() & 0x7);
-    quint32 w1 = ((data.fragment_id() & 0xFFFF) << 16)
-               | ((data.fragment_offset() & 0x1FFF) << 3)
-               | (data.rsvd2() & 0x7);
-    qToBigEndian(w0, p);
-    qToBigEndian(w1, p + 4);
-
-    if (data.is_control()) {
-        qToBigEndian(quint32(data.message_type()), p + 8);
-        p[12] = uchar(data.seq_num() & 0xFF);
-        qToBigEndian(quint16(msgElemLen(streamIndex)), p + 13);
-        p[15] = uchar(data.msg_flags() & 0xFF);
+    if ((data.type() & 0xF) == 1) {
+        // DTLS preamble: version, type, 24 reserved bits
+        p[0] = uchar(((data.version() & 0xF) << 4) | 1);
     }
-    return fv;
-}
+    else {
+        quint32 w0 = ((data.version() & 0xF) << 28)
+                   | ((data.type() & 0xF) << 24)
+                   | ((hlen() & 0x1F) << 19)
+                   | ((data.rid() & 0x1F) << 14)
+                   | ((data.wbid() & 0x1F) << 9)
+                   | ((data.flags() & 0x3F) << 3)
+                   | (data.rsvd_flags() & 0x7);
+        quint32 w1 = ((data.fragment_id() & 0xFFFF) << 16)
+                   | ((data.fragment_offset() & 0x1FFF) << 3)
+                   | (data.rsvd2() & 0x7);
+        qToBigEndian(w0, p);
+        qToBigEndian(w1, p + 4);
 
-int CapwapProtocol::protocolFrameSize(int /*streamIndex*/) const
-{
-    return kHeaderLen + (data.is_control() ? kControlHeaderLen : 0);
+        if (data.is_control()) {
+            qToBigEndian(quint32(data.message_type()), p + 8);
+            p[12] = uchar(data.seq_num() & 0xFF);
+            qToBigEndian(quint16(msgElemLen(streamIndex)), p + 13);
+            p[15] = uchar(data.msg_flags() & 0xFF);
+        }
+    }
+
+    // Variable fields (e.g. an incrementing sequence number)
+    VariableFields::apply(this, fv, streamIndex);
+    return fv;
 }

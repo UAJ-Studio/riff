@@ -370,6 +370,7 @@ void QHexEdit::selectRange(qint64 pos, qint64 count)
     resetSelection(pos * 2);
     if (count > 0)
         setSelection((pos + count) * 2);
+    _softSelection = count > 0;
     ensureVisible();
     viewport()->update();
 }
@@ -462,6 +463,11 @@ void QHexEdit::undo()
 // ********************************************************************** Handle events
 void QHexEdit::keyPressEvent(QKeyEvent *event)
 {
+    // (Riff) A selection made by selectRange() only highlights - typing
+    // then overwrites from its start instead of clearing/removing it all
+    const bool softSelection = _softSelection;
+    _softSelection = false;
+
     // Cursor movements
     if (event->matches(QKeySequence::MoveToNextChar))
     {
@@ -726,6 +732,9 @@ void QHexEdit::keyPressEvent(QKeyEvent *event)
             if ((((key >= '0' && key <= '9') || (key >= 'a' && key <= 'f')) && _editAreaIsAscii == false)
                 || (key >= ' ' && _editAreaIsAscii))
             {
+                if (softSelection)
+                    resetSelection(_cursorPosition);
+
                 if (getSelectionBegin() != getSelectionEnd())
                 {
                     if (_overwriteMode)
@@ -817,6 +826,7 @@ void QHexEdit::mouseMoveEvent(QMouseEvent * event)
 
 void QHexEdit::mousePressEvent(QMouseEvent * event)
 {
+    _softSelection = false;
     _blink = false;
     viewport()->update();
     qint64 cPos = cursorPosition(event->pos());

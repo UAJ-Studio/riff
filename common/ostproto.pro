@@ -75,6 +75,7 @@ HEADERS += \
     gre.h \
     etherip.h \
     capwap.h \
+    variablefields.h \
     icmp.h \
     igmp.h \
     mld.h \

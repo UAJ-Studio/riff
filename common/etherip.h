@@ -64,8 +64,6 @@ public:
     virtual bool setFieldData(int index, const QVariant &value,
             FieldAttrib attrib = FieldValue);
 
-    virtual QByteArray protocolFrameValue(int streamIndex = 0,
-            bool forCksum = false, FrameValueAttrib *attrib = nullptr) const;
     virtual int protocolFrameSize(int streamIndex = 0) const;
 
 private:

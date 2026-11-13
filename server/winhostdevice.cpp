@@ -169,7 +169,7 @@ void WindowsHostDevice::sendArpRequest(quint32 tgtIp)
     arpEntry.Address.Ipv4.sin_addr.s_addr = qToBigEndian(tgtIp);
 
     ulong status = ResolveIpNetEntry2(&arpEntry, &src);
-    if (ResolveIpNetEntry2(&arpEntry, &src) != NO_ERROR)
+    if (status != NO_ERROR)   // Riff: was resolving a second time
         qWarning("Resolve arp failed for LUID %llx: %s",
                  luid_.Value, qPrintable(errStr(status)));
 }
@@ -185,7 +185,7 @@ void WindowsHostDevice::sendNeighborSolicit(UInt128 tgtIp)
     memcpy(&ndpEntry.Address.Ipv6.sin6_addr.u, tgtIp.toArray(), 16);
 
     ulong status = ResolveIpNetEntry2(&ndpEntry, &src);
-    if (ResolveIpNetEntry2(&ndpEntry, &src) != NO_ERROR)
+    if (status != NO_ERROR)   // Riff: was resolving a second time
         qWarning("Resolve ndp failed for LUID %llx: %s",
                  luid_.Value, qPrintable(errStr(status)));
 }

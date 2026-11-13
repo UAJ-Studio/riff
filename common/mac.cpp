@@ -305,7 +305,9 @@ bool MacProtocol::setFieldData(int index, const QVariant &value,
         case mac_dstMacMode:
         {
             uint mode = value.toUInt(&isOk);
-            if (isOk && data.MacAddrMode_IsValid(mode))
+            // "Self" is a source-only mode
+            if (isOk && data.MacAddrMode_IsValid(mode)
+                    && mode != OstProto::Mac::e_mm_self)
                 data.set_dst_mac_mode((OstProto::Mac::MacAddrMode) mode);
             else
                 isOk = false;
@@ -403,6 +405,8 @@ QByteArray MacProtocol::protocolFrameValue(int streamIndex, bool /*forCksum*/,
             attrib->errorFlags |= FrameValueAttrib::UnresolvedDstMacError;
         if (!srcMac && data.src_mac_mode() == OstProto::Mac::e_mm_resolve)
             attrib->errorFlags |= FrameValueAttrib::UnresolvedSrcMacError;
+        if (!srcMac && data.src_mac_mode() == OstProto::Mac::e_mm_self)
+            attrib->errorFlags |= FrameValueAttrib::UnknownPortMacError;
     }
 
     return ba;

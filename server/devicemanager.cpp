@@ -316,6 +316,7 @@ void DeviceManager::clearDeviceNeighbors(Device::NeighborSet set)
 {
     foreach(Device *device, deviceList_)
         device->clearNeighbors(set);
+    fallbackResolved_.clear();  // a new resolve pass starts
 }
 
 void DeviceManager::getDeviceNeighbors(
@@ -333,10 +334,30 @@ void DeviceManager::getDeviceNeighbors(
 
 void DeviceManager::resolveDeviceNeighbor(PacketBuffer *pktBuf)
 {
-    Device *device = neighborOriginDevice(pktBuf);
+    bool fallback = false;
+    Device *device = neighborOriginDevice(pktBuf, &fallback);
 
-    if (device)
-        device->resolveNeighbor(pktBuf);
+    if (!device)
+        return;
+
+    if (fallback) {
+        // Riff: the host device asks the OS to resolve - a synchronous,
+        // possibly slow call made while the port is locked. Do it once per
+        // destination per "resolve" pass, and for a limited number of
+        // destinations (e.g. a stream incrementing its destination IP)
+        const uchar *l3 = pktBuf->data();   // at the EtherType now
+        QByteArray dst;
+        quint16 ethType = qFromBigEndian<quint16>(l3);
+        if (ethType == 0x0800 && pktBuf->length() >= 2 + 20)
+            dst = QByteArray(reinterpret_cast<const char*>(l3 + 2 + 16), 4);
+        else if (ethType == 0x86DD && pktBuf->length() >= 2 + 40)
+            dst = QByteArray(reinterpret_cast<const char*>(l3 + 2 + 24), 16);
+        if (dst.isEmpty() || fallbackResolved_.contains(dst)
+                || fallbackResolved_.size() >= kMaxFallbackResolves)
+            return;
+        fallbackResolved_.insert(dst);
+    }
+    device->resolveNeighbor(pktBuf);
 }
 
 quint64 DeviceManager::deviceMacAddress(PacketBuffer *pktBuf)
@@ -363,14 +384,27 @@ quint64 DeviceManager::neighborMacAddress(PacketBuffer *pktBuf)
  * of failing. That way "Resolve" works for streams whose source IP is not
  * the PC's own, e.g. with source MAC mode "Self".
  */
-Device* DeviceManager::neighborOriginDevice(PacketBuffer *pktBuf)
+Device* DeviceManager::neighborOriginDevice(PacketBuffer *pktBuf,
+                                            bool *fallback)
 {
+    const uchar *start = pktBuf->data();
     Device *device = originDevice(pktBuf);
 
-    if (!device && !hostDeviceList_.isEmpty())
-        device = hostDeviceList_.first();
+    if (fallback)
+        *fallback = false;
+    if (device || hostDeviceList_.isEmpty() || !deviceCount())
+        return device;
 
-    return device;
+    // originDevice() pulled pktBuf past the MACs and any VLAN tags. The
+    // host device is untagged - using it for a VLAN-tagged stream would
+    // resolve against the wrong network, so only fall back for untagged
+    // frames (MACs only = 12 bytes)
+    if (pktBuf->data() - start != 12)
+        return nullptr;
+
+    if (fallback)
+        *fallback = true;
+    return hostDeviceList_.first();
 }
 
 // ------------------------------------ //

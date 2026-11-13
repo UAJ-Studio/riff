@@ -788,10 +788,6 @@ To emulate a device, click on Configuration and create a device group</source>
         <translation>16進パケットエディタ</translation>
     </message>
     <message>
-        <source>Type hex digits in the right pane to edit the packet bytes. The decode on the left follows along: click a field to highlight its bytes, double-click a value to change it.</source>
-        <translation>右側に16進数を入力してパケットのバイト列を編集します。左側の解析結果は入力に合わせて更新されます。フィールドをクリックすると該当バイトが強調表示され、値をダブルクリックすると変更できます。</translation>
-    </message>
-    <message>
         <source>Start from Template</source>
         <translation>テンプレートから作成</translation>
     </message>
@@ -822,10 +818,6 @@ To emulate a device, click on Configuration and create a device group</source>
     <message>
         <source>Update checksums after field edits</source>
         <translation>フィールド編集後にチェックサムを自動更新</translation>
-    </message>
-    <message>
-        <source>When you change a value in the decode tree, recalculate checksums automatically. (Typing in the hex pane never changes other bytes.)</source>
-        <translation>解析ツリーで値を変更したときに、チェックサムを自動で再計算します。(16進表示での入力によって他のバイトが変わることはありません)</translation>
     </message>
     <message>
         <source>Insert mode</source>
@@ -1016,6 +1008,18 @@ This replaces the whole packet.</source>
     <message>
         <source>IGMPv2 Membership Report</source>
         <translation>IGMPv2 メンバーシップレポート</translation>
+    </message>
+    <message>
+        <source>Type hex digits in the right pane to edit the packet bytes. The decode on the left follows along: click a field to highlight its bytes, double-click a value to change it. Template MAC and IP addresses are examples - change them before sending.</source>
+        <translation>右側に16進数を入力してパケットのバイト列を編集します。左側の解析結果は入力に合わせて更新されます。フィールドをクリックすると該当バイトが強調表示され、値をダブルクリックすると変更できます。テンプレートの MAC / IP アドレスは例なので、送信前に変更してください。</translation>
+    </message>
+    <message>
+        <source>When you change a value in the decode tree, checksums that were correct are kept correct. Checksums that were already wrong - or that you set yourself - are left as they are. (Typing in the hex pane never changes other bytes.)</source>
+        <translation>解析ツリーで値を変更したとき、正しかったチェックサムは正しいまま更新されます。もともと誤っていたチェックサムや、自分で設定したチェックサムはそのまま残ります。(16進表示での入力によって他のバイトが変わることはありません)</translation>
+    </message>
+    <message>
+        <source>Ctrl+Enter</source>
+        <translation>Ctrl+Enter</translation>
     </message>
 </context>
 <context>
@@ -1253,6 +1257,10 @@ This replaces the whole packet.</source>
     <message>
         <source>Version check failed: %1</source>
         <translation>バージョン確認に失敗しました: %1</translation>
+    </message>
+    <message>
+        <source>Port %1: The source MAC of one or more streams is 00:00:00:00:00:00 - this port's own MAC address is unknown (e.g. a loopback adapter). Set the source MAC to "Fixed" and enter it.</source>
+        <translation>ポート %1: 一部のストリームの送信元 MAC が 00:00:00:00:00:00 になっています - このポート自身の MAC アドレスが不明です (ループバックアダプターなど)。送信元 MAC を「固定」にして入力してください。</translation>
     </message>
 </context>
 <context>
@@ -2523,6 +2531,10 @@ Debug: %2</source>
         <source>Option %1</source>
         <translation>オプション %1</translation>
     </message>
+    <message>
+        <source> (not checked - fragment or truncated)</source>
+        <translation> (未検証 - フラグメントまたは途中で切れたパケット)</translation>
+    </message>
 </context>
 <context>
     <name>PcapFileFormat</name>
@@ -2763,6 +2775,10 @@ Debug: %2</source>
     <message>
         <source>Up</source>
         <translation>アップ</translation>
+    </message>
+    <message>
+        <source>Port %1-%2</source>
+        <translation>ポート %1-%2</translation>
     </message>
 </context>
 <context>
@@ -3106,6 +3122,105 @@ Debug: %2</source>
     <message>
         <source>Protocol{%1} is not a instance of ComboProtocol</source>
         <translation>Protocol{%1} は ComboProtocol のインスタンスではありません</translation>
+    </message>
+</context>
+<context>
+    <name>ProtocolName</name>
+    <message>
+        <source>Media Access Protocol</source>
+        <translation>MAC (メディアアクセス制御)</translation>
+    </message>
+    <message>
+        <source>Ethernet II</source>
+        <translation>Ethernet II</translation>
+    </message>
+    <message>
+        <source>802.3</source>
+        <translation>802.3</translation>
+    </message>
+    <message>
+        <source>802.3 Logical Link Control</source>
+        <translation>802.3 LLC (論理リンク制御)</translation>
+    </message>
+    <message>
+        <source>SubNetwork Access Protocol</source>
+        <translation>SNAP (サブネットワークアクセスプロトコル)</translation>
+    </message>
+    <message>
+        <source>Vlan</source>
+        <translation>VLAN</translation>
+    </message>
+    <message>
+        <source>SVlan</source>
+        <translation>SVLAN</translation>
+    </message>
+    <message>
+        <source>Spanning Tree Protocol</source>
+        <translation>STP (スパニングツリープロトコル)</translation>
+    </message>
+    <message>
+        <source>Address Resolution Protocol</source>
+        <translation>ARP (アドレス解決プロトコル)</translation>
+    </message>
+    <message>
+        <source>Internet Protocol ver 4</source>
+        <translation>IPv4 (インターネットプロトコル バージョン 4)</translation>
+    </message>
+    <message>
+        <source>Internet Protocol ver 6</source>
+        <translation>IPv6 (インターネットプロトコル バージョン 6)</translation>
+    </message>
+    <message>
+        <source>Transmission Control Protocol (state less)</source>
+        <translation>TCP (ステートレス)</translation>
+    </message>
+    <message>
+        <source>User Datagram Protocol</source>
+        <translation>UDP (ユーザーデータグラムプロトコル)</translation>
+    </message>
+    <message>
+        <source>Internet Control Message Protocol</source>
+        <translation>ICMP (インターネット制御メッセージプロトコル)</translation>
+    </message>
+    <message>
+        <source>Internet Group Management Protocol</source>
+        <translation>IGMP (インターネットグループ管理プロトコル)</translation>
+    </message>
+    <message>
+        <source>Multicast Listener Discovery</source>
+        <translation>MLD (マルチキャストリスナー探索)</translation>
+    </message>
+    <message>
+        <source>General Routing Encapsulation Protocol</source>
+        <translation>GRE (汎用ルーティングカプセル化)</translation>
+    </message>
+    <message>
+        <source>EtherIP - Ethernet over IP (RFC 3378)</source>
+        <translation>EtherIP - Ethernet over IP (RFC 3378)</translation>
+    </message>
+    <message>
+        <source>CAPWAP - Control And Provisioning of Wireless Access Points (RFC 5415)</source>
+        <translation>CAPWAP - 無線 AP 制御プロトコル (RFC 5415)</translation>
+    </message>
+    <message>
+        <source>Text Protocol</source>
+        <translation>テキストプロトコル</translation>
+    </message>
+    <message>
+        <source>Payload Data</source>
+        <translation>ペイロードデータ</translation>
+    </message>
+    <message>
+        <source>HexDump</source>
+        <translation>Hex Dump (16進データ)</translation>
+    </message>
+    <message>
+        <source>Signature</source>
+        <translation>シグネチャ</translation>
+    </message>
+    <message>
+        <source>Sample Protocol</source>
+        <translation>サンプルプロトコル</translation>
     </message>
 </context>
 <context>
@@ -3882,20 +3997,24 @@ Right-click to create a stream</source>
         <translation>16進数で編集</translation>
     </message>
     <message>
-        <source>This stream is defined field by field. Editing it as hex turns it into a fixed sequence of bytes taken from its first packet - protocol settings, variable fields and changing frame lengths are replaced.
-
-Use "Edit Stream" instead if you want to keep them.
-
-Continue?</source>
-        <translation>このストリームはフィールド単位で定義されています。16進数で編集すると、最初のパケットのバイト列をもとにした固定のバイト列に変換され、プロトコル設定・可変フィールド・可変フレーム長は失われます。
-
-これらを残したい場合は「ストリームの編集」を使ってください。
-
-続行しますか?</translation>
-    </message>
-    <message>
         <source>Edit Stream as Hex</source>
         <translation>ストリームを16進数で編集</translation>
+    </message>
+    <message>
+        <source>This stream is defined field by field. Editing it as hex turns it into a fixed sequence of bytes taken from its first packet - protocol settings, variable fields and changing frame lengths are replaced.
+
+Use "Edit Stream" instead if you want to keep them.</source>
+        <translation>このストリームはフィールド単位で定義されています。16進数で編集すると、最初のパケットのバイト列をもとにした固定のバイト列に変換され、プロトコル設定・可変フィールド・可変フレーム長は失われます。
+
+これらを残したい場合は「ストリームの編集」を使ってください。</translation>
+    </message>
+    <message>
+        <source>Its MAC addresses are set to "Resolve" or "Self", which only the agent can fill in - they will become 00:00:00:00:00:00. Enter the real MAC addresses in the hex editor.</source>
+        <translation>MAC アドレスが「解決」または「自身」になっています。これらはエージェントしか決められないため 00:00:00:00:00:00 になります。16進エディタで実際の MAC アドレスを入力してください。</translation>
+    </message>
+    <message>
+        <source>Continue?</source>
+        <translation>続行しますか?</translation>
     </message>
 </context>
 <context>

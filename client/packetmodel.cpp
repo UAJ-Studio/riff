@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QHostAddress>
 
 #include "packetmodel.h"
+#include "protocolnames.h"
 #include "../common/protocollistiterator.h"
 #include "../common/abstractprotocol.h"
 
@@ -227,7 +228,8 @@ QVariant PacketModel::data(const QModelIndex &index, int role) const
     case  ITYP_PROTOCOL:
         return QString("%1 (%2)")
             .arg(mSelectedProtocols.at(id.ws.protocol)->shortName())
-            .arg(mSelectedProtocols.at(id.ws.protocol)->name());
+            .arg(translatedProtocolName(
+                    mSelectedProtocols.at(id.ws.protocol)->name()));
 
     case  ITYP_FIELD: 
         return    mSelectedProtocols.at(id.ws.protocol)->fieldData(fieldIdx,

@@ -25,7 +25,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QHash>
 #include <QMap>
 #include <QMultiHash>
+#include <QByteArray>
 #include <QMutex>
+#include <QSet>
 #include <QtGlobal>
 
 class AbstractPort;
@@ -69,7 +71,10 @@ private:
     enum Operation { kAdd, kDelete };
 
     Device* originDevice(PacketBuffer *pktBuf);
-    Device* neighborOriginDevice(PacketBuffer *pktBuf);
+    Device* neighborOriginDevice(PacketBuffer *pktBuf,
+                                 bool *fallback = nullptr);
+    QSet<QByteArray> fallbackResolved_;  // dst IPs resolved via host dev
+    static const int kMaxFallbackResolves = 16;
     void enumerateDevices(
             const OstProto::DeviceGroup *deviceGroup,
             Operation oper);

@@ -239,9 +239,16 @@ DecodedField PacketDecoder::ipv6Field(const QString &name, int off)
 }
 
 DecodedField PacketDecoder::checksumField(const QString &name, int off,
-                                          quint16 correct)
+                                          quint16 correct, bool verifiable)
 {
     DecodedField f = uintField(name, off, 2, 0, 0, QString(), true);
+    if (!verifiable) {
+        // Part of the datagram is missing (IP fragment, truncated packet,
+        // packet quoted in ICMP) - we can't tell the right value, so don't
+        // flag it and never "fix" it
+        f.value += tr(" (not checked - fragment or truncated)");
+        return f;
+    }
     quint16 cur = quint16(u16(off));
     if (cur == correct) {
         f.value += tr(" (correct)");
@@ -585,7 +592,8 @@ int PacketDecoder::decodeIpv4(int off, int end, Out &out, int depth)
                                 tr("%1 bytes").arg(hlen));
     hl.error = hlen < 20 || hlen > avail;
     DecodedField tl = uintField(tr("Total length"), off + 2, 2);
-    tl.error = total < hlen || total > avail;
+    // a packet quoted in ICMP is cut short on purpose
+    tl.error = total < hlen || (total > avail && !inQuote_);
     if (tl.error)
         tl.value += tr(" (bytes available: %1)").arg(avail);
 
@@ -633,10 +641,17 @@ int PacketDecoder::decodeIpv4(int off, int end, Out &out, int depth)
     pseudo.append(char((l4len >> 8) & 0xFF));
     pseudo.append(char(l4len & 0xFF));
 
+    // L4 checksums need the whole datagram: not when more fragments follow
+    // (MF), bytes are missing, or this is the header quoted in ICMP
+    bool moreFragments = u16(off + 6) & 0x2000;
+    bool savedComplete = l4Complete_;
+    l4Complete_ = !moreFragments && total <= avail && !inQuote_;
+
     int done = l4off;
     if (firstFragment)
         done = dispatchIpProto(int(u8(off + 9)), l4off, ipEnd, pseudo, out,
                                depth);
+    l4Complete_ = savedComplete;
     addData(done, ipEnd - done,
             firstFragment ? tr("Data") : tr("Fragment data"), out);
     return ipEnd;
@@ -677,7 +692,8 @@ int PacketDecoder::decodeIpv6(int off, int end, Out &out, int depth)
     int ipEnd = l4off + qMin(plen, avail);
 
     // Extension headers
-    bool fragment = false;
+    bool fragment = false;          // not the first fragment
+    bool fragmented = false;        // any fragment (incl. the first)
     while ((nh == 0 || nh == 43 || nh == 60 || nh == 44)
                 && l4off + 8 <= ipEnd) {
         int len = (nh == 44) ? 8 : (int(u8(l4off + 1)) + 1) * 8;
@@ -692,6 +708,7 @@ int PacketDecoder::decodeIpv6(int off, int end, Out &out, int depth)
                 << uintField(tr("Identification"), l4off + 4, 4, 0, 0,
                              QString(), true);
             fragment = (u16(l4off + 2) & 0xFFF8) != 0;
+            fragmented = fragment || (u16(l4off + 2) & 0x0001);
         }
         else {
             ext.children << uintField(tr("Length"), l4off + 1, 1, 0, 0,
@@ -712,9 +729,13 @@ int PacketDecoder::decodeIpv6(int off, int end, Out &out, int depth)
     pseudo.append(QByteArray(3, char(0)));
     pseudo.append(char(nh));
 
+    bool savedComplete = l4Complete_;
+    l4Complete_ = !fragmented && plen <= avail && !inQuote_;
+
     int done = l4off;
     if (!fragment)
         done = dispatchIpProto(nh, l4off, ipEnd, pseudo, out, depth);
+    l4Complete_ = savedComplete;
     addData(done, ipEnd - done, fragment ? tr("Fragment data") : tr("Data"),
             out);
     return ipEnd;
@@ -788,7 +809,7 @@ int PacketDecoder::decodeTcp(int off, int end, const QByteArray &pseudo,
         << uintField(tr("Flags"), off + 12, 2, 0x01FF, 0,
                      set.join(", "), true)
         << uintField(tr("Window"), off + 14, 2)
-        << checksumField(tr("Checksum"), off + 16,
+        << l4ChecksumField(tr("Checksum"), off + 16,
                          l4Checksum(pkt_, off, len, 16, pseudo))
         << uintField(tr("Urgent pointer"), off + 18, 2);
     if (doff > 20 && doff <= len)
@@ -811,7 +832,8 @@ int PacketDecoder::decodeUdp(int off, int end, const QByteArray &pseudo,
             QString("%1%2%3").arg(sport).arg(kArrow).arg(dport));
 
     DecodedField ulen = uintField(tr("Length"), off + 4, 2);
-    ulen.error = int(u16(off + 4)) != len;
+    // only meaningful when the whole datagram is here
+    ulen.error = int(u16(off + 4)) != len && l4Complete_;
     if (ulen.error)
         ulen.value += tr(" (should be %1)").arg(len);
 
@@ -827,7 +849,7 @@ int PacketDecoder::decodeUdp(int off, int end, const QByteArray &pseudo,
     }
     else {
         quint16 c = l4Checksum(pkt_, off, len, 6, pseudo);
-        udp.children << checksumField(tr("Checksum"), off + 6,
+        udp.children << l4ChecksumField(tr("Checksum"), off + 6,
                                       c ? c : 0xFFFF);
     }
     out << udp;
@@ -899,7 +921,7 @@ int PacketDecoder::decodeIcmp(int off, int end, Out &out, int depth)
     msg[3] = 0;
     icmp.children << uintField(tr("Type"), off, 1, 0, 0, name)
                   << uintField(tr("Code"), off + 1, 1)
-                  << checksumField(tr("Checksum"), off + 2,
+                  << l4ChecksumField(tr("Checksum"), off + 2,
                                    internetChecksum(msg));
     if ((type == 0 || type == 8) && len >= 8) {
         icmp.children << uintField(tr("Identifier"), off + 4, 2)
@@ -913,8 +935,14 @@ int PacketDecoder::decodeIcmp(int off, int end, Out &out, int depth)
     // Error messages quote the offending packet's IP header
     int done = off + icmp.length;
     if ((type == 3 || type == 5 || type == 11) && len >= 28
-            && depth < kMaxDepth)
+            && depth < kMaxDepth) {
+        // the quoted packet is cut short: shown, but its checksums are
+        // neither checked nor "fixed"
+        bool savedQuote = inQuote_;
+        inQuote_ = true;
         done = decodeIpv4(done, end, out, depth + 1);
+        inQuote_ = savedQuote;
+    }
     addData(done, end - done, tr("Data"), out);
     return end;
 }
@@ -943,7 +971,7 @@ int PacketDecoder::decodeIcmp6(int off, int end, const QByteArray &pseudo,
     DecodedField icmp = header("ICMPv6", off, 4, name);
     icmp.children << uintField(tr("Type"), off, 1, 0, 0, name)
                   << uintField(tr("Code"), off + 1, 1)
-                  << checksumField(tr("Checksum"), off + 2,
+                  << l4ChecksumField(tr("Checksum"), off + 2,
                                    l4Checksum(pkt_, off, len, 2, pseudo));
     if ((type == 128 || type == 129) && len >= 8) {
         icmp.length = 8;
@@ -981,7 +1009,7 @@ int PacketDecoder::decodeIgmp(int off, int end, Out &out)
     igmp.children << uintField(tr("Type"), off, 1, 0, 0, name, true)
                   << uintField(tr("Max response time"), off + 1, 1, 0, 0,
                                tr("1/10 s"))
-                  << checksumField(tr("Checksum"), off + 2,
+                  << l4ChecksumField(tr("Checksum"), off + 2,
                                    internetChecksum(msg));
     if (u8(off) == 0x22)
         igmp.children << uintField(tr("Number of group records"), off + 6, 2);
@@ -1034,7 +1062,7 @@ int PacketDecoder::decodeGre(int off, int end, Out &out, int depth)
         QByteArray msg = pkt_.mid(off, end - off);
         msg[pos - off] = 0;
         msg[pos - off + 1] = 0;
-        gre.children << checksumField(tr("Checksum"), pos,
+        gre.children << l4ChecksumField(tr("Checksum"), pos,
                                       internetChecksum(msg));
         pos += 4;
     }
@@ -1652,6 +1680,26 @@ bool PacketDecoder::writeText(QByteArray &pkt, const DecodedField &f,
 
 int PacketDecoder::fixChecksums(QByteArray &pkt)
 {
+    return fixChecksums(pkt, QSet<int>() << -1);
+}
+
+QSet<int> PacketDecoder::correctChecksums(const QByteArray &pkt)
+{
+    QSet<int> set;
+    PacketDecoder dec(pkt);
+    for (const ChecksumSpot &spot : dec.checksums()) {
+        quint16 cur = quint16((quint8(pkt.at(spot.offset)) << 8)
+                              | quint8(pkt.at(spot.offset + 1)));
+        if (cur == spot.correct)
+            set.insert(spot.offset);
+    }
+    return set;
+}
+
+// onlyAt containing -1 means "all checksums"
+int PacketDecoder::fixChecksums(QByteArray &pkt, const QSet<int> &onlyAt)
+{
+    const bool all = onlyAt.contains(-1);
     const QByteArray original = pkt;
     // An inner (tunnelled) checksum fix changes the outer payload, so the
     // outer checksum must be recomputed - iterate until nothing changes
@@ -1660,6 +1708,8 @@ int PacketDecoder::fixChecksums(QByteArray &pkt)
         PacketDecoder dec(pkt);
         int n = 0;
         for (const ChecksumSpot &spot : dec.checksums()) {
+            if (!all && !onlyAt.contains(spot.offset))
+                continue;
             spots.insert(spot.offset);
             quint16 cur = quint16((quint8(pkt.at(spot.offset)) << 8)
                                   | quint8(pkt.at(spot.offset + 1)));
@@ -1678,4 +1728,84 @@ int PacketDecoder::fixChecksums(QByteArray &pkt)
         if (pkt.mid(off, 2) != original.mid(off, 2))
             changed++;
     return changed;
+}
+
+// Parse hex text (plain, 0x.., hex dumps with offsets) - see header
+bool PacketDecoder::parseHexText(const QString &text, QByteArray *out,
+                                 QString *error, int maxLength)
+{
+    // Hex dump line (Wireshark "Copy as Hex Dump", tcpdump -x/-X, xxd):
+    // an offset, then ':' or 2+ spaces, then bytes as 2-digit (or 4-digit)
+    // groups, optionally followed by an ASCII column which is ignored
+    static const QRegularExpression dumpLine(
+            "^\\s*(?:0x)?([0-9A-Fa-f]{4,8})(:\\s*|\\s{2,})(.*)$");
+    static const QRegularExpression byteToken("^[0-9A-Fa-f]{2}$");
+    static const QRegularExpression wordToken("^[0-9A-Fa-f]{4}$");
+    static const QRegularExpression asciiGap("\\s{3,}");
+    static const QRegularExpression separators("(0x|\\\\x|[\\s:,;\\-])",
+            QRegularExpression::CaseInsensitiveOption);
+    static const QRegularExpression hexOnly("^[0-9A-Fa-f]*$");
+    const int kMaxDumpBytesPerLine = 16;
+
+    QByteArray result;
+    int lineNo = 0;
+    for (QString line : text.split('\n')) {
+        lineNo++;
+        line = line.trimmed();
+        if (line.isEmpty())
+            continue;
+
+        // Only treat the leading number as an offset if it is one: it must
+        // equal the number of bytes read so far (or the line has a ':' as
+        // tcpdump/xxd print). Otherwise e.g. "0011  2233" stays plain hex.
+        QRegularExpressionMatch m = dumpLine.match(line);
+        if (m.hasMatch()) {
+            bool ok = false;
+            int offset = m.captured(1).toInt(&ok, 16);
+            bool colon = m.captured(2).startsWith(':');
+            if (ok && (offset == result.size() || colon)) {
+                // the ASCII column starts after a wide gap
+                QString hexPart = m.captured(3).split(asciiGap).value(0);
+                QStringList tokens = hexPart.split(
+                        QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+                QByteArray bytes;
+                for (const QString &t : tokens) {
+                    if (bytes.size() >= kMaxDumpBytesPerLine)
+                        break;
+                    if (byteToken.match(t).hasMatch())
+                        bytes.append(char(t.toInt(nullptr, 16)));
+                    else if (wordToken.match(t).hasMatch())
+                        bytes.append(QByteArray::fromHex(t.toLatin1()));
+                    else
+                        break; // start of the ASCII column
+                }
+                // never re-read a dump line as plain hex - the offset and
+                // ASCII column would become data
+                result.append(bytes);
+                continue;
+            }
+        }
+
+        QString digits = line;
+        digits.remove(separators);
+        if (!hexOnly.match(digits).hasMatch()) {
+            *error = QCoreApplication::translate("HexPacketEditor", "Line %1 contains characters that are not hex "
+                        "digits.").arg(lineNo);
+            return false;
+        }
+        if (digits.size() % 2) {
+            *error = QCoreApplication::translate("HexPacketEditor", "Line %1 has an odd number of hex digits.")
+                         .arg(lineNo);
+            return false;
+        }
+        result.append(QByteArray::fromHex(digits.toLatin1()));
+    }
+
+    if (result.size() > maxLength) {
+        *error = QCoreApplication::translate("HexPacketEditor", "The packet is too long (%1 bytes, maximum %2).")
+                     .arg(result.size()).arg(maxLength);
+        return false;
+    }
+    *out = result;
+    return true;
 }
