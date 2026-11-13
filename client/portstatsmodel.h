@@ -77,40 +77,40 @@ typedef enum {
 } PortStat;
 
 static const QStringList PortStatName = (QStringList()
-    << "Status"
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Status")
 
-    << "Sent Frames"
-    << "Received Frames"
-    << "Sent Bytes"
-    << "Received Bytes"
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Sent Frames")
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Received Frames")
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Sent Bytes")
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Received Bytes")
 
-    << "Send Frame Rate (fps)"
-    << "Receive Frame Rate (fps)"
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Send Frame Rate (fps)")
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Receive Frame Rate (fps)")
 #if 0
-    << "Send Byte Rate (Bps)"
-    << "Receive Byte Rate (Bps)"
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Send Byte Rate (Bps)")
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Receive Byte Rate (Bps)")
 #endif
-    << "Send Bit Rate (bps)"
-    << "Receive Bit Rate (bps)"
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Send Bit Rate (bps)")
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Receive Bit Rate (bps)")
 #if 0
-    << "Frames Received (NIC)"
-    << "Frames Sent (NIC)"
-    << "Bytes Received (NIC)"
-    << "Bytes Sent (NIC)"
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Frames Received (NIC)")
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Frames Sent (NIC)")
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Bytes Received (NIC)")
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Bytes Sent (NIC)")
 #endif
 
-    << "Receive Drops"
-    << "Receive Errors"
-    << "Receive Fifo Errors"
-    << "Receive Frame Errors"
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Receive Drops")
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Receive Errors")
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Receive Fifo Errors")
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Receive Frame Errors")
 
-    << "User"
+    << QT_TRANSLATE_NOOP("PortStatsModel", "User")
 );
 
 static QStringList LinkStateName = (QStringList()
-    << "Unknown"
-    << "Down"
-    << "Up"
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Unknown")
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Down")
+    << QT_TRANSLATE_NOOP("PortStatsModel", "Up")
 );
 
 class PortGroupList;

@@ -366,7 +366,11 @@ HexPacketEditor::HexPacketEditor(const QByteArray &packet, QWidget *parent)
     connect(buttons, SIGNAL(rejected()), SLOT(reject()));
     layout->addWidget(buttons);
 
-    setPacket(packet.left(kMaxLength));
+    // setData() (not setPacket()) so that the initial bytes are the
+    // baseline for "changed bytes" highlighting and aren't undoable
+    hexEdit_->setData(packet.left(kMaxLength));
+    rebuildTree();
+    updateStatus();
     tree_->expandAll();
     hexEdit_->setFocus();
 }
@@ -685,7 +689,8 @@ void HexPacketEditor::updateStatus()
     parts << tr("%n byte(s)", "", len);
     if (len) {
         parts << tr("cursor at offset 0x%1 (%2)")
-                     .arg(pos, 4, 16, QChar('0')).arg(pos);
+                     .arg(QString("%1").arg(pos, 4, 16, QChar('0')).toUpper())
+                     .arg(pos);
     }
     if (len && len < 60)
         parts << tr("shorter than the 60-byte Ethernet minimum - zero "

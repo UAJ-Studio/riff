@@ -316,7 +316,8 @@ QVariant PortStatsModel::headerData(int section, Qt::Orientation orientation, in
         return portName;
     }
     else
-        return PortStatName.at(section);
+        return QCoreApplication::translate("PortStatsModel",
+                PortStatName.at(section).toUtf8().constData());
 }
 
 Qt::DropActions PortStatsModel::supportedDropActions() const

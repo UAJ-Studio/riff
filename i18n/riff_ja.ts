@@ -720,12 +720,14 @@ This replaces the whole packet.</source>
     <message numerus="yes">
         <source>Copied %n byte(s) to the clipboard.</source>
         <translation>
-            <numerusform>%n バイトをクリップボードにコピーしました。</numerusform></translation>
+            <numerusform>%n バイトをクリップボードにコピーしました。</numerusform>
+        </translation>
     </message>
     <message numerus="yes">
         <source>Fixed %n checksum(s).</source>
         <translation>
-            <numerusform>%n 個のチェックサムを修正しました。</numerusform></translation>
+            <numerusform>%n 個のチェックサムを修正しました。</numerusform>
+        </translation>
     </message>
     <message>
         <source>All checksums are already correct.</source>
@@ -734,7 +736,8 @@ This replaces the whole packet.</source>
     <message numerus="yes">
         <source>%n byte(s)</source>
         <translation>
-            <numerusform>%n バイト</numerusform></translation>
+            <numerusform>%n バイト</numerusform>
+        </translation>
     </message>
     <message>
         <source>cursor at offset 0x%1 (%2)</source>
@@ -1237,7 +1240,8 @@ Debug: %2</source>
     <message numerus="yes">
         <source>%n byte(s)</source>
         <translation>
-            <numerusform>%n バイト</numerusform></translation>
+            <numerusform>%n バイト</numerusform>
+        </translation>
     </message>
     <message>
         <source>Data (too short for an Ethernet header)</source>
@@ -1699,6 +1703,101 @@ Debug: %2</source>
     </message>
 </context>
 <context>
+    <name>PortStatsModel</name>
+    <message>
+        <source>Status</source>
+        <translation>状態</translation>
+    </message>
+    <message>
+        <source>Sent Frames</source>
+        <translation>送信フレーム数</translation>
+    </message>
+    <message>
+        <source>Received Frames</source>
+        <translation>受信フレーム数</translation>
+    </message>
+    <message>
+        <source>Sent Bytes</source>
+        <translation>送信バイト数</translation>
+    </message>
+    <message>
+        <source>Received Bytes</source>
+        <translation>受信バイト数</translation>
+    </message>
+    <message>
+        <source>Send Frame Rate (fps)</source>
+        <translation>送信フレームレート (fps)</translation>
+    </message>
+    <message>
+        <source>Receive Frame Rate (fps)</source>
+        <translation>受信フレームレート (fps)</translation>
+    </message>
+    <message>
+        <source>Send Byte Rate (Bps)</source>
+        <translation>送信バイトレート (Bps)</translation>
+    </message>
+    <message>
+        <source>Receive Byte Rate (Bps)</source>
+        <translation>受信バイトレート (Bps)</translation>
+    </message>
+    <message>
+        <source>Send Bit Rate (bps)</source>
+        <translation>送信ビットレート (bps)</translation>
+    </message>
+    <message>
+        <source>Receive Bit Rate (bps)</source>
+        <translation>受信ビットレート (bps)</translation>
+    </message>
+    <message>
+        <source>Frames Received (NIC)</source>
+        <translation>受信フレーム数 (NIC)</translation>
+    </message>
+    <message>
+        <source>Frames Sent (NIC)</source>
+        <translation>送信フレーム数 (NIC)</translation>
+    </message>
+    <message>
+        <source>Bytes Received (NIC)</source>
+        <translation>受信バイト数 (NIC)</translation>
+    </message>
+    <message>
+        <source>Bytes Sent (NIC)</source>
+        <translation>送信バイト数 (NIC)</translation>
+    </message>
+    <message>
+        <source>Receive Drops</source>
+        <translation>受信ドロップ</translation>
+    </message>
+    <message>
+        <source>Receive Errors</source>
+        <translation>受信エラー</translation>
+    </message>
+    <message>
+        <source>Receive Fifo Errors</source>
+        <translation>受信 FIFO エラー</translation>
+    </message>
+    <message>
+        <source>Receive Frame Errors</source>
+        <translation>受信フレームエラー</translation>
+    </message>
+    <message>
+        <source>User</source>
+        <translation>ユーザー</translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation>不明</translation>
+    </message>
+    <message>
+        <source>Down</source>
+        <translation>ダウン</translation>
+    </message>
+    <message>
+        <source>Up</source>
+        <translation>アップ</translation>
+    </message>
+</context>
+<context>
     <name>PortStatsWindow</name>
     <message>
         <source>Form</source>
@@ -1960,11 +2059,23 @@ Debug: %2</source>
 &lt;p&gt;3 つのステップでパケットを作成し、ネットワークポートから送信できます。&lt;/p&gt;
 &lt;table cellspacing="6"&gt;
 &lt;tr&gt;&lt;td&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;ポートを選ぶ&lt;/b&gt; &amp;mdash; 左のリストから送信に使うポートを選択します。&lt;img src=":/icons/bullet_green.png"/&gt; の付いたポートが使用可能です。(ポートグループをダブルクリックすると、ポートの表示/非表示を切り替えられます)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;&lt;b&gt;2&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;ストリームを作る&lt;/b&gt; &amp;mdash; ストリームとは 1 つ(または一連)のパケットです。ストリーム一覧を右クリックし、&lt;i&gt;新しいストリーム&lt;/i&gt;でプロトコルをフィールドごとに設定するか、&lt;i&gt;16進数から新しいストリーム&lt;/i&gt;でバイト列を直接入力します。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;b&gt;2&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;ストリームを作る&lt;/b&gt; &amp;mdash; ストリームとは 1 つ(または一連)のパケットです。ストリーム一覧を右クリックし、&lt;i&gt;新規ストリーム&lt;/i&gt;でプロトコルをフィールドごとに設定するか、&lt;i&gt;16進数から新規ストリーム&lt;/i&gt;でバイト列を直接入力します。&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;&lt;b&gt;3&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;送信する&lt;/b&gt; &amp;mdash; 下の&lt;i&gt;ポート統計&lt;/i&gt;でポートの列を選択し、&lt;i&gt;送信&lt;/i&gt;の開始ボタンを押します。送受信カウンターがリアルタイムで更新されます。&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;
 &lt;hr/&gt;
 &lt;p&gt;目的のポートが表示されない場合は、Npcap がインストールされているか確認し、Riff を管理者として実行してみてください。&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>Configuration has changed - &lt;font color='red'&gt;&lt;b&gt;click Apply&lt;/b&gt;&lt;/font&gt; to activate the changes</source>
+        <translation>設定が変更されました - &lt;font color='red'&gt;&lt;b&gt;[適用]をクリック&lt;/b&gt;&lt;/font&gt;すると反映されます</translation>
+    </message>
+    <message>
+        <source>Configuration activated - click &lt;img src=':/icons/control_play'/&gt; to transmit packets</source>
+        <translation>設定は反映済みです - &lt;img src=':/icons/control_play'/&gt; をクリックするとパケットを送信します</translation>
+    </message>
+    <message>
+        <source>Configuration activated</source>
+        <translation>設定は反映済みです</translation>
     </message>
 </context>
 <context>
@@ -2760,7 +2871,7 @@ Right-click to create a stream</source>
     </message>
     <message>
         <source>New Stream from Hex...</source>
-        <translation>16進数から新しいストリーム...</translation>
+        <translation>16進数から新規ストリーム...</translation>
     </message>
     <message>
         <source>Create a stream by typing or pasting the packet bytes as hex</source>
@@ -2776,7 +2887,7 @@ Right-click to create a stream</source>
     </message>
     <message>
         <source>New Stream from Hex</source>
-        <translation>16進数から新しいストリーム</translation>
+        <translation>16進数から新規ストリーム</translation>
     </message>
     <message>
         <source>Hex packet</source>

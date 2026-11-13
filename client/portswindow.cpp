@@ -374,15 +374,15 @@ void PortsWindow::updateApplyHint(int /*portGroupId*/, int /*portId*/,
         bool configChanged)
 {
     if (configChanged)
-        applyHint->setText("Configuration has changed - "
+        applyHint->setText(tr("Configuration has changed - "
                            "<font color='red'><b>click Apply</b></font> "
-                           "to activate the changes");
+                           "to activate the changes"));
     else if (plm->getStreamModel()->rowCount() > 0)
-        applyHint->setText("Configuration activated - "
+        applyHint->setText(tr("Configuration activated - "
                            "click <img src=':/icons/control_play'/> "
-                           "to transmit packets");
+                           "to transmit packets"));
     else
-        applyHint->setText("Configuration activated");
+        applyHint->setText(tr("Configuration activated"));
 }
 
 void PortsWindow::updatePortViewActions(const QModelIndex& currentIndex)
