@@ -69,6 +69,7 @@ private:
     enum Operation { kAdd, kDelete };
 
     Device* originDevice(PacketBuffer *pktBuf);
+    Device* neighborOriginDevice(PacketBuffer *pktBuf);
     void enumerateDevices(
             const OstProto::DeviceGroup *deviceGroup,
             Operation oper);

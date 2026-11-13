@@ -36,6 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "../rpc/pbrpccontroller.h"
 #include "device.h"
 #include "devicemanager.h"
+#include "interfaceinfo.h"
 #include "portmanager.h"
 
 #include <QStringList>
@@ -1350,4 +1351,16 @@ quint64 getNeighborMacAddress(int portId, int streamId, int frameIndex)
     service->portLock[portId]->unlock();
 
     return mac;
+}
+
+// Riff: MAC address of the port itself (source MAC mode "Self")
+quint64 getPortMacAddress(int portId)
+{
+    MyService *service = drone->rpcService();
+
+    if (!service || (portId < 0) || (portId >= service->portInfo.size()))
+        return 0;
+
+    const InterfaceInfo *ifInfo = service->portInfo[portId]->interfaceInfo();
+    return ifInfo ? ifInfo->mac : 0;
 }

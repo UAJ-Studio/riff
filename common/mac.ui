@@ -126,6 +126,11 @@
        <string>Resolve</string>
       </property>
      </item>
+     <item>
+      <property name="text">
+       <string>Self (port's own MAC)</string>
+      </property>
+     </item>
     </widget>
    </item>
    <item row="2" column="2">
@@ -148,7 +153,7 @@
    <item row="3" column="0" colspan="5">
     <widget class="QLabel" name="resolveInfo">
      <property name="text">
-      <string>Please ensure that a corresponding device is configured on the port to enable source/destination mac address resolution. A corresponding device is one which has VLANs and source/gateway IP corresponding to this stream.</string>
+      <string>Resolve: the source MAC is taken from the device (Devices tab) that has this stream's source IP and VLANs. The destination MAC is looked up with ARP/ND from that device - or, if there is none, from the port's own IP address, subnet and default gateway. Self: the source MAC is the transmitting port's own MAC address.</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>

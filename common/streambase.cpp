@@ -30,6 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 extern ProtocolManager *OstProtocolManager;
 extern quint64 getDeviceMacAddress(int portId, int streamId, int frameIndex);
+extern quint64 getPortMacAddress(int portId);
 extern quint64 getNeighborMacAddress(int portId, int streamId, int frameIndex);
 
 StreamBase::StreamBase(int portId) :
@@ -807,4 +808,11 @@ bool StreamBase::preflightCheck(QStringList &result) const
 bool StreamBase::StreamLessThan(StreamBase* stream1, StreamBase* stream2)
 {
     return stream1->ordinal() < stream2->ordinal() ? true : false;
+}
+
+// Riff: MAC address of the port this stream belongs to (0 if unknown -
+// e.g. on the controller side, which doesn't know the port's MAC)
+quint64 StreamBase::portMacAddress() const
+{
+    return getPortMacAddress(portId_);
 }

@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "deviceswidget.h"
 #include "fileformat.pb.h"
 #include "portconfigdialog.h"
+#include "thememanager.h"
 #include "portgrouplist.h"
 #include "portwidget.h"
 #include "settings.h"
@@ -376,7 +377,9 @@ void PortsWindow::updateApplyHint(int /*portGroupId*/, int /*portId*/,
     if (configChanged)
         applyHint->setText(tr("Configuration has changed - "
                            "<font color='red'><b>click Apply</b></font> "
-                           "to activate the changes"));
+                           "to activate the changes")
+                .replace("color='red'", QString("color='%1'").arg(
+                         ThemeManager::instance()->errorColor())));
     else if (plm->getStreamModel()->rowCount() > 0)
         applyHint->setText(tr("Configuration activated - "
                            "click <img src=':/icons/control_play'/> "

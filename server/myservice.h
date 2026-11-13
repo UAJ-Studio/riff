@@ -173,6 +173,7 @@ public:
             int portId, int streamId, int frameIndex);
     friend quint64 getNeighborMacAddress(
             int portId, int streamId, int frameIndex);
+    friend quint64 getPortMacAddress(int portId);
 signals:
     void notification(int notifType, SharedProtobufMessage notifData);
 

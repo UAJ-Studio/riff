@@ -1,0 +1,50 @@
+/*
+Copyright (C) 2026 Riff contributors
+
+This file is part of "Riff"
+
+This is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>
+*/
+
+import "protocol.proto";
+
+package OstProto;
+
+// CAPWAP (RFC 5415) - header, optionally followed by the control message
+// header (control channel, UDP 5246). On the data channel (UDP 5247) with
+// T = 0 the payload is an IEEE 802.3 frame.
+message Capwap {
+    optional uint32 version = 1;
+    optional uint32 type = 2;                 // 0 = CAPWAP header
+    optional uint32 hlen = 3;                 // 4-byte words
+    optional bool   is_override_hlen = 4;
+    optional uint32 rid = 5 [default = 1];    // radio ID
+    optional uint32 wbid = 6 [default = 1];   // 1 = IEEE 802.11
+    optional uint32 flags = 7;                // T F L W M K (bit 5..0)
+    optional uint32 rsvd_flags = 8;
+    optional uint32 fragment_id = 9;
+    optional uint32 fragment_offset = 10;
+    optional uint32 rsvd2 = 11;
+
+    optional bool   is_control = 12;
+    optional uint32 message_type = 13 [default = 13];  // Echo Request
+    optional uint32 seq_num = 14;
+    optional uint32 msg_elem_len = 15;
+    optional bool   is_override_msg_elem_len = 16;
+    optional uint32 msg_flags = 17;
+}
+
+extend Protocol {
+    optional Capwap capwap = 407;
+}

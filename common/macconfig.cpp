@@ -68,13 +68,15 @@ void MacConfigForm::on_cmbDstMacMode_currentIndexChanged(int index)
     }
     resolveInfo->setVisible(
             cmbDstMacMode->currentIndex() == OstProto::Mac::e_mm_resolve
-            || cmbSrcMacMode->currentIndex() == OstProto::Mac::e_mm_resolve);
+            || cmbSrcMacMode->currentIndex() == OstProto::Mac::e_mm_resolve
+            || cmbSrcMacMode->currentIndex() == OstProto::Mac::e_mm_self);
 }
 
 void MacConfigForm::on_cmbSrcMacMode_currentIndexChanged(int index)
 {
     switch (index) {
         case OstProto::Mac::e_mm_resolve:
+        case OstProto::Mac::e_mm_self:
             leSrcMac->setEnabled(false);
             leSrcMacCount->setEnabled(false);
             leSrcMacStep->setEnabled(false);
@@ -92,7 +94,8 @@ void MacConfigForm::on_cmbSrcMacMode_currentIndexChanged(int index)
     }
     resolveInfo->setVisible(
             cmbDstMacMode->currentIndex() == OstProto::Mac::e_mm_resolve
-            || cmbSrcMacMode->currentIndex() == OstProto::Mac::e_mm_resolve);
+            || cmbSrcMacMode->currentIndex() == OstProto::Mac::e_mm_resolve
+            || cmbSrcMacMode->currentIndex() == OstProto::Mac::e_mm_self);
 }
 
 void MacConfigForm::loadWidget(AbstractProtocol *proto)

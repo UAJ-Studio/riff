@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "portmodel.h"
 #include "portgrouplist.h"
+#include "thememanager.h"
 
 #include <QIcon>
 #include <QPainter>
@@ -177,7 +178,9 @@ QVariant PortModel::data(const QModelIndex &index, int role) const
         }
         else if (role == Qt::ForegroundRole)
         {
-            return port->isDirty() ? QBrush(Qt::red) : QVariant();
+            return port->isDirty()
+                ? QBrush(QColor(ThemeManager::instance()->errorColor()))
+                : QVariant();
         }
         else
         {

@@ -30,6 +30,8 @@ PROTOS += \
     ip4over4.proto \
     ip6over6.proto \
     gre.proto \
+    etherip.proto \
+    capwap.proto \
     icmp.proto \
     gmp.proto \
     igmp.proto \
@@ -71,6 +73,8 @@ HEADERS += \
     ip6over6.h \
     gmp.h \
     gre.h \
+    etherip.h \
+    capwap.h \
     icmp.h \
     igmp.h \
     mld.h \
@@ -106,6 +110,8 @@ SOURCES += \
     ip6.cpp \
     gmp.cpp \
     gre.cpp \
+    etherip.cpp \
+    capwap.cpp \
     icmp.cpp \
     igmp.cpp \
     mld.cpp \

@@ -158,6 +158,8 @@ message Protocol {
         kIgmpFieldNumber = 403;
         kMldFieldNumber = 404;
         kGreFieldNumber = 405;
+        kEtherIpFieldNumber = 406;   // Riff
+        kCapwapFieldNumber = 407;    // Riff
 
         kTextProtocolFieldNumber = 500;
     }

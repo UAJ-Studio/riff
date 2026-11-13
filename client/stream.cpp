@@ -65,3 +65,8 @@ quint64 getNeighborMacAddress(
 {
     return 0;
 }
+
+quint64 getPortMacAddress(int /*portId*/)
+{
+    return 0;
+}

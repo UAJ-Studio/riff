@@ -148,6 +148,7 @@ public:
 
     quint64 deviceMacAddress(int frameIndex) const;
     quint64 neighborMacAddress(int frameIndex) const;
+    quint64 portMacAddress() const;  // Riff: MAC of the port itself
 
     bool preflightCheck(QStringList &result) const;
 

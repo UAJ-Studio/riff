@@ -153,6 +153,169 @@ Riff modifications (c) 2026</translation>
     </message>
 </context>
 <context>
+    <name>CapwapConfigForm</name>
+    <message>
+        <source>Channel</source>
+        <translation>チャネル</translation>
+    </message>
+    <message>
+        <source>Data (UDP 5247)</source>
+        <translation>データ (UDP 5247)</translation>
+    </message>
+    <message>
+        <source>Control (UDP 5246)</source>
+        <translation>制御 (UDP 5246)</translation>
+    </message>
+    <message>
+        <source>Carries client frames between the WTP (access point) and the AC (controller)</source>
+        <translation>WTP (アクセスポイント) と AC (コントローラー) の間でクライアントのフレームを運びます</translation>
+    </message>
+    <message>
+        <source>Adds the control message header (message type, sequence number ...)</source>
+        <translation>制御メッセージヘッダー (メッセージタイプ、シーケンス番号など) を追加します</translation>
+    </message>
+    <message>
+        <source>CAPWAP header</source>
+        <translation>CAPWAP ヘッダー</translation>
+    </message>
+    <message>
+        <source>Version</source>
+        <translation>バージョン</translation>
+    </message>
+    <message>
+        <source>0 = CAPWAP header follows, 1 = DTLS</source>
+        <translation>0 = CAPWAP ヘッダーが続く、1 = DTLS</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>タイプ</translation>
+    </message>
+    <message>
+        <source>Header length (HLEN, 4-byte words)</source>
+        <translation>ヘッダー長 (HLEN、4 バイト単位)</translation>
+    </message>
+    <message>
+        <source>Radio ID</source>
+        <translation>無線 ID</translation>
+    </message>
+    <message>
+        <source>1 - IEEE 802.11</source>
+        <translation>1 - IEEE 802.11</translation>
+    </message>
+    <message>
+        <source>3 - EPCGlobal</source>
+        <translation>3 - EPCGlobal</translation>
+    </message>
+    <message>
+        <source>Wireless binding ID (0 - 31)</source>
+        <translation>ワイヤレスバインディング ID (0 - 31)</translation>
+    </message>
+    <message>
+        <source>Wireless binding ID</source>
+        <translation>ワイヤレスバインディング ID</translation>
+    </message>
+    <message>
+        <source>T: native frame</source>
+        <translation>T: ネイティブフレーム</translation>
+    </message>
+    <message>
+        <source>F: fragment</source>
+        <translation>F: フラグメント</translation>
+    </message>
+    <message>
+        <source>L: not last fragment</source>
+        <translation>L: 最終フラグメントではない</translation>
+    </message>
+    <message>
+        <source>W: wireless info</source>
+        <translation>W: ワイヤレス情報</translation>
+    </message>
+    <message>
+        <source>M: radio MAC</source>
+        <translation>M: 無線 MAC</translation>
+    </message>
+    <message>
+        <source>K: keep-alive</source>
+        <translation>K: キープアライブ</translation>
+    </message>
+    <message>
+        <source>Off: the payload is an IEEE 802.3 (Ethernet) frame. On: the payload uses the binding's native format (e.g. IEEE 802.11).</source>
+        <translation>オフ: ペイロードは IEEE 802.3 (Ethernet) フレームです。オン: ペイロードはバインディング固有の形式 (IEEE 802.11 など) です。</translation>
+    </message>
+    <message>
+        <source>This packet is a fragment</source>
+        <translation>このパケットはフラグメントです</translation>
+    </message>
+    <message>
+        <source>More fragments follow</source>
+        <translation>後続のフラグメントがあります</translation>
+    </message>
+    <message>
+        <source>Wireless specific information is present (set HLEN to include it, and add the bytes yourself)</source>
+        <translation>ワイヤレス固有情報を含みます (HLEN にその分を含め、バイト列は自分で追加してください)</translation>
+    </message>
+    <message>
+        <source>Radio MAC address is present (set HLEN to include it, and add the bytes yourself)</source>
+        <translation>無線 MAC アドレスを含みます (HLEN にその分を含め、バイト列は自分で追加してください)</translation>
+    </message>
+    <message>
+        <source>Data channel keep-alive packet</source>
+        <translation>データチャネルのキープアライブパケット</translation>
+    </message>
+    <message>
+        <source>Flags</source>
+        <translation>フラグ</translation>
+    </message>
+    <message>
+        <source>Fragment ID</source>
+        <translation>フラグメント ID</translation>
+    </message>
+    <message>
+        <source>In units of 8 bytes</source>
+        <translation>8 バイト単位</translation>
+    </message>
+    <message>
+        <source>Fragment offset</source>
+        <translation>フラグメントオフセット</translation>
+    </message>
+    <message>
+        <source>Control message header</source>
+        <translation>制御メッセージヘッダー</translation>
+    </message>
+    <message>
+        <source>Pick a message, or type a number</source>
+        <translation>メッセージを選ぶか、番号を入力してください</translation>
+    </message>
+    <message>
+        <source>Message type</source>
+        <translation>メッセージタイプ</translation>
+    </message>
+    <message>
+        <source>Sequence number</source>
+        <translation>シーケンス番号</translation>
+    </message>
+    <message>
+        <source>Message element length</source>
+        <translation>メッセージエレメント長</translation>
+    </message>
+    <message>
+        <source>Message flags</source>
+        <translation>メッセージフラグ</translation>
+    </message>
+    <message>
+        <source>The UDP port is set to 5246 automatically. To add message elements, put a &lt;i&gt;Hex Dump&lt;/i&gt; after CAPWAP in &lt;b&gt;Protocol Selection &amp;gt; Advanced&lt;/b&gt; (each element: type 2 bytes, length 2 bytes, value).</source>
+        <translation>UDP ポートは自動で 5246 になります。メッセージエレメントを追加するには、&lt;b&gt;プロトコル選択 &amp;gt; 詳細&lt;/b&gt;で CAPWAP の後ろに &lt;i&gt;Hex Dump&lt;/i&gt; を追加してください (各エレメント: タイプ 2 バイト、長さ 2 バイト、値)。</translation>
+    </message>
+    <message>
+        <source>The UDP port is set to 5247 automatically. With T off, the payload is an Ethernet frame: in &lt;b&gt;Protocol Selection &amp;gt; Advanced&lt;/b&gt; add it after CAPWAP - e.g. &lt;i&gt;MAC, Ethernet II, IPv4, UDP&lt;/i&gt;.</source>
+        <translation>UDP ポートは自動で 5247 になります。T がオフのときペイロードは Ethernet フレームです。&lt;b&gt;プロトコル選択 &amp;gt; 詳細&lt;/b&gt;で CAPWAP の後ろに追加してください (例: &lt;i&gt;MAC、Ethernet II、IPv4、UDP&lt;/i&gt;)。</translation>
+    </message>
+    <message>
+        <source>The UDP port is set to 5247 automatically. With T on, add the native frame (e.g. IEEE 802.11) after CAPWAP as a &lt;i&gt;Hex Dump&lt;/i&gt;.</source>
+        <translation>UDP ポートは自動で 5247 になります。T がオンのときは、ネイティブフレーム (IEEE 802.11 など) を CAPWAP の後ろに &lt;i&gt;Hex Dump&lt;/i&gt; として追加してください。</translation>
+    </message>
+</context>
+<context>
     <name>ClipboardHelper</name>
     <message>
         <source>&amp;Cut</source>
@@ -307,6 +470,33 @@ To emulate a device, click on Configuration and create a device group</source>
     <message>
         <source>Edit Device Group</source>
         <translation>デバイスグループを編集</translation>
+    </message>
+</context>
+<context>
+    <name>EtherIpConfigForm</name>
+    <message>
+        <source>EtherIP header</source>
+        <translation>EtherIP ヘッダー</translation>
+    </message>
+    <message>
+        <source>RFC 3378 defines version 3</source>
+        <translation>RFC 3378 ではバージョン 3 です</translation>
+    </message>
+    <message>
+        <source>Version</source>
+        <translation>バージョン</translation>
+    </message>
+    <message>
+        <source>12 reserved bits - normally 0</source>
+        <translation>12 ビットの予約領域 - 通常は 0</translation>
+    </message>
+    <message>
+        <source>Reserved</source>
+        <translation>予約</translation>
+    </message>
+    <message>
+        <source>EtherIP carries a whole Ethernet frame inside IP (IP protocol 97, set automatically).&lt;br&gt;In &lt;b&gt;Protocol Selection &amp;gt; Advanced&lt;/b&gt;, add the inner frame after EtherIP - e.g. &lt;i&gt;MAC, Ethernet II, IPv4, UDP&lt;/i&gt;.</source>
+        <translation>EtherIP は Ethernet フレームをまるごと IP で運びます (IP プロトコル番号 97 は自動設定)。&lt;br&gt;&lt;b&gt;プロトコル選択 &amp;gt; 詳細&lt;/b&gt;で EtherIP の後ろに内側のフレームを追加してください (例: &lt;i&gt;MAC、Ethernet II、IPv4、UDP&lt;/i&gt;)。</translation>
     </message>
 </context>
 <context>
@@ -948,6 +1138,156 @@ This replaces the whole packet.</source>
     <message>
         <source>Destination</source>
         <translation>宛先</translation>
+    </message>
+</context>
+<context>
+    <name>LogTranslator</name>
+    <message>
+        <source>Port %1: Could not resolve the source MAC of one or more streams - no device has the stream's source IP. Set the source MAC mode to "Self" to use the port's own MAC, or add a device with that IP on the Devices tab.</source>
+        <translation>ポート %1: 一部のストリームで送信元 MAC を解決できませんでした - ストリームの送信元 IP を持つデバイスがありません。送信元 MAC のモードを「自身」にするとポート自身の MAC を使います。または［デバイス］タブでその IP のデバイスを追加してください。</translation>
+    </message>
+    <message>
+        <source>Port %1: Could not resolve the destination MAC of one or more streams - no ARP/ND reply. Check the destination IP (or the default gateway for other subnets).</source>
+        <translation>ポート %1: 一部のストリームで宛先 MAC を解決できませんでした - ARP/ND の応答がありません。宛先 IP (別サブネット宛てならデフォルトゲートウェイ) を確認してください。</translation>
+    </message>
+    <message>
+        <source>Port %1: Could not build the packets - out of buffer memory. Reduce the number of streams or packets.</source>
+        <translation>ポート %1: バッファメモリが不足しているためパケットを作成できませんでした。ストリーム数またはパケット数を減らしてください。</translation>
+    </message>
+    <message>
+        <source>Port %1 (%2): not allowed while the port is transmitting - stop transmit and try again</source>
+        <translation>ポート %1 (%2): 送信中は実行できません - 送信を停止してからやり直してください</translation>
+    </message>
+    <message>
+        <source>Port %1 stream %2 (%3): invalid stream ID</source>
+        <translation>ポート %1 ストリーム %2 (%3): ストリーム ID が無効です</translation>
+    </message>
+    <message>
+        <source>Port %1 (%2): invalid port</source>
+        <translation>ポート %1 (%2): ポートが無効です</translation>
+    </message>
+    <message>
+        <source>The agent needs controller version %1</source>
+        <translation>エージェントにはバージョン %1 のコントローラーが必要です</translation>
+    </message>
+    <message>
+        <source>Connected to the port group</source>
+        <translation>ポートグループに接続しました</translation>
+    </message>
+    <message>
+        <source>Disconnected from the port group</source>
+        <translation>ポートグループから切断されました</translation>
+    </message>
+    <message>
+        <source>Reconnecting in %1 s</source>
+        <translation>%1 秒後に再接続します</translation>
+    </message>
+    <message>
+        <source>Unexpected data from the port group - connection closed. Is the program listening on %1:%2 really riff-agent?</source>
+        <translation>ポートグループから想定外のデータを受信したため切断しました。%1:%2 で待ち受けているのは riff-agent ですか?</translation>
+    </message>
+    <message>
+        <source>Port configuration was changed</source>
+        <translation>ポートの設定が変更されました</translation>
+    </message>
+    <message>
+        <source>The port list is empty</source>
+        <translation>ポート一覧が空です</translation>
+    </message>
+    <message>
+        <source>Port is reserved by %1 - not reconfigured</source>
+        <translation>ポートは %1 によって予約されているため、再設定しませんでした</translation>
+    </message>
+    <message>
+        <source>Deleting old device groups</source>
+        <translation>古いデバイスグループを削除しています</translation>
+    </message>
+    <message>
+        <source>Creating new device groups</source>
+        <translation>新しいデバイスグループを作成しています</translation>
+    </message>
+    <message>
+        <source>Updating changed device groups</source>
+        <translation>変更されたデバイスグループを更新しています</translation>
+    </message>
+    <message>
+        <source>Deleting old streams</source>
+        <translation>古いストリームを削除しています</translation>
+    </message>
+    <message>
+        <source>Creating new streams</source>
+        <translation>新しいストリームを作成しています</translation>
+    </message>
+    <message>
+        <source>Updating changed streams</source>
+        <translation>変更されたストリームを更新しています</translation>
+    </message>
+    <message>
+        <source>Resolving neighbors (ARP/ND)</source>
+        <translation>近隣を解決しています (ARP/ND)</translation>
+    </message>
+    <message>
+        <source>Rebuilding packets</source>
+        <translation>パケットを再作成しています</translation>
+    </message>
+    <message>
+        <source>All port changes applied (%1 s)</source>
+        <translation>ポートの変更をすべて適用しました (%1 秒)</translation>
+    </message>
+    <message>
+        <source>Updating port configuration</source>
+        <translation>ポートの設定を更新しています</translation>
+    </message>
+    <message>
+        <source>Wireshark was not found at %1</source>
+        <translation>%1 に Wireshark が見つかりません</translation>
+    </message>
+    <message>
+        <source>Could not start %1</source>
+        <translation>%1 を起動できませんでした</translation>
+    </message>
+    <message>
+        <source>Port is still transmitting - stream statistics may be missing or incomplete</source>
+        <translation>ポートはまだ送信中です - ストリーム統計が欠けているか不完全な可能性があります</translation>
+    </message>
+    <message>
+        <source>Version check failed: %1</source>
+        <translation>バージョン確認に失敗しました: %1</translation>
+    </message>
+</context>
+<context>
+    <name>LogsModel</name>
+    <message>
+        <source>Timestamp</source>
+        <translation>時刻</translation>
+    </message>
+    <message>
+        <source>Level</source>
+        <translation>レベル</translation>
+    </message>
+    <message>
+        <source>Port</source>
+        <translation>ポート</translation>
+    </message>
+    <message>
+        <source>Message</source>
+        <translation>メッセージ</translation>
+    </message>
+    <message>
+        <source>Info</source>
+        <translation>情報</translation>
+    </message>
+    <message>
+        <source>Warning</source>
+        <translation>警告</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>エラー</translation>
+    </message>
+    <message>
+        <source>Log level changed to %1 or higher</source>
+        <translation>ログレベルを「%1」以上に変更しました</translation>
     </message>
 </context>
 <context>
@@ -2877,6 +3217,18 @@ Debug: %2</source>
         <source>Only %L1 frames at the rate of %L2 frames/sec are configured to be transmitted. Transmission will last for only %L3 second - to transmit for a longer duration, increase the number of packets (bursts) and/or set the 'After this stream' action as 'Goto First'</source>
         <translation>%L2 フレーム/秒のレートで %L1 フレームのみ送信するように設定されています。送信は %L3 秒しか続きません - より長く送信するには、パケット数 (バースト数) を増やすか、[このストリームの後]の動作を[最初へ移動]に設定してください</translation>
     </message>
+    <message>
+        <source>Override</source>
+        <translation>手動指定</translation>
+    </message>
+    <message>
+        <source>Unchecked: calculated automatically</source>
+        <translation>オフのときは自動計算します</translation>
+    </message>
+    <message>
+        <source>&lt;port's own MAC&gt;</source>
+        <translation>&lt;ポート自身の MAC&gt;</translation>
+    </message>
 </context>
 <context>
     <name>Sample</name>
@@ -3382,6 +3734,10 @@ QLineEdit:enabled[inputMask = "HH HH HH HH HH HH; "] { background-color: #ccccff
     <message>
         <source>&lt;p&gt;Ignore?&lt;/p&gt;</source>
         <translation>&lt;p&gt;無視しますか?&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>Preflight Check</source>
+        <translation>送信前チェック</translation>
     </message>
 </context>
 <context>
@@ -4033,8 +4389,12 @@ Length (x4)</source>
         <translation>送信元</translation>
     </message>
     <message>
-        <source>Please ensure that a corresponding device is configured on the port to enable source/destination mac address resolution. A corresponding device is one which has VLANs and source/gateway IP corresponding to this stream.</source>
-        <translation>送信元/宛先MACアドレスの解決を有効にするには、ポートに対応するデバイスが設定されていることを確認してください。対応するデバイスとは、このストリームに対応するVLANと送信元/ゲートウェイIPを持つデバイスです。</translation>
+        <source>Self (port's own MAC)</source>
+        <translation>自身 (ポートの MAC)</translation>
+    </message>
+    <message>
+        <source>Resolve: the source MAC is taken from the device (Devices tab) that has this stream's source IP and VLANs. The destination MAC is looked up with ARP/ND from that device - or, if there is none, from the port's own IP address, subnet and default gateway. Self: the source MAC is the transmitting port's own MAC address.</source>
+        <translation>解決: 送信元 MAC は、このストリームの送信元 IP と VLAN を持つデバイス (［デバイス］タブ) の MAC を使います。宛先 MAC はそのデバイスから ARP/ND で調べます - 該当するデバイスがない場合は、ポート自身の IP アドレス・サブネット・デフォルトゲートウェイを使います。自身: 送信元 MAC に送信ポート自身の MAC アドレスを使います。</translation>
     </message>
 </context>
 <context>

@@ -381,8 +381,7 @@ void HexPacketEditor::addFields(QTreeWidgetItem *parent,
                                 const QList<DecodedField> &fields,
                                 const QString &path)
 {
-    const QColor errorColor(ThemeManager::instance()->isDark()
-                                ? "#FF8A8A" : "#C62828");
+    const QColor errorColor(ThemeManager::instance()->errorColor());
     int n = 0;
     for (const DecodedField &f : fields) {
         QString myPath = QString("%1/%2#%3").arg(path, f.name).arg(n++);

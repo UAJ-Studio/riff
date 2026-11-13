@@ -333,7 +333,7 @@ void DeviceManager::getDeviceNeighbors(
 
 void DeviceManager::resolveDeviceNeighbor(PacketBuffer *pktBuf)
 {
-    Device *device = originDevice(pktBuf);
+    Device *device = neighborOriginDevice(pktBuf);
 
     if (device)
         device->resolveNeighbor(pktBuf);
@@ -341,6 +341,8 @@ void DeviceManager::resolveDeviceNeighbor(PacketBuffer *pktBuf)
 
 quint64 DeviceManager::deviceMacAddress(PacketBuffer *pktBuf)
 {
+    // Source MAC "Resolve" stays strict: only a device with the stream's
+    // source IP counts (use source MAC mode "Self" for the port's own MAC)
     Device *device = originDevice(pktBuf);
 
     return device ? device->mac() : 0;
@@ -348,9 +350,27 @@ quint64 DeviceManager::deviceMacAddress(PacketBuffer *pktBuf)
 
 quint64 DeviceManager::neighborMacAddress(PacketBuffer *pktBuf)
 {
-    Device *device = originDevice(pktBuf);
+    Device *device = neighborOriginDevice(pktBuf);
 
     return device ? device->neighborMac(pktBuf) : 0;
+}
+
+/*
+ * Riff: device to resolve a stream's destination MAC with. Same as
+ * originDevice() - the device owning the stream's source IP - but if no
+ * device has that IP, fall back to the port's host device (the PC's own
+ * interface: its subnet, default gateway and the OS ARP/ND table) instead
+ * of failing. That way "Resolve" works for streams whose source IP is not
+ * the PC's own, e.g. with source MAC mode "Self".
+ */
+Device* DeviceManager::neighborOriginDevice(PacketBuffer *pktBuf)
+{
+    Device *device = originDevice(pktBuf);
+
+    if (!device && !hostDeviceList_.isEmpty())
+        device = hostDeviceList_.first();
+
+    return device;
 }
 
 // ------------------------------------ //

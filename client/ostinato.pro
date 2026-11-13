@@ -36,6 +36,7 @@ LIBS += -L"../extra/qhexedit2/$(OBJECTS_DIR)/" -lqhexedit2
 RESOURCES += ostinato.qrc riff.qrc
 HEADERS += \
     hexpacketeditor.h \
+    logtranslator.h \
     packetdecoder.h \
     packettemplates.h \
     arpstatusmodel.h \
@@ -97,6 +98,7 @@ FORMS += \
 
 SOURCES += \
     hexpacketeditor.cpp \
+    logtranslator.cpp \
     packetdecoder.cpp \
     packettemplates.cpp \
     arpstatusmodel.cpp \

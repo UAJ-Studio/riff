@@ -77,6 +77,8 @@ HEADERS += \
     ip4over4config.h \
     gmpconfig.h \
     greconfig.h \
+    etheripconfig.h \
+    capwapconfig.h \
     icmpconfig.h \
     igmpconfig.h \
     mldconfig.h \
@@ -121,6 +123,8 @@ SOURCES += \
     ip6config.cpp \
     gmpconfig.cpp \
     greconfig.cpp \
+    etheripconfig.cpp \
+    capwapconfig.cpp \
     icmpconfig.cpp \
     igmpconfig.cpp \
     mldconfig.cpp \

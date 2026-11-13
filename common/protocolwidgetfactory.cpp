@@ -41,6 +41,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "ip6over6config.h"
 // L4 Protocol Widgets
 #include "greconfig.h"
+#include "etheripconfig.h"
+#include "capwapconfig.h"
 #include "icmpconfig.h"
 #include "igmpconfig.h"
 #include "mldconfig.h"
@@ -128,6 +130,12 @@ ProtocolWidgetFactory::ProtocolWidgetFactory()
     OstProtocolWidgetFactory->registerProtocolConfigWidget(
             OstProto::Protocol::kGreFieldNumber,
             (void*) GreConfigForm::createInstance);
+    OstProtocolWidgetFactory->registerProtocolConfigWidget(
+            OstProto::Protocol::kEtherIpFieldNumber,
+            (void*) EtherIpConfigForm::createInstance);
+    OstProtocolWidgetFactory->registerProtocolConfigWidget(
+            OstProto::Protocol::kCapwapFieldNumber,
+            (void*) CapwapConfigForm::createInstance);
     OstProtocolWidgetFactory->registerProtocolConfigWidget(
             OstProto::Protocol::kIcmpFieldNumber, 
             (void*) IcmpConfigForm::createInstance);

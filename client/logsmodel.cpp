@@ -19,7 +19,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "logsmodel.h"
 
+#include "logtranslator.h"
+#include "thememanager.h"
+
 #include <QBrush>
+#include <QFont>
 
 // XXX: Keep the enum in sync with it's string
 enum {
@@ -29,16 +33,24 @@ enum {
     kMessage,
     kFieldCount
 };
+// Translated where used - these lists are built before the UI translator
+// is installed
 static QStringList columnTitles = QStringList()
-    << "Timestamp"
-    << "Level"
-    << "Port"
-    << "Message";
+    << QT_TRANSLATE_NOOP("LogsModel", "Timestamp")
+    << QT_TRANSLATE_NOOP("LogsModel", "Level")
+    << QT_TRANSLATE_NOOP("LogsModel", "Port")
+    << QT_TRANSLATE_NOOP("LogsModel", "Message");
 
 static QStringList levelTitles = QStringList()
-    << "Info"
-    << "Warning"
-    << "Error";
+    << QT_TRANSLATE_NOOP("LogsModel", "Info")
+    << QT_TRANSLATE_NOOP("LogsModel", "Warning")
+    << QT_TRANSLATE_NOOP("LogsModel", "Error");
+
+static QString levelTitle(int level)
+{
+    return QCoreApplication::translate("LogsModel",
+            levelTitles.at(level).toUtf8().constData());
+}
 
 LogsModel::LogsModel(QObject *parent)
     : QAbstractTableModel(parent)
@@ -63,7 +75,8 @@ QVariant LogsModel::headerData(
 
     switch (orientation) {
     case Qt::Horizontal: // Column Header
-        return columnTitles.at(section);
+        return QCoreApplication::translate("LogsModel",
+                columnTitles.at(section).toUtf8().constData());
     case Qt::Vertical:   // Row Header
         return QVariant();
     default:
@@ -77,16 +90,37 @@ QVariant LogsModel::data(const QModelIndex &index, int role) const
     if (!index.isValid() || (index.row() >= logs_.size()))
             return QVariant();
 
+    // Errors/warnings: a tinted row with a high-contrast text colour that
+    // suits the current theme (plain dark red text is hard to read on a
+    // dark background)
+    const int level = logs_.at(index.row()).logLevel;
+    const bool dark = ThemeManager::instance()->isDark();
     if (role == Qt::ForegroundRole) {
-        switch(logs_.at(index.row()).logLevel) {
+        switch(level) {
         case kError:
-            return QBrush(QColor("darkred"));
+            return QBrush(QColor(dark ? "#FFB4AB" : "#B3261E"));
         case kWarning:
-            return QBrush(QColor("orangered"));
+            return QBrush(QColor(dark ? "#F2CC60" : "#8A5300"));
         case kInfo:
         default:
             return QVariant();
         }
+    }
+    if (role == Qt::BackgroundRole) {
+        switch(level) {
+        case kError:
+            return QBrush(QColor(dark ? "#3D2326" : "#FDECEC"));
+        case kWarning:
+            return QBrush(QColor(dark ? "#3A3220" : "#FFF4D6"));
+        default:
+            return QVariant();
+        }
+    }
+    if (role == Qt::FontRole && index.column() == kLogLevel
+            && level != kInfo) {
+        QFont bold;
+        bold.setBold(true);
+        return bold;
     }
 
     if (role != Qt::DisplayRole)
@@ -96,7 +130,7 @@ QVariant LogsModel::data(const QModelIndex &index, int role) const
     case kTimeStamp:
         return logs_.at(index.row()).timeStamp.toString("hh:mm:ss.zzz");
     case kLogLevel:
-        return levelTitles.at(logs_.at(index.row()).logLevel);
+        return levelTitle(logs_.at(index.row()).logLevel);
     case kPort:
         return logs_.at(index.row()).port;
     case kMessage:
@@ -127,8 +161,8 @@ void LogsModel::setLogLevel(int level)
 {
     currentLevel_ = static_cast<LogLevel>(level % kLevelCount);
     log(currentLevel_, QString("--"),
-        QString("Log level changed to %1 or higher")
-            .arg(levelTitles.at(currentLevel_)));
+        tr("Log level changed to %1 or higher")
+            .arg(levelTitle(currentLevel_)));
 }
 
 void LogsModel::log(int logLevel,QString port, QString message)
@@ -147,6 +181,7 @@ void LogsModel::log(int logLevel,QString port, QString message)
     logs_.last().port = port;
     // XXX: QTableView does not honour newline unless we increase the
     // row height, so we replace newlines with semicolon for now
-    logs_.last().message = message.trimmed().replace("\n", "; ");
+    logs_.last().message = LogTranslator::translate(message.trimmed())
+                                .replace("\n", "; ");
     endInsertRows();
 }

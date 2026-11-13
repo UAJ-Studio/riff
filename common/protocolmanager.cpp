@@ -47,6 +47,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 // L4 Protos
 #include "gre.h"
+#include "etherip.h"
+#include "capwap.h"
 #include "icmp.h"    
 #include "igmp.h"    
 #include "mld.h"    
@@ -115,6 +117,10 @@ ProtocolManager::ProtocolManager()
     // Layer 4 Protocols
     registerProtocol(OstProto::Protocol::kGreFieldNumber,
             (void*) GreProtocol::createInstance);
+    registerProtocol(OstProto::Protocol::kEtherIpFieldNumber,
+            (void*) EtherIpProtocol::createInstance);
+    registerProtocol(OstProto::Protocol::kCapwapFieldNumber,
+            (void*) CapwapProtocol::createInstance);
     registerProtocol(OstProto::Protocol::kIcmpFieldNumber,
             (void*) IcmpProtocol::createInstance);
     registerProtocol(OstProto::Protocol::kIgmpFieldNumber,

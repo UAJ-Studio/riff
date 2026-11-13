@@ -41,6 +41,11 @@ public:
     void setTheme(QString theme);
     bool isDark() const { return dark_; }
 
+    // Text colours for errors/warnings that are readable on the
+    // current theme's background
+    QString errorColor() const { return dark_ ? "#FFB4AB" : "#B3261E"; }
+    QString warningColor() const { return dark_ ? "#F2CC60" : "#8A5300"; }
+
     static ThemeManager* instance();
 
 private:

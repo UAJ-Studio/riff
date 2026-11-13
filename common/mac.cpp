@@ -191,6 +191,10 @@ QVariant MacProtocol::fieldData(int index, FieldAttrib attrib,
                         forResolve_ = false;
                     }
                     break;
+                case OstProto::Mac::e_mm_self:
+                    // Riff: the MAC of the port the stream is sent from
+                    srcMac = mpStream->portMacAddress();
+                    break;
                 default:
                     qWarning("Unhandled srcMac_mode %d", data.src_mac_mode());
             }
@@ -202,6 +206,11 @@ QVariant MacProtocol::fieldData(int index, FieldAttrib attrib,
                 case FieldValue:
                     return srcMac;
                 case FieldTextValue:
+                    // The controller doesn't know the port's MAC - the
+                    // agent fills it in when the packets are built
+                    if (!srcMac
+                            && data.src_mac_mode() == OstProto::Mac::e_mm_self)
+                        return QObject::tr("<port's own MAC>");
                     return uintToMacStr(srcMac);
                 case FieldFrameValue:
                 {
@@ -413,7 +422,8 @@ bool MacProtocol::hasErrors(QStringList *errors) const
     }
 
     if ((data.src_mac() == 0ULL)
-            && (data.src_mac_mode() != OstProto::Mac::e_mm_resolve)) {
+            && (data.src_mac_mode() != OstProto::Mac::e_mm_resolve)
+            && (data.src_mac_mode() != OstProto::Mac::e_mm_self)) {
         if (errors)
             *errors << QObject::tr("Frames with Source Mac "
                                    "00:00:00:00:00:00 are likely "

@@ -1250,7 +1250,7 @@ bool StreamConfigDialog::isCurrentStreamValid()
 
     if (log.size())
     {
-        if (QMessageBox::warning(this, "Preflight Check",
+        if (QMessageBox::warning(this, tr("Preflight Check"),
                     tr("<p>We found possible problems with this stream -</p>")
                     + "<ul>"
                     + log.replaceInStrings(QRegExp("(.*)"), "<li>\\1</li>")
