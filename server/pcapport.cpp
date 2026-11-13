@@ -232,19 +232,28 @@ bool PcapPort::stopStreamStatsTracking()
 PcapPort::PortMonitor::PortMonitor(const char *device, Direction direction,
         AbstractPort::PortStats *stats)
 {
-    int ret;
-    char errbuf[PCAP_ERRBUF_SIZE] = "";
-    bool noLocalCapture;
-
     setObjectName(QString("Mon%1:%2")
                     .arg(direction == kDirectionRx ? "Rx" : "Tx")
                     .arg(device));
+    device_ = QByteArray(device);
     direction_ = direction;
     isDirectional_ = true;
     isPromisc_ = true;
-    noLocalCapture = true;
+    noLocalCapture_ = true;
     stats_ = stats;
     stop_ = false;
+
+    handle_ = openHandle();
+    originalHandle_ = handle_;
+}
+
+// Opens the adapter with the best options it supports (promiscuous, no
+// local capture, direction) - remembering what works for later reopens
+pcap_t* PcapPort::PortMonitor::openHandle()
+{
+    char errbuf[PCAP_ERRBUF_SIZE] = "";
+    pcap_t *handle;
+    int ret;
 
 _retry:
 #ifdef Q_OS_WIN32
@@ -252,32 +261,34 @@ _retry:
 
     if (isPromisc_)
         flags |= PCAP_OPENFLAG_PROMISCUOUS;
-    if (noLocalCapture)
+    if (noLocalCapture_)
         flags |= PCAP_OPENFLAG_NOCAPTURE_LOCAL;
 
-    handle_ = pcap_open(device, 64 /* FIXME */, flags,
+    handle = pcap_open(device_.constData(), 64 /* FIXME */, flags,
                 1000 /* ms */, NULL, errbuf);
 #else
-    handle_ = pcap_open_live(device, 64 /* FIXME */, int(isPromisc_),
-                1000 /* ms */, errbuf);
+    handle = pcap_open_live(device_.constData(), 64 /* FIXME */,
+                int(isPromisc_), 1000 /* ms */, errbuf);
 #endif
 
-    if (handle_ == NULL)
+    if (handle == NULL)
     {
         if (isPromisc_ && QString(errbuf).contains("promiscuous"))
         {
-            qDebug("Can't set promiscuous mode, trying non-promisc %s", device);
+            qDebug("Can't set promiscuous mode, trying non-promisc %s",
+                   device_.constData());
             isPromisc_ = false;
             goto _retry;
         }
-        else if (noLocalCapture && QString(errbuf).contains("loopback"))
+        else if (noLocalCapture_ && QString(errbuf).contains("loopback"))
         {
-            qDebug("Can't set no local capture mode %s", device);
-            noLocalCapture = false;
+            qDebug("Can't set no local capture mode %s", device_.constData());
+            noLocalCapture_ = false;
             goto _retry;
         }
-        else
-            goto _open_error;
+        qDebug("%s: Error opening port %s: %s\n", __FUNCTION__,
+               device_.constData(), errbuf);
+        return NULL;
     }
 #ifdef Q_OS_WIN32
     // pcap_setdirection() API is not supported in Windows.
@@ -289,10 +300,10 @@ _retry:
     switch (direction_)
     {
     case kDirectionRx:
-        ret = pcap_setdirection(handle_, PCAP_D_IN);
+        ret = pcap_setdirection(handle, PCAP_D_IN);
         break;
     case kDirectionTx:
-        ret = pcap_setdirection(handle_, PCAP_D_OUT);
+        ret = pcap_setdirection(handle, PCAP_D_OUT);
         break;
     default:
         ret = -1; // avoid 'may be used uninitialized' warning
@@ -301,24 +312,54 @@ _retry:
 #endif
 
     if (ret < 0)
-        goto _set_direction_error;
-
-    return;
-
-_set_direction_error:
-    qDebug("Error setting direction(%d) %s: %s\n", direction, device, 
-            pcap_geterr(handle_));
-    isDirectional_ = false;
-    return;
-
-_open_error:
-    qDebug("%s: Error opening port %s: %s\n", __FUNCTION__, device, errbuf);
-} 
+    {
+        qDebug("Error setting direction(%d) %s: %s\n", direction_,
+               device_.constData(), pcap_geterr(handle));
+        isDirectional_ = false;
+    }
+    return handle;
+}
 
 PcapPort::PortMonitor::~PortMonitor()
 {
-    if (handle_)
+    if (handle_ && handle_ != originalHandle_)
         pcap_close(handle_);
+    if (originalHandle_)
+        pcap_close(originalHandle_);
+}
+
+void PcapPort::PortMonitor::recoverHandle()
+{
+    if (!recovering_) {
+        recovering_ = true;
+        qWarning("%s: reading failed (%s) - link down? Will reopen the "
+                 "adapter", qPrintable(objectName()),
+                 handle_ ? pcap_geterr(handle_) : "no handle");
+    }
+
+    // Back off while the adapter can't be reopened (0.5s .. 5s), and don't
+    // sleep through a stop request
+    for (int waited = 0; waited < recoverDelayMs_ && !stop_; waited += 100)
+        QThread::msleep(100);
+    if (stop_)
+        return;
+
+    pcap_t *handle = openHandle();
+    if (!handle) {
+        recoverDelayMs_ = qMin(recoverDelayMs_ * 2, 5000);
+        return;
+    }
+    configureHandle(handle);
+
+    QMutexLocker lock(&handleLock_);
+    // The original handle may still be in use by the transmitter - keep
+    // it open (closed in the destructor); later ones are ours alone
+    if (handle_ && handle_ != originalHandle_)
+        pcap_close(handle_);
+    handle_ = handle;
+    recoverDelayMs_ = 500;
+    recovering_ = false;
+    qWarning("%s: reopened the adapter", qPrintable(objectName()));
 }
 
 void PcapPort::PortMonitor::run()
@@ -329,10 +370,16 @@ void PcapPort::PortMonitor::run()
         struct pcap_pkthdr *hdr;
         const uchar *data;
 
+        if (!handle_) {
+            recoverHandle();
+            continue;
+        }
+
         ret = pcap_next_ex(handle_, &hdr, &data);
         switch (ret)
         {
             case 1:
+                recovering_ = false;
                 switch (direction_)
                 {
                 case kDirectionRx:
@@ -356,15 +403,14 @@ void PcapPort::PortMonitor::run()
                 break;
             case 0:
                 //qDebug("%s: timeout. continuing ...", __PRETTY_FUNCTION__);
+                recovering_ = false;
                 continue;
             case -1:
-                qWarning("%s: error reading packet (%d): %s", 
-                        __PRETTY_FUNCTION__, ret, pcap_geterr(handle_));
-                break;
             case -2:
-                qWarning("%s: error reading packet (%d): %s", 
-                        __PRETTY_FUNCTION__, ret, pcap_geterr(handle_));
-                break;
+                // -2: pcap_breakloop() from stop(); -1: read error
+                if (!stop_)
+                    recoverHandle();
+                continue;
             default:
                 qFatal("%s: Unexpected return value %d", __PRETTY_FUNCTION__, ret);
         }
@@ -374,8 +420,9 @@ void PcapPort::PortMonitor::run()
 void PcapPort::PortMonitor::stop()
 {
     stop_ = true;
-    if (handle())
-        pcap_breakloop(handle());
+    QMutexLocker lock(&handleLock_);
+    if (handle_)
+        pcap_breakloop(handle_);
 }
 
 /*

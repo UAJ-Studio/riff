@@ -30,6 +30,7 @@ PcapTxThread::PcapTxThread(const char *device)
     char errbuf[PCAP_ERRBUF_SIZE] = "";
 
     setObjectName(QString("Tx:%1").arg(device));
+    device_ = QByteArray(device);
 
 #ifdef Q_OS_WIN32
     LARGE_INTEGER   freq;
@@ -322,26 +323,31 @@ _restart:
                 // and no stream timing is configured
                 if (seq->usecDuration_ <= long(1e6) && firstTtagPkt_ < 0) {
                     getTimeStamp(&ovrStart);
-                    ret = pcap_sendqueue_transmit(handle_,
+                    // Returns the number of bytes actually sent - less
+                    // than the queue length means it failed part way
+                    u_int sent = pcap_sendqueue_transmit(handle_,
                             seq->sendQueue_, kSyncTransmit);
-                    if (ret >= 0) {
+                    if (sent >= seq->sendQueue_->len) {
+                        onSendSuccess();
                         stats_->pkts += seq->packets_;
                         stats_->bytes += seq->bytes_;
 
                         getTimeStamp(&ovrEnd);
                         overHead += seq->usecDuration_
                             - udiffTimeStamp(&ovrStart, &ovrEnd);
-                        Q_ASSERT(overHead <= 0);
+                        if (overHead > 0)
+                            overHead = 0;
                     }
-                    if (stop_)
-                        ret = -2;
+                    else {
+                        // Riff: don't count unsent packets, keep going
+                        onSendFailure();
+                    }
+                    ret = stop_ ? -2 : 0;
                 } else {
-                    ret = sendQueueTransmit(handle_, seq,
-                            overHead, kSyncTransmit);
+                    ret = sendQueueTransmit(seq, overHead, kSyncTransmit);
                 }
 #else
-                ret = sendQueueTransmit(handle_, seq,
-                            overHead, kSyncTransmit);
+                ret = sendQueueTransmit(seq, overHead, kSyncTransmit);
 #endif
 
                 if (ret >= 0) {
@@ -430,8 +436,8 @@ double PcapTxThread::lastTxDuration()
     return lastTxDuration_;
 }
 
-int PcapTxThread::sendQueueTransmit(pcap_t *p, PacketSequence *seq,
-        long &overHead, int sync)
+int PcapTxThread::sendQueueTransmit(PacketSequence *seq, long &overHead,
+        int sync)
 {
     TimeStamp ovrStart, ovrEnd;
     struct timeval ts;
@@ -509,9 +515,17 @@ int PcapTxThread::sendQueueTransmit(pcap_t *p, PacketSequence *seq,
 
         Q_ASSERT(pktLen > 0);
 
-        pcap_sendpacket(p, pkt, pktLen);
-        stats_->pkts++;
-        stats_->bytes += pktLen;
+        // Riff: count only packets that were actually sent; on failure
+        // (link down) keep going - handle_ may be replaced by
+        // onSendFailure() so always use the current one
+        if (pcap_sendpacket(handle_, pkt, pktLen) == 0) {
+            onSendSuccess();
+            stats_->pkts++;
+            stats_->bytes += pktLen;
+        }
+        else {
+            onSendFailure();
+        }
 
         // Revert T-Tag packet changes
         if (ttagPkt) {
@@ -685,4 +699,59 @@ void PcapTxThread::udelay(unsigned long usec)
 #else
     QThread::usleep(usec);
 #endif
+}
+
+// ---- Riff: link loss recovery ------------------------------------------
+
+void PcapTxThread::onSendSuccess()
+{
+    if (!sendFailing_)
+        return;
+    sendFailing_ = false;
+    qWarning("%s: sending again after %llu failed packet(s)",
+             qPrintable(objectName()), sendFailures_);
+}
+
+void PcapTxThread::onSendFailure()
+{
+    sendFailures_++;
+    if (!sendFailing_) {
+        sendFailing_ = true;
+        sinceReopenAttempt_.start();
+        qWarning("%s: send failed (%s) - link down? Transmit continues and "
+                 "resumes when the link is back",
+                 qPrintable(objectName()),
+                 handle_ ? pcap_geterr(handle_) : "no handle");
+    }
+
+    // Don't spin while the link is down - this only slows down sending
+    // while packets can't be sent anyway
+    QThread::msleep(20);
+
+    // On Windows the adapter may be re-bound when a (Wi-Fi) link comes
+    // back, leaving our handle unusable for good - so periodically get a
+    // fresh one while failing
+    if (sinceReopenAttempt_.elapsed() >= 1000) {
+        sinceReopenAttempt_.restart();
+        if (reopenHandle())
+            qWarning("%s: reopened the adapter", qPrintable(objectName()));
+    }
+}
+
+bool PcapTxThread::reopenHandle()
+{
+    char errbuf[PCAP_ERRBUF_SIZE] = "";
+    pcap_t *handle = pcap_open_live(device_.constData(), 64 /* FIXME */, 0,
+                                    1000 /* ms */, errbuf);
+    if (!handle)
+        return false;
+
+    // Our own (internal) handle can be closed - nobody else uses it. A
+    // shared (external) one belongs to the port monitor, which takes care
+    // of it, so it's just let go.
+    if (usingInternalHandle_ && handle_)
+        pcap_close(handle_);
+    handle_ = handle;
+    usingInternalHandle_ = true;
+    return true;
 }

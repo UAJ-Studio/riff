@@ -20,6 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #ifndef _SERVER_PCAP_PORT_H
 #define _SERVER_PCAP_PORT_H
 
+#include <QByteArray>
+#include <QMutex>
 #include <QTemporaryFile>
 #include <QThread>
 #include <pcap.h>
@@ -110,10 +112,27 @@ protected:
         bool isDirectional() { return isDirectional_; }
         bool isPromiscuous() { return isPromisc_; }
     protected:
+        // Riff: called from run() when reading fails (e.g. the adapter
+        // was re-bound after a Wi-Fi reconnect) - waits a little and
+        // reopens the adapter instead of spinning on the dead handle
+        void recoverHandle();
+        // Extra per-platform setup of a freshly opened handle
+        virtual void configureHandle(pcap_t * /*handle*/) {}
+
         AbstractPort::PortStats *stats_;
-        bool stop_;
+        volatile bool stop_;
     private:
+        pcap_t* openHandle();
+
         pcap_t *handle_;
+        // The first handle is shared with the transmitter, so it is kept
+        // open until we are destroyed even after being replaced
+        pcap_t *originalHandle_{nullptr};
+        QMutex handleLock_;     // handle_ swap vs. stop()
+        QByteArray device_;
+        bool noLocalCapture_{true};
+        int recoverDelayMs_{500};
+        bool recovering_{false};
         Direction direction_;
         bool isDirectional_;
         bool isPromisc_;

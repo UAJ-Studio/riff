@@ -50,6 +50,8 @@ protected:
         PortMonitor(const char *device, Direction direction,
                 AbstractPort::PortStats *stats);
         void run();
+    protected:
+        void configureHandle(pcap_t *handle) override;
     };
 private:
     void populateInterfaceInfo();

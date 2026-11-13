@@ -24,6 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "packetsequence.h"
 #include "statstuple.h"
 
+#include <QByteArray>
+#include <QElapsedTimer>
 #include <QMutex>
 #include <QThread>
 #include <pcap.h>
@@ -67,9 +69,21 @@ private:
     };
 
     static void udelay(unsigned long usec);
-    int sendQueueTransmit(pcap_t *p, PacketSequence *seq,
-            long &overHead, int sync);
+    int sendQueueTransmit(PacketSequence *seq, long &overHead, int sync);
     void updateTxStreamStats();
+
+    // Riff: link loss recovery. When sending fails (e.g. Wi-Fi drops and
+    // Windows re-binds the adapter, leaving our pcap handle unusable) keep
+    // the transmit running, don't count unsent packets and periodically
+    // reopen a fresh handle so that sending resumes on reconnect.
+    void onSendSuccess();
+    void onSendFailure();
+    bool reopenHandle();
+
+    QByteArray device_;
+    bool sendFailing_{false};
+    quint64 sendFailures_{0};
+    QElapsedTimer sinceReopenAttempt_;
 
     // Intermediate state variables used while building the packet list
     PacketSequence *currentPacketSequence_;

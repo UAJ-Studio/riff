@@ -155,6 +155,12 @@ WinPcapPort::PortMonitor::PortMonitor(const char *device, Direction direction,
         pcap_setmode(handle(), MODE_STAT);
 }
 
+void WinPcapPort::PortMonitor::configureHandle(pcap_t *handle)
+{
+    // a reopened handle (see recoverHandle()) needs the same setup
+    pcap_setmode(handle, MODE_STAT);
+}
+
 void WinPcapPort::PortMonitor::run()
 {
     struct timeval lastTs;
@@ -171,6 +177,11 @@ void WinPcapPort::PortMonitor::run()
         int ret;
         struct pcap_pkthdr *hdr;
         const uchar *data;
+
+        if (!handle()) {
+            recoverHandle();
+            continue;
+        }
 
         ret = pcap_next_ex(handle(), &hdr, &data);
         switch (ret)
@@ -227,13 +238,16 @@ void WinPcapPort::PortMonitor::run()
                 //qDebug("%s: timeout. continuing ...", __PRETTY_FUNCTION__);
                 continue;
             case -1:
-                qWarning("%s: error reading packet (%d): %s", 
-                        __PRETTY_FUNCTION__, ret, pcap_geterr(handle()));
-                break;
             case -2:
-                qWarning("%s: error reading packet (%d): %s", 
-                        __PRETTY_FUNCTION__, ret, pcap_geterr(handle()));
-                break;
+                // -2: pcap_breakloop() from stop(); -1: read error, e.g.
+                // the adapter was re-bound after a (Wi-Fi) reconnect.
+                // Riff: reopen instead of spinning on the dead handle - and
+                // don't touch hdr, which is not valid here
+                if (!stop_)
+                    recoverHandle();
+                lastTs.tv_sec = 0;
+                lastTs.tv_usec = 0;
+                continue;
             default:
                 qFatal("%s: Unexpected return value %d", __PRETTY_FUNCTION__, ret);
         }
