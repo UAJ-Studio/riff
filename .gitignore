@@ -40,3 +40,4 @@ cscope.out
 /dist/
 target_wrapper.sh
 win/tests/build/
+wireless/packs/

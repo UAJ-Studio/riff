@@ -1,3 +1,4 @@
 *.sh eol=lf
 *.pri eol=lf
 *.pro eol=lf
+wireless/** text eol=lf

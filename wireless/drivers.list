@@ -1,0 +1,31 @@
+# Leaf USB Wi-Fi drivers the loader inserts (dependencies follow via depmod).
+# Realtek rtw89: Wi-Fi 6/6E/7 (RTL8852AU/8832AU = ASUS USB-AX56, 8852BU, 8852CU, 8851BU, 8922AU = Wi-Fi 7)
+rtw89_8851bu
+rtw89_8852au
+rtw89_8852bu
+rtw89_8852cu
+rtw89_8922au
+# Realtek rtw88: Wi-Fi 5 (RTL8812AU/8821AU/8814AU, 8812BU/8822BU, 8811CU/8821CU, 8822CU, 8723DU)
+rtw88_8723du
+rtw88_8812au
+rtw88_8814au
+rtw88_8821au
+rtw88_8821cu
+rtw88_8822bu
+rtw88_8822cu
+# Realtek RTL8188/8192/8723 (Wi-Fi 4)
+rtl8xxxu
+# MediaTek: MT7601U, MT7610U, MT7612U, MT7921AU (Wi-Fi 6E), MT7925U (Wi-Fi 7)
+mt7601u
+mt76x0u
+mt76x2u
+mt7921u
+mt7925u
+# Atheros: AR9271/AR7010, AR9170, AR5523
+ath9k_htc
+carl9170
+ar5523
+# Ralink: RT2500, RT2571/RT73, RT2770/RT2870/RT3070/RT3572/RT5370/RT5572
+rt2500usb
+rt73usb
+rt2800usb
