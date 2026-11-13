@@ -90,6 +90,63 @@ QComboBox QAbstractItemView {
     selection-color: @text;
 }
 
+/* ---- Check boxes & radio buttons ------------------------------------- */
+/* Fusion derives the indicator outline from the window colour, which
+   vanishes on a dark background - draw our own, visible in both themes */
+QCheckBox::indicator, QGroupBox::indicator {
+    width: 14px;
+    height: 14px;
+    border: 1px solid @indicatorBorder;
+    border-radius: 3px;
+    background: @base;
+}
+QCheckBox::indicator:hover, QGroupBox::indicator:hover {
+    border-color: @accent;
+}
+QCheckBox::indicator:checked, QGroupBox::indicator:checked {
+    background: @accent;
+    border-color: @accent;
+    image: url(:/riff/check.svg);
+}
+QCheckBox::indicator:indeterminate {
+    background: @accent;
+    border-color: @accent;
+    image: url(:/riff/partial.svg);
+}
+QCheckBox::indicator:disabled, QGroupBox::indicator:disabled {
+    background: @window;
+    border-color: @border;
+}
+QCheckBox::indicator:checked:disabled,
+QGroupBox::indicator:checked:disabled {
+    background: @mutedText;
+    border-color: @mutedText;
+}
+QRadioButton::indicator {
+    width: 14px;
+    height: 14px;
+    border: 1px solid @indicatorBorder;
+    border-radius: 8px;
+    background: @base;
+}
+QRadioButton::indicator:hover {
+    border-color: @accent;
+}
+/* same outer size (8 + 2*4 = 14 + 2*1): a ring with a solid centre */
+QRadioButton::indicator:checked {
+    width: 8px;
+    height: 8px;
+    border: 4px solid @accent;
+    background: @base;
+}
+QRadioButton::indicator:disabled {
+    background: @window;
+    border-color: @border;
+}
+QRadioButton::indicator:checked:disabled {
+    border-color: @mutedText;
+}
+
 /* ---- Item views ------------------------------------------------------ */
 QTableView, QTreeView, QListView {
     border: 1px solid @border;

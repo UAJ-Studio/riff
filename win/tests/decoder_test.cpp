@@ -1,6 +1,7 @@
 // Console checks for the hex editor's decoder / checksum / hex parsing.
 // Build + run: win/tests/run-decoder-test.sh
 #include "../../client/packetdecoder.h"
+#include "../../client/packettemplates.h"
 
 #include <QCoreApplication>
 #include <QStringList>
@@ -29,6 +30,15 @@ const DecodedField* find(const QList<DecodedField> &fs, const QString &name)
     return nullptr;
 }
 
+void collectHeaders(const QList<DecodedField> &fs, QStringList &names)
+{
+    for (const DecodedField &f : fs) {
+        if (f.kind == DecodedField::Header)
+            names << f.name;
+        collectHeaders(f.children, names);
+    }
+}
+
 bool anyError(const QList<DecodedField> &fs)
 {
     for (const DecodedField &f : fs)
@@ -41,6 +51,25 @@ bool anyError(const QList<DecodedField> &fs)
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
+
+    // --pcap <file>: write every template to a pcap (for cross-checking
+    // with Wireshark/tshark) and exit
+    if (argc == 3 && QByteArray(argv[1]) == "--pcap") {
+        FILE *fp = std::fopen(argv[2], "wb");
+        if (!fp)
+            return 2;
+        const quint32 hdr[] = {0xa1b2c3d4, 0x00040002, 0, 0, 65535, 1};
+        std::fwrite(hdr, 1, sizeof(hdr), fp);   // little-endian host
+        for (int i = 0; i < PacketTemplates::count(); i++) {
+            QByteArray p = PacketTemplates::build(i);
+            const quint32 rec[] = {quint32(i + 1), 0, quint32(p.size()),
+                                   quint32(p.size())};
+            std::fwrite(rec, 1, sizeof(rec), fp);
+            std::fwrite(p.constData(), 1, size_t(p.size()), fp);
+        }
+        std::fclose(fp);
+        return 0;
+    }
 
     // Real capture: ICMP echo request 192.168.0.10 -> 192.168.0.1 with
     // correct IPv4 header checksum (0xb966) and ICMP checksum (0x4d5a).
@@ -129,6 +158,129 @@ int main(int argc, char **argv)
     for (int len = 0; len < fixed.size(); len++)
         PacketDecoder trunc(fixed.left(len));
     check(true, "truncated packets decode without crashing");
+
+    // ---- Every template decodes cleanly with the expected layers ----
+    const QList<QStringList> expected = {
+        {"Ethernet", "IPv4", "UDP"},
+        {"Ethernet", "IPv4", "TCP"},
+        {"Ethernet", "IPv4", "ICMP"},
+        {"Ethernet", "ARP"},
+        {"Ethernet", "IPv6", "UDP"},
+        {"Ethernet", "VLAN (802.1Q)", "IPv4", "UDP"},
+        {"Ethernet"},
+        {"IPv4", "UDP", "CAPWAP Data", "Inner Ethernet", "IPv4", "ICMP"},
+        {"IPv4", "UDP", "CAPWAP Control", "CAPWAP Control Message"},
+        {"IPv4", "EtherIP", "Inner Ethernet", "ICMP"},
+        {"IPv4", "UDP", "VXLAN", "Inner Ethernet", "ICMP"},
+        {"IPv4", "UDP", "Geneve", "Inner Ethernet", "ICMP"},
+        {"IPv4", "GRE", "Inner IPv4", "ICMP"},
+        {"IPv4", "Inner IPv4", "ICMP"},
+        {"Ethernet", "MPLS", "IPv4", "UDP"},
+        {"Ethernet", "PPPoE Session", "IPv4", "UDP"},
+        {"IPv4", "UDP", "GTP-U", "Inner IPv4", "ICMP"},
+        {"IPv4", "UDP", "DNS"},
+        {"IPv4", "UDP", "DHCP"},
+        {"Ethernet", "LLDP"},
+        {"Ethernet", "LLC", "Spanning Tree (BPDU)"},
+        {"Ethernet", "IPv4", "IGMP"},
+    };
+    check(expected.size() == PacketTemplates::count(),
+          "template table and expectations have the same size");
+    for (int i = 0; i < PacketTemplates::count(); i++) {
+        QByteArray pkt = PacketTemplates::build(i);
+        PacketDecoder d(pkt);
+        QStringList seen;
+        collectHeaders(d.fields(), seen);
+        bool ok = !anyError(d.fields());
+        QString missing;
+        for (const QString &h : expected.value(i))
+            if (!seen.contains(h)) {
+                ok = false;
+                missing += h + " ";
+            }
+        QByteArray what = QString("template %1 (%2) %3")
+            .arg(i).arg(PacketTemplates::name(i))
+            .arg(missing.isEmpty() ? QString()
+                                   : "missing: " + missing).toUtf8();
+        check(ok, what.constData());
+        if (!ok)
+            std::printf("      seen: %s\n",
+                        seen.join(" | ").toUtf8().constData());
+
+        // robustness: every prefix and deterministic byte flips
+        for (int len = 0; len < pkt.size(); len++)
+            PacketDecoder trunc(pkt.left(len));
+        quint32 seed = 0x12345u + quint32(i);
+        for (int k = 0; k < 300; k++) {
+            QByteArray m = pkt;
+            for (int f = 0; f < 3; f++) {
+                seed = seed * 1103515245u + 12345u;
+                m[int((seed >> 8) % quint32(m.size()))] = char(seed >> 24);
+            }
+            PacketDecoder fuzz(m);
+            QByteArray fixedm = m;
+            PacketDecoder::fixChecksums(fixedm);
+        }
+    }
+    check(true, "templates survive truncation and byte-flip fuzzing");
+
+    // ---- Tunnel specifics ----
+    {
+        QByteArray cw = PacketTemplates::build(7);
+        PacketDecoder d(cw);
+        const DecodedField *wbid = find(d.fields(), "Wireless binding ID");
+        check(wbid && PacketDecoder::readUInt(cw, *wbid) == 1,
+              "capwap: wireless binding ID = 1 (IEEE 802.11)");
+        const DecodedField *t = find(d.fields(), "T: native frame");
+        check(t && PacketDecoder::readUInt(cw, *t) == 0,
+              "capwap: T = 0 (802.3 payload)");
+        const DecodedField *hl = find(d.fields(), "Header length");
+        check(hl, "capwap: header length decoded");
+    }
+    {
+        QByteArray cc = PacketTemplates::build(8);
+        PacketDecoder d(cc);
+        const DecodedField *mt = find(d.fields(), "Message type");
+        check(mt && mt->value.contains("Echo Request"),
+              "capwap control: Echo Request");
+    }
+    {
+        // Corrupt the inner ICMP of the VXLAN template: inner checksum
+        // must be flagged, and fixing must touch exactly that checksum
+        // (outer UDP checksum 0 = not used stays 0)
+        QByteArray vx = PacketTemplates::build(10);
+        QByteArray bad = vx;
+        bad[bad.size() - 1] = char(bad.at(bad.size() - 1) ^ 0x55);
+        PacketDecoder d(bad);
+        check(anyError(d.fields()), "vxlan: corrupted inner ICMP flagged");
+        int n = PacketDecoder::fixChecksums(bad);
+        check(n == 1, "vxlan: exactly one (inner) checksum fixed");
+        PacketDecoder d2(bad);
+        check(!anyError(d2.fields()), "vxlan: clean after fix");
+        const DecodedField *vni = find(d2.fields(), "VNI");
+        check(vni && PacketDecoder::readUInt(bad, *vni) == 100,
+              "vxlan: VNI 100");
+    }
+    {
+        QByteArray dns = PacketTemplates::build(17);
+        PacketDecoder d(dns);
+        const DecodedField *q = find(d.fields(), "Question");
+        check(q && q->value == "example.com A",
+              "dns: question is example.com, type A");
+        QByteArray dhcp = PacketTemplates::build(18);
+        PacketDecoder d2(dhcp);
+        const DecodedField *h = find(d2.fields(), "DHCP");
+        check(h && h->value == "DISCOVER", "dhcp: message type DISCOVER");
+    }
+    {
+        // Self-referencing DNS compression pointer must not hang
+        QByteArray dns = PacketTemplates::build(17);
+        int qoff = dns.indexOf(QByteArray("\x07" "example", 8));
+        dns[qoff] = char(0xC0);
+        dns[qoff + 1] = char(qoff - 42); // points to itself (DNS at 42)
+        PacketDecoder d(dns);
+        check(true, "dns: compression pointer loop terminates");
+    }
 
     std::printf("\n%s (%d failure(s))\n", failures ? "FAILED" : "ALL PASSED",
                 failures);

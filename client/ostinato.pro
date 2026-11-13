@@ -37,6 +37,7 @@ RESOURCES += ostinato.qrc riff.qrc
 HEADERS += \
     hexpacketeditor.h \
     packetdecoder.h \
+    packettemplates.h \
     arpstatusmodel.h \
     clipboardhelper.h \
     devicegroupdialog.h \
@@ -97,6 +98,7 @@ FORMS += \
 SOURCES += \
     hexpacketeditor.cpp \
     packetdecoder.cpp \
+    packettemplates.cpp \
     arpstatusmodel.cpp \
     clipboardhelper.cpp \
     devicegroupdialog.cpp \

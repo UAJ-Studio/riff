@@ -630,10 +630,6 @@ To emulate a device, click on Configuration and create a device group</source>
         <translation>チェックサムを修正</translation>
     </message>
     <message>
-        <source>Recalculate the IPv4, TCP, UDP, ICMP and ICMPv6 checksums</source>
-        <translation>IPv4、TCP、UDP、ICMP、ICMPv6 のチェックサムを再計算します</translation>
-    </message>
-    <message>
         <source>Update checksums after field edits</source>
         <translation>フィールド編集後にチェックサムを自動更新</translation>
     </message>
@@ -750,6 +746,86 @@ This replaces the whole packet.</source>
     <message>
         <source>longer than a standard 1514-byte frame (jumbo)</source>
         <translation>標準の 1514 バイトを超えるフレームです (ジャンボ)</translation>
+    </message>
+    <message>
+        <source>Recalculate the IPv4, TCP, UDP, ICMP, ICMPv6, IGMP and GRE checksums, including those of tunnelled (inner) packets</source>
+        <translation>IPv4、TCP、UDP、ICMP、ICMPv6、IGMP、GRE のチェックサムを再計算します (トンネル内の内側パケットも含みます)</translation>
+    </message>
+    <message>
+        <source>Basic</source>
+        <translation>基本</translation>
+    </message>
+    <message>
+        <source>802.1Q VLAN + IPv4 + UDP</source>
+        <translation>802.1Q VLAN + IPv4 + UDP</translation>
+    </message>
+    <message>
+        <source>Tunnels / encapsulation</source>
+        <translation>トンネル / カプセル化</translation>
+    </message>
+    <message>
+        <source>CAPWAP Data (802.3 frame)</source>
+        <translation>CAPWAP データ (802.3 フレーム)</translation>
+    </message>
+    <message>
+        <source>CAPWAP Control (Echo Request)</source>
+        <translation>CAPWAP 制御 (エコー要求)</translation>
+    </message>
+    <message>
+        <source>EtherIP (Ethernet over IP)</source>
+        <translation>EtherIP (Ethernet over IP)</translation>
+    </message>
+    <message>
+        <source>VXLAN</source>
+        <translation>VXLAN</translation>
+    </message>
+    <message>
+        <source>Geneve</source>
+        <translation>Geneve</translation>
+    </message>
+    <message>
+        <source>GRE (IPv4 in GRE)</source>
+        <translation>GRE (IPv4 in GRE)</translation>
+    </message>
+    <message>
+        <source>IP-in-IP</source>
+        <translation>IP-in-IP</translation>
+    </message>
+    <message>
+        <source>MPLS + IPv4 + UDP</source>
+        <translation>MPLS + IPv4 + UDP</translation>
+    </message>
+    <message>
+        <source>PPPoE Session + IPv4</source>
+        <translation>PPPoE セッション + IPv4</translation>
+    </message>
+    <message>
+        <source>GTP-U</source>
+        <translation>GTP-U</translation>
+    </message>
+    <message>
+        <source>Control / applications</source>
+        <translation>制御 / アプリケーション</translation>
+    </message>
+    <message>
+        <source>DNS Query</source>
+        <translation>DNS クエリ</translation>
+    </message>
+    <message>
+        <source>DHCP Discover</source>
+        <translation>DHCP Discover</translation>
+    </message>
+    <message>
+        <source>LLDP</source>
+        <translation>LLDP</translation>
+    </message>
+    <message>
+        <source>STP BPDU</source>
+        <translation>STP BPDU</translation>
+    </message>
+    <message>
+        <source>IGMPv2 Membership Report</source>
+        <translation>IGMPv2 メンバーシップレポート</translation>
     </message>
 </context>
 <context>
@@ -1264,10 +1340,6 @@ Debug: %2</source>
         <translation>長さ</translation>
     </message>
     <message>
-        <source>LLC</source>
-        <translation>LLC</translation>
-    </message>
-    <message>
         <source>Control</source>
         <translation>コントロール</translation>
     </message>
@@ -1554,6 +1626,562 @@ Debug: %2</source>
     <message>
         <source>Edit these bytes directly in the hex pane.</source>
         <translation>このバイト列は16進表示で直接編集してください。</translation>
+    </message>
+    <message>
+        <source>Inner Ethernet</source>
+        <translation>内側 Ethernet</translation>
+    </message>
+    <message>
+        <source>Protocol ID</source>
+        <translation>プロトコル ID</translation>
+    </message>
+    <message>
+        <source>Topology Change Notification</source>
+        <translation>トポロジー変更通知</translation>
+    </message>
+    <message>
+        <source>Spanning Tree (BPDU)</source>
+        <translation>スパニングツリー (BPDU)</translation>
+    </message>
+    <message>
+        <source>BPDU type</source>
+        <translation>BPDU タイプ</translation>
+    </message>
+    <message>
+        <source>Root priority</source>
+        <translation>ルート優先度</translation>
+    </message>
+    <message>
+        <source>x 4096</source>
+        <translation>× 4096</translation>
+    </message>
+    <message>
+        <source>Root bridge MAC</source>
+        <translation>ルートブリッジ MAC</translation>
+    </message>
+    <message>
+        <source>Root path cost</source>
+        <translation>ルートパスコスト</translation>
+    </message>
+    <message>
+        <source>Bridge priority</source>
+        <translation>ブリッジ優先度</translation>
+    </message>
+    <message>
+        <source>Bridge MAC</source>
+        <translation>ブリッジ MAC</translation>
+    </message>
+    <message>
+        <source>Port ID</source>
+        <translation>ポート ID</translation>
+    </message>
+    <message>
+        <source>Message age</source>
+        <translation>メッセージエージ</translation>
+    </message>
+    <message>
+        <source>1/256 s</source>
+        <translation>1/256 秒</translation>
+    </message>
+    <message>
+        <source>Max age</source>
+        <translation>最大エージ</translation>
+    </message>
+    <message>
+        <source>Hello time</source>
+        <translation>Hello タイム</translation>
+    </message>
+    <message>
+        <source>Forward delay</source>
+        <translation>転送遅延</translation>
+    </message>
+    <message>
+        <source>Label %1</source>
+        <translation>ラベル %1</translation>
+    </message>
+    <message>
+        <source>Label</source>
+        <translation>ラベル</translation>
+    </message>
+    <message>
+        <source>Bottom of stack</source>
+        <translation>スタック最下位 (S)</translation>
+    </message>
+    <message>
+        <source>PPPoE Session</source>
+        <translation>PPPoE セッション</translation>
+    </message>
+    <message>
+        <source>PPPoE Discovery</source>
+        <translation>PPPoE ディスカバリー</translation>
+    </message>
+    <message>
+        <source>Session ID</source>
+        <translation>セッション ID</translation>
+    </message>
+    <message>
+        <source>PPP protocol</source>
+        <translation>PPP プロトコル</translation>
+    </message>
+    <message>
+        <source>PPP payload</source>
+        <translation>PPP ペイロード</translation>
+    </message>
+    <message>
+        <source>Tags</source>
+        <translation>タグ</translation>
+    </message>
+    <message>
+        <source>TLV %1</source>
+        <translation>TLV %1</translation>
+    </message>
+    <message>
+        <source>%1 s</source>
+        <translation>%1 秒</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation>値</translation>
+    </message>
+    <message>
+        <source>Inner IPv4</source>
+        <translation>内側 IPv4</translation>
+    </message>
+    <message>
+        <source>Fragment data</source>
+        <translation>フラグメントデータ</translation>
+    </message>
+    <message>
+        <source>Inner IPv6</source>
+        <translation>内側 IPv6</translation>
+    </message>
+    <message>
+        <source>Verification tag</source>
+        <translation>検証タグ</translation>
+    </message>
+    <message>
+        <source>Checksum (CRC32c)</source>
+        <translation>チェックサム (CRC32c)</translation>
+    </message>
+    <message>
+        <source>Chunk: %1</source>
+        <translation>チャンク: %1</translation>
+    </message>
+    <message>
+        <source>Flags / reserved</source>
+        <translation>フラグ / 予約</translation>
+    </message>
+    <message>
+        <source>Target address</source>
+        <translation>ターゲットアドレス</translation>
+    </message>
+    <message>
+        <source>Membership Query</source>
+        <translation>メンバーシップクエリ</translation>
+    </message>
+    <message>
+        <source>Membership Report v1</source>
+        <translation>メンバーシップレポート v1</translation>
+    </message>
+    <message>
+        <source>Membership Report v2</source>
+        <translation>メンバーシップレポート v2</translation>
+    </message>
+    <message>
+        <source>Leave Group</source>
+        <translation>グループ離脱</translation>
+    </message>
+    <message>
+        <source>Membership Report v3</source>
+        <translation>メンバーシップレポート v3</translation>
+    </message>
+    <message>
+        <source>Max response time</source>
+        <translation>最大応答時間</translation>
+    </message>
+    <message>
+        <source>1/10 s</source>
+        <translation>1/10 秒</translation>
+    </message>
+    <message>
+        <source>Number of group records</source>
+        <translation>グループレコード数</translation>
+    </message>
+    <message>
+        <source>Group address</source>
+        <translation>グループアドレス</translation>
+    </message>
+    <message>
+        <source>SPI %1</source>
+        <translation>SPI %1</translation>
+    </message>
+    <message>
+        <source>Encrypted data</source>
+        <translation>暗号化データ</translation>
+    </message>
+    <message>
+        <source>Checksum present</source>
+        <translation>チェックサムあり (C)</translation>
+    </message>
+    <message>
+        <source>Key present</source>
+        <translation>キーあり (K)</translation>
+    </message>
+    <message>
+        <source>Sequence number present</source>
+        <translation>シーケンス番号あり (S)</translation>
+    </message>
+    <message>
+        <source>Call ID</source>
+        <translation>コール ID</translation>
+    </message>
+    <message>
+        <source>Virtual subnet ID (NVGRE)</source>
+        <translation>仮想サブネット ID (NVGRE)</translation>
+    </message>
+    <message>
+        <source>Flow ID</source>
+        <translation>フロー ID</translation>
+    </message>
+    <message>
+        <source>Key</source>
+        <translation>キー</translation>
+    </message>
+    <message>
+        <source>ERSPAN Type II</source>
+        <translation>ERSPAN タイプ II</translation>
+    </message>
+    <message>
+        <source>Session %1</source>
+        <translation>セッション %1</translation>
+    </message>
+    <message>
+        <source>VLAN</source>
+        <translation>VLAN</translation>
+    </message>
+    <message>
+        <source>Encapsulation type</source>
+        <translation>カプセル化タイプ</translation>
+    </message>
+    <message>
+        <source>Truncated</source>
+        <translation>切り詰め</translation>
+    </message>
+    <message>
+        <source>Index</source>
+        <translation>インデックス</translation>
+    </message>
+    <message>
+        <source>ERSPAN Type III</source>
+        <translation>ERSPAN タイプ III</translation>
+    </message>
+    <message>
+        <source>Timestamp</source>
+        <translation>タイムスタンプ</translation>
+    </message>
+    <message>
+        <source>Flags / platform info</source>
+        <translation>フラグ / プラットフォーム情報</translation>
+    </message>
+    <message>
+        <source>version %1</source>
+        <translation>バージョン %1</translation>
+    </message>
+    <message>
+        <source>Reserved</source>
+        <translation>予約</translation>
+    </message>
+    <message>
+        <source>VNI %1</source>
+        <translation>VNI %1</translation>
+    </message>
+    <message>
+        <source>VNI valid</source>
+        <translation>VNI 有効</translation>
+    </message>
+    <message>
+        <source>VNI</source>
+        <translation>VNI</translation>
+    </message>
+    <message>
+        <source>Options length</source>
+        <translation>オプション長</translation>
+    </message>
+    <message>
+        <source>OAM</source>
+        <translation>OAM</translation>
+    </message>
+    <message>
+        <source>Critical options</source>
+        <translation>クリティカルオプション</translation>
+    </message>
+    <message>
+        <source>CAPWAP (DTLS)</source>
+        <translation>CAPWAP (DTLS)</translation>
+    </message>
+    <message>
+        <source>encrypted</source>
+        <translation>暗号化</translation>
+    </message>
+    <message>
+        <source>DTLS record</source>
+        <translation>DTLS レコード</translation>
+    </message>
+    <message>
+        <source>CAPWAP Data</source>
+        <translation>CAPWAP データ</translation>
+    </message>
+    <message>
+        <source>CAPWAP Control</source>
+        <translation>CAPWAP 制御</translation>
+    </message>
+    <message>
+        <source>CAPWAP header</source>
+        <translation>CAPWAP ヘッダー</translation>
+    </message>
+    <message>
+        <source>Radio ID</source>
+        <translation>無線 ID</translation>
+    </message>
+    <message>
+        <source>Wireless binding ID</source>
+        <translation>ワイヤレスバインディング ID</translation>
+    </message>
+    <message>
+        <source>T: native frame</source>
+        <translation>T: ネイティブフレーム</translation>
+    </message>
+    <message>
+        <source>native (see binding)</source>
+        <translation>ネイティブ (バインディング参照)</translation>
+    </message>
+    <message>
+        <source>IEEE 802.3</source>
+        <translation>IEEE 802.3</translation>
+    </message>
+    <message>
+        <source>F: fragment</source>
+        <translation>F: フラグメント</translation>
+    </message>
+    <message>
+        <source>L: not last fragment</source>
+        <translation>L: 最終フラグメントではない</translation>
+    </message>
+    <message>
+        <source>W: wireless info present</source>
+        <translation>W: ワイヤレス情報あり</translation>
+    </message>
+    <message>
+        <source>M: radio MAC present</source>
+        <translation>M: 無線 MAC あり</translation>
+    </message>
+    <message>
+        <source>K: keep-alive</source>
+        <translation>K: キープアライブ</translation>
+    </message>
+    <message>
+        <source>Fragment ID</source>
+        <translation>フラグメント ID</translation>
+    </message>
+    <message>
+        <source>Optional fields (radio MAC / wireless info)</source>
+        <translation>オプションフィールド (無線 MAC / ワイヤレス情報)</translation>
+    </message>
+    <message>
+        <source>fragment</source>
+        <translation>フラグメント</translation>
+    </message>
+    <message>
+        <source>keep-alive</source>
+        <translation>キープアライブ</translation>
+    </message>
+    <message>
+        <source>802.11 frame</source>
+        <translation>802.11 フレーム</translation>
+    </message>
+    <message>
+        <source>native frame</source>
+        <translation>ネイティブフレーム</translation>
+    </message>
+    <message>
+        <source>802.3 frame</source>
+        <translation>802.3 フレーム</translation>
+    </message>
+    <message>
+        <source>IEEE 802.11 frame</source>
+        <translation>IEEE 802.11 フレーム</translation>
+    </message>
+    <message>
+        <source>Native frame</source>
+        <translation>ネイティブフレーム</translation>
+    </message>
+    <message>
+        <source>CAPWAP Control Message</source>
+        <translation>CAPWAP 制御メッセージ</translation>
+    </message>
+    <message>
+        <source>Message elements length</source>
+        <translation>メッセージエレメント長</translation>
+    </message>
+    <message>
+        <source>Enterprise number</source>
+        <translation>エンタープライズ番号</translation>
+    </message>
+    <message>
+        <source>Message type</source>
+        <translation>メッセージタイプ</translation>
+    </message>
+    <message>
+        <source>Element %1</source>
+        <translation>エレメント %1</translation>
+    </message>
+    <message>
+        <source>TEID %1</source>
+        <translation>TEID %1</translation>
+    </message>
+    <message>
+        <source>Extension header flag</source>
+        <translation>拡張ヘッダーフラグ</translation>
+    </message>
+    <message>
+        <source>Sequence number flag</source>
+        <translation>シーケンス番号フラグ</translation>
+    </message>
+    <message>
+        <source>N-PDU number flag</source>
+        <translation>N-PDU 番号フラグ</translation>
+    </message>
+    <message>
+        <source>N-PDU number</source>
+        <translation>N-PDU 番号</translation>
+    </message>
+    <message>
+        <source>Next extension header</source>
+        <translation>次の拡張ヘッダー</translation>
+    </message>
+    <message>
+        <source>Extension header</source>
+        <translation>拡張ヘッダー</translation>
+    </message>
+    <message>
+        <source>Response</source>
+        <translation>応答</translation>
+    </message>
+    <message>
+        <source>Query</source>
+        <translation>クエリ</translation>
+    </message>
+    <message>
+        <source>Transaction ID</source>
+        <translation>トランザクション ID</translation>
+    </message>
+    <message>
+        <source>Opcode</source>
+        <translation>オペコード</translation>
+    </message>
+    <message>
+        <source>Authoritative</source>
+        <translation>権威応答</translation>
+    </message>
+    <message>
+        <source>Recursion desired</source>
+        <translation>再帰要求</translation>
+    </message>
+    <message>
+        <source>Recursion available</source>
+        <translation>再帰可能</translation>
+    </message>
+    <message>
+        <source>Response code</source>
+        <translation>応答コード</translation>
+    </message>
+    <message>
+        <source>Questions</source>
+        <translation>質問数</translation>
+    </message>
+    <message>
+        <source>Answer RRs</source>
+        <translation>回答 RR 数</translation>
+    </message>
+    <message>
+        <source>Authority RRs</source>
+        <translation>権威 RR 数</translation>
+    </message>
+    <message>
+        <source>Additional RRs</source>
+        <translation>追加 RR 数</translation>
+    </message>
+    <message>
+        <source>Question</source>
+        <translation>質問</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <translation>名前</translation>
+    </message>
+    <message>
+        <source>Class</source>
+        <translation>クラス</translation>
+    </message>
+    <message>
+        <source>Resource records</source>
+        <translation>リソースレコード</translation>
+    </message>
+    <message>
+        <source>Hardware address length</source>
+        <translation>ハードウェアアドレス長</translation>
+    </message>
+    <message>
+        <source>Hops</source>
+        <translation>ホップ数</translation>
+    </message>
+    <message>
+        <source>Seconds elapsed</source>
+        <translation>経過秒数</translation>
+    </message>
+    <message>
+        <source>Broadcast flag</source>
+        <translation>ブロードキャストフラグ</translation>
+    </message>
+    <message>
+        <source>Client IP</source>
+        <translation>クライアント IP</translation>
+    </message>
+    <message>
+        <source>Your (client) IP</source>
+        <translation>割り当て IP (yiaddr)</translation>
+    </message>
+    <message>
+        <source>Next server IP</source>
+        <translation>次サーバー IP</translation>
+    </message>
+    <message>
+        <source>Relay agent IP</source>
+        <translation>リレーエージェント IP</translation>
+    </message>
+    <message>
+        <source>Client MAC</source>
+        <translation>クライアント MAC</translation>
+    </message>
+    <message>
+        <source>Client hardware address padding</source>
+        <translation>クライアントハードウェアアドレスのパディング</translation>
+    </message>
+    <message>
+        <source>Server host name</source>
+        <translation>サーバーホスト名</translation>
+    </message>
+    <message>
+        <source>Boot file name</source>
+        <translation>ブートファイル名</translation>
+    </message>
+    <message>
+        <source>Magic cookie</source>
+        <translation>マジッククッキー</translation>
+    </message>
+    <message>
+        <source>Option %1</source>
+        <translation>オプション %1</translation>
     </message>
 </context>
 <context>

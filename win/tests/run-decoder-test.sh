@@ -9,5 +9,6 @@ QTINC="$MINGW_PREFIX/include"
 g++ -std=c++17 -O1 -DQT_NO_DEBUG \
     -I"$QTINC" -I"$QTINC/QtCore" -I"$QTINC/QtNetwork" \
     "$ROOT/win/tests/decoder_test.cpp" "$ROOT/client/packetdecoder.cpp" \
+    "$ROOT/client/packettemplates.cpp" \
     -o "$OUT/decoder_test.exe" -lQt5Core -lQt5Network
 "$OUT/decoder_test.exe"

@@ -50,6 +50,7 @@ public:
     // Ready made example packets, also used for "New Stream from Hex"
     static QByteArray templatePacket(int index);
     static QStringList templateNames();
+    static QString templateGroup(int index);
 
     // Parse hex text in common formats (plain, spaced, 0x.., hex dumps
     // with offsets). Returns false with *error set if text isn't hex.

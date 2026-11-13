@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "hexpacketeditor.h"
 
+#include "packettemplates.h"
 #include "thememanager.h"
 
 #include "qhexedit.h"
@@ -48,121 +49,26 @@ namespace {
 const int kFieldRole = Qt::UserRole;
 const int kPathRole = Qt::UserRole + 1;
 
-// ---- template builders ----
-
-QByteArray mac(const char *text)
-{
-    return QByteArray::fromHex(QByteArray(text).replace(":", ""));
-}
-
-QByteArray be16(int v)
-{
-    QByteArray b(2, 0);
-    b[0] = char((v >> 8) & 0xFF);
-    b[1] = char(v & 0xFF);
-    return b;
-}
-
-QByteArray ip4(int a, int b, int c, int d)
-{
-    QByteArray r;
-    r.append(char(a)).append(char(b)).append(char(c)).append(char(d));
-    return r;
-}
-
-QByteArray ethernet(const QByteArray &dst, const QByteArray &src, int type)
-{
-    return dst + src + be16(type);
-}
-
-QByteArray ipv4Header(int proto, const QByteArray &src, const QByteArray &dst,
-                      int payloadLen)
-{
-    QByteArray h;
-    h.append(char(0x45)).append(char(0));           // ver/ihl, dscp/ecn
-    h.append(be16(20 + payloadLen));                // total length
-    h.append(be16(0x1234));                         // identification
-    h.append(be16(0x4000));                         // DF
-    h.append(char(64)).append(char(proto));         // ttl, protocol
-    h.append(be16(0));                              // checksum (fixed later)
-    h.append(src).append(dst);
-    return h;
-}
-
-const QByteArray kDstMac = mac("00:11:22:33:44:55");
-const QByteArray kSrcMac = mac("00:aa:bb:cc:dd:ee");
-
 } // namespace
 
 // ------------------------------------------------------------------------
 
 QStringList HexPacketEditor::templateNames()
 {
-    return QStringList()
-        << tr("Ethernet + IPv4 + UDP")
-        << tr("Ethernet + IPv4 + TCP SYN")
-        << tr("ICMP Echo Request (ping)")
-        << tr("ARP Request")
-        << tr("Ethernet + IPv6 + UDP")
-        << tr("Empty Ethernet frame (60 bytes)");
+    QStringList names;
+    for (int i = 0; i < PacketTemplates::count(); i++)
+        names << tr(PacketTemplates::name(i));
+    return names;
+}
+
+QString HexPacketEditor::templateGroup(int index)
+{
+    return tr(PacketTemplates::group(index));
 }
 
 QByteArray HexPacketEditor::templatePacket(int index)
 {
-    QByteArray pkt;
-    const QByteArray srcIp = ip4(192, 168, 0, 10);
-    const QByteArray dstIp = ip4(192, 168, 0, 20);
-
-    switch (index) {
-    case 0: { // IPv4 + UDP
-        QByteArray payload("Hello from Riff!..");
-        QByteArray udp = be16(49152) + be16(5000) + be16(8 + payload.size())
-                         + be16(0) + payload;
-        pkt = ethernet(kDstMac, kSrcMac, 0x0800)
-              + ipv4Header(17, srcIp, dstIp, udp.size()) + udp;
-        break;
-    }
-    case 1: { // IPv4 + TCP SYN
-        QByteArray tcp = be16(49152) + be16(80)
-            + QByteArray::fromHex("00000001") + QByteArray::fromHex("00000000")
-            + QByteArray::fromHex("5002") + be16(64240) + be16(0) + be16(0);
-        pkt = ethernet(kDstMac, kSrcMac, 0x0800)
-              + ipv4Header(6, srcIp, dstIp, tcp.size()) + tcp;
-        break;
-    }
-    case 2: { // ICMP echo request
-        QByteArray data("abcdefghijklmnopqrstuvwabcdefghi");
-        QByteArray icmp = QByteArray::fromHex("0800") + be16(0) + be16(1)
-                          + be16(1) + data;
-        pkt = ethernet(kDstMac, kSrcMac, 0x0800)
-              + ipv4Header(1, srcIp, ip4(192, 168, 0, 1), icmp.size()) + icmp;
-        break;
-    }
-    case 3: { // ARP request
-        QByteArray arp = be16(1) + be16(0x0800)
-            + QByteArray::fromHex("0604") + be16(1)
-            + kSrcMac + srcIp + QByteArray(6, 0) + ip4(192, 168, 0, 1);
-        pkt = ethernet(QByteArray(6, char(0xFF)), kSrcMac, 0x0806) + arp
-              + QByteArray(18, 0); // pad to 60
-        break;
-    }
-    case 4: { // IPv6 + UDP
-        QByteArray payload("Hello from Riff!");
-        QByteArray udp = be16(49152) + be16(5000) + be16(8 + payload.size())
-                         + be16(0) + payload;
-        QByteArray ip6 = QByteArray::fromHex("60000000") + be16(udp.size())
-            + QByteArray::fromHex("1140")      // next header UDP, hop limit 64
-            + QByteArray::fromHex("20010db8000000000000000000000010")
-            + QByteArray::fromHex("20010db8000000000000000000000020");
-        pkt = ethernet(mac("33:33:00:00:00:01"), kSrcMac, 0x86DD) + ip6 + udp;
-        break;
-    }
-    default: // empty frame with the IEEE "local experimental" EtherType
-        pkt = ethernet(kDstMac, kSrcMac, 0x88B5) + QByteArray(46, 0);
-        break;
-    }
-    PacketDecoder::fixChecksums(pkt);
-    return pkt;
+    return PacketTemplates::build(index);
 }
 
 bool HexPacketEditor::parseHexText(const QString &text, QByteArray *out,
@@ -254,7 +160,20 @@ HexPacketEditor::HexPacketEditor(const QByteArray &packet, QWidget *parent)
     tplButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
     QMenu *tplMenu = new QMenu(tplButton);
     QStringList names = templateNames();
+    QString group;
     for (int i = 0; i < names.size(); i++) {
+        if (templateGroup(i) != group) {
+            // Fusion doesn't draw QMenu::addSection() titles - use a
+            // disabled, bold item as the group heading instead
+            group = templateGroup(i);
+            if (i)
+                tplMenu->addSeparator();
+            QAction *heading = tplMenu->addAction(group);
+            QFont bold = heading->font();
+            bold.setBold(true);
+            heading->setFont(bold);
+            heading->setEnabled(false);
+        }
         QAction *a = tplMenu->addAction(names.at(i));
         a->setData(i);
         connect(a, SIGNAL(triggered()), SLOT(onTemplateChosen()));
@@ -277,8 +196,9 @@ HexPacketEditor::HexPacketEditor(const QByteArray &packet, QWidget *parent)
     tools->addWidget(copyButton);
 
     QPushButton *fixButton = new QPushButton(tr("Fix Checksums"), this);
-    fixButton->setToolTip(tr("Recalculate the IPv4, TCP, UDP, ICMP and "
-                             "ICMPv6 checksums"));
+    fixButton->setToolTip(tr("Recalculate the IPv4, TCP, UDP, ICMP, ICMPv6, "
+                             "IGMP and GRE checksums, including those of "
+                             "tunnelled (inner) packets"));
     fixButton->setAutoDefault(false);
     connect(fixButton, SIGNAL(clicked()), SLOT(onFixChecksums()));
     tools->addWidget(fixButton);

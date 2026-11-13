@@ -37,19 +37,19 @@ namespace {
 struct RiffColors {
     const char *window, *base, *alt, *header, *text, *mutedText, *border,
                *grid, *hover, *accent, *accentStrong, *accentSoft,
-               *accentText, *scroll, *tooltip;
+               *accentText, *scroll, *tooltip, *indicatorBorder;
 };
 
 const RiffColors kLight = {
     "#F3F5F8", "#FFFFFF", "#F7F9FB", "#EBEFF4", "#1D2733", "#6B7785",
     "#D3DAE3", "#E6EBF1", "#E3F1F0", "#0F8B8D", "#0B6E70", "#CDEDEA",
-    "#FFFFFF", "#C2CBD6", "#FFFFFF"
+    "#FFFFFF", "#C2CBD6", "#FFFFFF", "#8A95A3"
 };
 
 const RiffColors kDark = {
     "#1C2026", "#232830", "#282E37", "#2B313A", "#E4E8EE", "#9AA5B1",
     "#3A424D", "#313842", "#2C3A3E", "#2CB8AA", "#5FD3C6", "#1F4A48",
-    "#0E1B1A", "#4A5360", "#2B313A"
+    "#0E1B1A", "#4A5360", "#2B313A", "#8691A0"
 };
 
 } // namespace
@@ -65,7 +65,7 @@ ThemeManager::ThemeManager()
 QStringList ThemeManager::themeList()
 {
     QStringList themes;
-    themes << "riff-light" << "riff-dark" << "default";
+    themes << "riff-dark" << "riff-light" << "default";
 
     QDir themeDir(themeDir_);
     themeDir.setFilter(QDir::Files);
@@ -187,6 +187,7 @@ void ThemeManager::applyRiffTheme(bool dark)
         {"@grid", c.grid}, {"@hover", c.hover}, {"@accent", c.accent},
         {"@accentStrong", c.accentStrong}, {"@accentSoft", c.accentSoft},
         {"@accentText", c.accentText}, {"@scroll", c.scroll},
+        {"@indicatorBorder", c.indicatorBorder},
     };
     QStringList keys = tokens.keys();
     std::sort(keys.begin(), keys.end(),

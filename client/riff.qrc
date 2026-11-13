@@ -1,6 +1,8 @@
 <RCC>
     <qresource prefix="/">
         <file alias="riff/theme.qss">riff-theme.qss</file>
+        <file alias="riff/check.svg">icons/riff-check.svg</file>
+        <file alias="riff/partial.svg">icons/riff-partial.svg</file>
         <file alias="i18n/riff_ja.qm">../i18n/riff_ja.qm</file>
     </qresource>
 </RCC>

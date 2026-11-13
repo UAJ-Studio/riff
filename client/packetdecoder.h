@@ -93,20 +93,57 @@ public:
     static int fixChecksums(QByteArray &pkt);
 
 private:
-    int decodeEthernet(int off, QList<DecodedField> &out);
-    int decodeVlan(int off, int tpid, QList<DecodedField> &out, int *type);
-    int decodeArp(int off, QList<DecodedField> &out);
-    int decodeIpv4(int off, QList<DecodedField> &out);
-    int decodeIpv6(int off, QList<DecodedField> &out);
-    int decodeTcp(int off, int len, const QByteArray &pseudo,
-                  QList<DecodedField> &out);
-    int decodeUdp(int off, int len, const QByteArray &pseudo,
-                  QList<DecodedField> &out);
-    int decodeIcmp(int off, int len, QList<DecodedField> &out);
-    int decodeIcmp6(int off, int len, const QByteArray &pseudo,
-                    QList<DecodedField> &out);
-    void addData(int off, int len, const QString &name,
-                 QList<DecodedField> &out);
+    // Every decodeXxx() decodes the bytes [off, end) and appends one or
+    // more nodes to out. It returns the offset up to which it consumed
+    // bytes (callers show anything left as data). depth counts tunnel
+    // nesting so that crafted packets can't recurse forever.
+    typedef QList<DecodedField> Out;
+
+    // Layer 2
+    int decodeEthernet(int off, int end, Out &out, int depth);
+    int decodeVlan(int off, int tpid, Out &out, int *type);
+    int decodeLlc(int off, int end, Out &out, int depth);
+    int decodeStp(int off, int end, Out &out);
+    int dispatchEtherType(int type, int off, int end, Out &out, int depth);
+    int decodeArp(int off, int end, Out &out);
+    int decodeMpls(int off, int end, Out &out, int depth);
+    int decodePppoe(int off, int end, bool session, Out &out, int depth);
+    int decodeLldp(int off, int end, Out &out);
+
+    // Layer 3
+    int decodeIpv4(int off, int end, Out &out, int depth);
+    int decodeIpv6(int off, int end, Out &out, int depth);
+    int dispatchIpProto(int proto, int off, int end,
+                        const QByteArray &pseudo, Out &out, int depth);
+    int decodeIpByVersion(int off, int end, Out &out, int depth);
+
+    // Layer 4 and above
+    int decodeTcp(int off, int end, const QByteArray &pseudo, Out &out);
+    int decodeUdp(int off, int end, const QByteArray &pseudo, Out &out,
+                  int depth);
+    int decodeSctp(int off, int end, Out &out);
+    int decodeIcmp(int off, int end, Out &out, int depth);
+    int decodeIcmp6(int off, int end, const QByteArray &pseudo, Out &out);
+    int decodeIgmp(int off, int end, Out &out);
+    int decodeGre(int off, int end, Out &out, int depth);
+    int decodeEtherIp(int off, int end, Out &out, int depth);
+    int decodeEsp(int off, int end, Out &out);
+
+    // UDP based tunnels/applications
+    int dispatchUdpPort(int sport, int dport, int off, int end, Out &out,
+                        int depth);
+    int decodeVxlan(int off, int end, Out &out, int depth);
+    int decodeGeneve(int off, int end, Out &out, int depth);
+    int decodeCapwap(int off, int end, bool dataChannel, Out &out,
+                     int depth);
+    int decodeGtpu(int off, int end, Out &out, int depth);
+    int decodeDns(int off, int end, Out &out);
+    int decodeDhcp(int off, int end, Out &out);
+
+    void addData(int off, int len, const QString &name, Out &out);
+    DecodedField header(const QString &name, int off, int len,
+                        const QString &value = QString());
+    QString dnsName(int off, int msgStart, int end, int *next) const;
 
     DecodedField uintField(const QString &name, int off, int len,
                            quint64 mask = 0, int shift = 0,
@@ -120,6 +157,7 @@ private:
     bool has(int off, int len) const {
         return off >= 0 && len >= 0 && off + len <= pkt_.size();
     }
+    static const int kMaxDepth = 6;
     quint32 u8(int off) const { return quint8(pkt_.at(off)); }
     quint32 u16(int off) const { return (u8(off) << 8) | u8(off + 1); }
     quint32 u32(int off) const { return (u16(off) << 16) | u16(off + 2); }
