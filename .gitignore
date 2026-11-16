@@ -41,3 +41,5 @@ cscope.out
 target_wrapper.sh
 win/tests/build/
 wireless/packs/
+wireless/dist/
+win/tools/*.exe

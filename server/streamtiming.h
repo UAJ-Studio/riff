@@ -29,6 +29,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QTimer>
 
 #include <time.h>
+#ifndef Q_OS_WIN32
+#include <sys/time.h> // struct timeval (musl does not pull it in via time.h)
+#endif
 
 class StreamTiming : public QObject
 {

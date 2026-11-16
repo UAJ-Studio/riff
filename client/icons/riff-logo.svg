@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Riff application icon (original artwork for Riff).
+     A guitar pick ("riff") carrying three packets (header + payload)
+     that stream towards the tip. Source for logo.png / logo.ico / about.png. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="pick" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF7A59"/>
+      <stop offset="1" stop-color="#FFB547"/>
+    </linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2A303A"/>
+      <stop offset="1" stop-color="#171A20"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="54" fill="url(#bg)"/>
+  <path d="M128 230 C 96 200, 38 142, 38 94 C 38 52, 82 30, 128 30
+           C 174 30, 218 52, 218 94 C 218 142, 160 200, 128 230 Z"
+        fill="url(#pick)"/>
+  <g fill="#171A20">
+    <rect x="66"  y="74"  width="22" height="20" rx="6"/>
+    <rect x="80"  y="108" width="20" height="20" rx="6"/>
+    <rect x="96"  y="142" width="18" height="20" rx="6"/>
+  </g>
+  <g fill="#FFFFFF">
+    <rect x="94"  y="74"  width="96" height="20" rx="6"/>
+    <rect x="106" y="108" width="70" height="20" rx="6"/>
+    <rect x="120" y="142" width="40" height="20" rx="6"/>
+  </g>
+</svg>
