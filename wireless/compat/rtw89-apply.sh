@@ -16,6 +16,19 @@ sed -i '1a ccflags-y += -include $(src)/wificap-compat.h' "$R/Makefile"
 sed -i '/^static void rtw89_core_update_radiotap_vht(/,/^}/ s/if (!phy_ppdu)/if (1 || !phy_ppdu)/' "$R/core.c"
 grep -q 'if (1 || !phy_ppdu)' "$R/core.c" || { echo "VHT radiotap patch failed"; exit 1; }
 
+# Riff: do not switch USB 2 connected dongles to USB 3 mode by default
+# (module parameter switch_usb_mode, like morrownr's out-of-tree rtw89).
+# The switch rewrites R_AX_PAD_CTRL2 with a "keep across power down" bit and
+# makes the dongle re-enumerate; handed back to Windows in that state, the
+# Realtek Windows driver (rtwlanu6.sys) mis-initialises it and later
+# double-frees pool memory - a Windows crash (BAD_POOL_HEADER 0x19/0x22).
+U2=$R/usb.c
+if ! grep -q 'switch_usb_mode' "$U2"; then
+    sed -i '0,/^static int rtw89_usb_switch_mode(struct rtw89_dev \*rtwdev)$/s//static bool rtw89_switch_usb_mode;\nmodule_param_named(switch_usb_mode, rtw89_switch_usb_mode, bool, 0644);\nMODULE_PARM_DESC(switch_usb_mode,\n\t\t "Switch USB 2 connected dongles to USB 3 mode (default: N in Riff, see wireless\/README.md)");\n\n&/' "$U2"
+    perl -0pi -e 's/(static int rtw89_usb_switch_mode\(struct rtw89_dev \*rtwdev\)\n\{\n\tstruct rtw89_usb \*rtwusb = rtw89_usb_priv\(rtwdev\);\n)/$1\n\tif (!rtw89_switch_usb_mode)\n\t\treturn 0;\n/' "$U2"
+fi
+grep -q 'if (!rtw89_switch_usb_mode)' "$U2" || { echo "USB mode switch patch failed"; exit 1; }
+
 # Backport __ieee80211_iterate_stations() (used by for_each_station()).
 U=$K/net/mac80211/util.c
 H=$K/include/net/mac80211.h
