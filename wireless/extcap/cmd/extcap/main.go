@@ -176,6 +176,17 @@ func capture(args map[string]string) error {
 	if country == "" {
 		country = "JP"
 	}
+	// Riff's "Live Capture" button leaves one-shot settings per dongle
+	if f, w, c, ok := riffRequest(args["extcap-interface"]); ok {
+		log.Printf("settings from Riff: %d MHz, %d MHz wide, country %q", f, w, c)
+		freq = f
+		if w > 0 {
+			width = w
+		}
+		if c != "" {
+			country = c
+		}
+	}
 	ch, err := wifi.FromFreq(freq)
 	if err != nil {
 		return err
@@ -423,4 +434,44 @@ func checkDistro() error {
 		}
 	}
 	return fmt.Errorf("Riff の無線環境 (%s) がありません。Riff の「ツール ＞ 無線ドングル」でセットアップしてください", common.DistroName)
+}
+
+// riffRequest reads the settings Riff writes just before it starts
+// Wireshark for this interface (Tools > Wireless Dongle > Live Capture):
+// %LOCALAPPDATA%\Riff\capture-requests\<interface>.txt with lines
+// "freq=5180", "width=20", "country=JP". The file is used once and must be
+// recent, so captures started later from Wireshark itself use Wireshark's
+// own interface options again.
+func riffRequest(iface string) (freq, width int, country string, ok bool) {
+	if iface == "" {
+		return
+	}
+	p := filepath.Join(common.DataDir(), "capture-requests", iface+".txt")
+	fi, err := os.Stat(p)
+	if err != nil {
+		return
+	}
+	defer os.Remove(p)
+	if time.Since(fi.ModTime()) > 2*time.Minute {
+		return
+	}
+	b, err := os.ReadFile(p)
+	if err != nil {
+		return
+	}
+	for _, l := range strings.Split(string(b), "\n") {
+		k, v, found := strings.Cut(strings.TrimSpace(l), "=")
+		if !found {
+			continue
+		}
+		switch k {
+		case "freq":
+			freq, _ = strconv.Atoi(v)
+		case "width":
+			width, _ = strconv.Atoi(v)
+		case "country":
+			country = strings.ToUpper(strings.TrimSpace(v))
+		}
+	}
+	return freq, width, country, freq > 0
 }

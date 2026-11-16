@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "wirelessmanager.h"
 
 #include <QApplication>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDateTime>
 #include <QDialogButtonBox>
@@ -42,6 +43,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 static const char *kWirelessCountryKey = "Wireless/Country";
 static const char *kWirelessChannelKey = "Wireless/Channel";
 static const char *kWirelessBusIdsKey = "Wireless/BusIds";
+static const char *kWirelessOneWindowKey = "Wireless/CaptureOneWindow";
+// per dongle: "Wireless/Capture/<vid_pid_bus>" = "checked,freq,width"
+static const char *kWirelessCapturePrefix = "Wireless/Capture/";
 
 WirelessDialog::WirelessDialog(WirelessManager *manager, QWidget *parent)
     : QDialog(parent), manager_(manager),
@@ -49,7 +53,7 @@ WirelessDialog::WirelessDialog(WirelessManager *manager, QWidget *parent)
       wiresharkOk_(false)
 {
     setWindowTitle(tr("Wireless Dongle"));
-    resize(720, 640);
+    resize(760, 780);
 
     QVBoxLayout *top = new QVBoxLayout(this);
 
@@ -143,16 +147,37 @@ WirelessDialog::WirelessDialog(WirelessManager *manager, QWidget *parent)
 
     // 4. live capture in Wireshark (extcap)
     QGroupBox *cg = new QGroupBox(tr("4. Live capture (Wireshark)"));
-    QHBoxLayout *ch4 = new QHBoxLayout(cg);
+    QVBoxLayout *cv = new QVBoxLayout(cg);
+    capList_ = new QTreeWidget;
+    capList_->setRootIsDecorated(false);
+    capList_->setHeaderLabels({tr("Capture"), tr("Bus ID"), tr("Device"),
+                               tr("Channel"), tr("Width")});
+    capList_->header()->setStretchLastSection(false);
+    capList_->header()->setSectionResizeMode(2, QHeaderView::Stretch);
+    capList_->setMinimumHeight(70);
+    capList_->setToolTip(tr("Each supported dongle can capture a different "
+            "channel at the same time. A dongle that is also transmitting "
+            "is retuned to the capture channel."));
+    cv->addWidget(capList_);
+    QHBoxLayout *ch4 = new QHBoxLayout;
     captureStatus_ = new QLabel;
     captureStatus_->setWordWrap(true);
+    oneWindow_ = new QCheckBox(tr("Show in one Wireshark window"));
+    oneWindow_->setToolTip(tr("On: all checked dongles in one Wireshark "
+            "window (frames merged; the interface column tells them apart). "
+            "Off: one Wireshark window per dongle."));
+    oneWindow_->setChecked(appSettings->value(kWirelessOneWindowKey,
+                                              true).toBool());
     captureButton_ = new QPushButton(tr("Live Capture in Wireshark"));
     captureButton_->setToolTip(tr("Opens Wireshark capturing live from the "
-            "checked dongle. In Wireshark the dongle is also listed as "
-            "\"Wi-Fi monitor: ...\" - choose the channel with the gear "
-            "icon next to it. Works with or without the transmit agent."));
+            "checked dongles on the chosen channels. In Wireshark each "
+            "dongle is also listed as \"Wi-Fi monitor: ...\" (channel: the "
+            "gear icon next to it). Works with or without the transmit "
+            "agent."));
     ch4->addWidget(captureStatus_, 1);
+    ch4->addWidget(oneWindow_);
     ch4->addWidget(captureButton_);
+    cv->addLayout(ch4);
     top->addWidget(cg);
 
     log_ = new QPlainTextEdit;
@@ -176,6 +201,8 @@ WirelessDialog::WirelessDialog(WirelessManager *manager, QWidget *parent)
     connect(installButton_, &QPushButton::clicked, this, &WirelessDialog::onInstall);
     connect(startButton_, &QPushButton::clicked, this, &WirelessDialog::onStartStop);
     connect(captureButton_, &QPushButton::clicked, this, &WirelessDialog::onLiveCapture);
+    connect(oneWindow_, &QCheckBox::toggled, this, &WirelessDialog::saveCaptureSettings);
+    connect(capList_, &QTreeWidget::itemChanged, this, &WirelessDialog::saveCaptureSettings);
     connect(channel_, static_cast<void (QComboBox::*)(int)>(
                 &QComboBox::currentIndexChanged),
             this, &WirelessDialog::onChannelChanged);
@@ -272,6 +299,10 @@ void WirelessDialog::refresh()
         for (int c = 0; c < devices_->columnCount(); c++)
             if (c != 2)
                 devices_->resizeColumnToContents(c);
+        fillCaptureList(list);
+    }
+    else {
+        fillCaptureList(QList<WirelessManager::UsbDevice>());
     }
     // Wireshark + the Riff Wi-Fi extcap (installed/updated automatically)
     wiresharkOk_ = !manager_->wiresharkPath().isEmpty();
@@ -323,6 +354,7 @@ void WirelessDialog::updateButtons()
     country_->setEnabled(idle);
     captureButton_->setEnabled(wslOk_ && usbipdOk_ && distroOk_
                                && wiresharkOk_);
+    capList_->setEnabled(wslOk_ && usbipdOk_ && distroOk_);
 }
 
 void WirelessDialog::onInstall()
@@ -405,26 +437,118 @@ void WirelessDialog::onNeedRebuild(QString kernel)
            .arg(kernel));
 }
 
+// Channel list for capture: 2.4, 5 and 6 GHz control channels (the dongle
+// and the country decide what actually works; the extcap reports it)
+static void fillChannels(QComboBox *box)
+{
+    for (int c = 1; c <= 14; c++)
+        box->addItem(QString("2.4 GHz  ch %1  (%2 MHz)").arg(c)
+                     .arg(c == 14 ? 2484 : 2407 + 5 * c),
+                     c == 14 ? 2484 : 2407 + 5 * c);
+    const int ch5[] = {36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112,
+                       116, 120, 124, 128, 132, 136, 140, 144, 149, 153,
+                       157, 161, 165, 169, 173, 177};
+    for (int c : ch5)
+        box->addItem(QString("5 GHz  ch %1  (%2 MHz)").arg(c).arg(5000 + 5 * c),
+                     5000 + 5 * c);
+    for (int c = 1; c <= 233; c += 4)
+        box->addItem(QString("6 GHz  ch %1  (%2 MHz)").arg(c).arg(5950 + 5 * c),
+                     5950 + 5 * c);
+}
+
+static QString captureKey(const WirelessManager::UsbDevice &d)
+{
+    return QString(kWirelessCapturePrefix)
+            + WirelessManager::captureInterface(d);
+}
+
+void WirelessDialog::fillCaptureList(
+        const QList<WirelessManager::UsbDevice> &list)
+{
+    capList_->clear();
+    int row = 0;
+    foreach (const WirelessManager::UsbDevice &d, list) {
+        if (d.driver.isEmpty())
+            continue;   // supported dongles only
+        // "checked,freq,width" - default: first dongle on, 5 GHz ch 36
+        QStringList s = appSettings->value(captureKey(d),
+                QString("%1,5180,20").arg(row == 0 ? 1 : 0)).toString()
+                .split(',');
+        QTreeWidgetItem *it = new QTreeWidgetItem(capList_);
+        it->setCheckState(0, s.value(0) == "1" ? Qt::Checked : Qt::Unchecked);
+        it->setText(1, d.busId);
+        it->setText(2, d.name);
+        it->setToolTip(2, d.vidPid);
+        it->setData(0, Qt::UserRole, d.driver);
+
+        QComboBox *ch = new QComboBox;
+        fillChannels(ch);
+        int ci = ch->findData(s.value(1).toInt());
+        ch->setCurrentIndex(ci < 0 ? ch->findData(5180) : ci);
+        QComboBox *w = new QComboBox;
+        for (int mhz : {20, 40, 80, 160, 320})
+            w->addItem(QString("%1 MHz").arg(mhz), mhz);
+        int wi = w->findData(s.value(2).toInt());
+        w->setCurrentIndex(wi < 0 ? 0 : wi);
+        capList_->setItemWidget(it, 3, ch);
+        capList_->setItemWidget(it, 4, w);
+        connect(ch, static_cast<void (QComboBox::*)(int)>(
+                    &QComboBox::currentIndexChanged),
+                this, &WirelessDialog::saveCaptureSettings);
+        connect(w, static_cast<void (QComboBox::*)(int)>(
+                    &QComboBox::currentIndexChanged),
+                this, &WirelessDialog::saveCaptureSettings);
+        row++;
+    }
+    for (int c : {0, 1, 3, 4})
+        capList_->resizeColumnToContents(c);
+}
+
+void WirelessDialog::saveCaptureSettings()
+{
+    for (int i = 0; i < capList_->topLevelItemCount(); i++) {
+        QTreeWidgetItem *it = capList_->topLevelItem(i);
+        WirelessManager::UsbDevice d;
+        d.busId = it->text(1);
+        d.vidPid = it->toolTip(2);
+        QComboBox *ch = qobject_cast<QComboBox*>(capList_->itemWidget(it, 3));
+        QComboBox *w = qobject_cast<QComboBox*>(capList_->itemWidget(it, 4));
+        if (!ch || !w)
+            continue;
+        appSettings->setValue(captureKey(d), QString("%1,%2,%3")
+                .arg(it->checkState(0) == Qt::Checked ? 1 : 0)
+                .arg(ch->currentData().toInt())
+                .arg(w->currentData().toInt()));
+    }
+    appSettings->setValue(kWirelessOneWindowKey, oneWindow_->isChecked());
+}
+
 void WirelessDialog::onLiveCapture()
 {
-    // the first checked supported dongle
-    WirelessManager::UsbDevice dev;
-    for (int i = 0; i < devices_->topLevelItemCount(); i++) {
-        QTreeWidgetItem *it = devices_->topLevelItem(i);
-        if (it->checkState(0) != Qt::Checked
-                || it->text(3) == tr("Not supported"))
+    QList<WirelessManager::CaptureTarget> targets;
+    for (int i = 0; i < capList_->topLevelItemCount(); i++) {
+        QTreeWidgetItem *it = capList_->topLevelItem(i);
+        if (it->checkState(0) != Qt::Checked)
             continue;
-        dev.busId = it->text(1);
-        dev.name = it->text(2);
-        dev.vidPid = it->toolTip(2);
-        break;
+        QComboBox *ch = qobject_cast<QComboBox*>(capList_->itemWidget(it, 3));
+        QComboBox *w = qobject_cast<QComboBox*>(capList_->itemWidget(it, 4));
+        WirelessManager::CaptureTarget t;
+        t.dev.busId = it->text(1);
+        t.dev.name = it->text(2);
+        t.dev.vidPid = it->toolTip(2);
+        t.freq = ch ? ch->currentData().toInt() : 5180;
+        t.width = w ? w->currentData().toInt() : 20;
+        targets << t;
     }
-    if (dev.busId.isEmpty()) {
+    if (targets.isEmpty()) {
         QMessageBox::information(this, windowTitle(),
-                tr("Check a supported dongle in the list first."));
+                tr("Check at least one dongle in the capture list."));
         return;
     }
+    saveCaptureSettings();
     QString err;
-    if (!manager_->startLiveCapture(dev, &err))
+    if (!manager_->startLiveCapture(targets,
+                                    country_->currentData().toString(),
+                                    oneWindow_->isChecked(), &err))
         QMessageBox::warning(this, windowTitle(), err);
 }

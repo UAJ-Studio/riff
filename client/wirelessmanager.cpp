@@ -114,7 +114,17 @@ bool WirelessManager::installExtcap(QString *error)
     return true;
 }
 
-bool WirelessManager::startLiveCapture(const UsbDevice &dev, QString *error)
+// the extcap names its interfaces riffwifi_<vid>_<pid>_<bus>_<port>
+QString WirelessManager::captureInterface(const UsbDevice &dev)
+{
+    return QString("riffwifi_%1_%2")
+            .arg(QString(dev.vidPid).replace(':', '_'),
+                 QString(dev.busId).replace('-', '_').replace('.', '_'));
+}
+
+bool WirelessManager::startLiveCapture(const QList<CaptureTarget> &targets,
+                                       const QString &country, bool oneWindow,
+                                       QString *error)
 {
     QString ws = wiresharkPath();
     if (ws.isEmpty()) {
@@ -123,21 +133,57 @@ bool WirelessManager::startLiveCapture(const UsbDevice &dev, QString *error)
                         "its location in Edit > Preferences.");
         return false;
     }
-    if (!installExtcap(error))
-        return false;
-    // the extcap names its interfaces riffwifi_<vid>_<pid>_<bus>_<port>
-    QString iface = QString("riffwifi_%1_%2")
-            .arg(QString(dev.vidPid).replace(':', '_'),
-                 QString(dev.busId).replace('-', '_').replace('.', '_'));
-    if (!QProcess::startDetached(ws, {"-i", iface, "-k"})) {
+    if (targets.isEmpty()) {
         if (error)
-            *error = tr("Could not start Wireshark.");
+            *error = tr("Check at least one dongle to capture from.");
         return false;
     }
-    emit message(tr("Started Wireshark live capture on USB %1 (%2). The "
-                    "channel is set in Wireshark: Capture > Options > the "
-                    "gear icon of the interface.").arg(dev.busId, dev.name),
-                 false);
+    if (!installExtcap(error))
+        return false;
+
+    // one-shot settings for each interface, read by the extcap when the
+    // capture starts (see riffRequest() in wireless/extcap)
+    QDir reqDir(QDir(qEnvironmentVariable("LOCALAPPDATA"))
+                    .filePath("Riff/capture-requests"));
+    reqDir.mkpath(".");
+    QStringList ifaces;
+    foreach (const CaptureTarget &t, targets) {
+        QString iface = captureInterface(t.dev);
+        QFile f(reqDir.filePath(iface + ".txt"));
+        if (f.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+            QTextStream ts(&f);
+            ts << "freq=" << t.freq << "\nwidth=" << t.width
+               << "\ncountry=" << country << "\n";
+        }
+        ifaces << iface;
+        emit message(tr("Live capture: USB %1 (%2) on %3 MHz, %4 MHz wide.")
+                        .arg(t.dev.busId, t.dev.name).arg(t.freq).arg(t.width),
+                     false);
+    }
+
+    QList<QStringList> launches;
+    if (oneWindow) {
+        QStringList args;
+        foreach (const QString &i, ifaces)
+            args << "-i" << i;
+        launches << (args << "-k");
+    }
+    else {
+        foreach (const QString &i, ifaces)
+            launches << QStringList({"-i", i, "-k"});
+    }
+    foreach (const QStringList &args, launches) {
+        if (!QProcess::startDetached(ws, args)) {
+            if (error)
+                *error = tr("Could not start Wireshark.");
+            return false;
+        }
+    }
+    emit message(oneWindow
+        ? tr("Started Wireshark with %n dongle(s) in one window.", "",
+             targets.size())
+        : tr("Started %n Wireshark window(s), one per dongle.", "",
+             targets.size()), false);
     return true;
 }
 

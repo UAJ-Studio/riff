@@ -88,3 +88,15 @@ Wireshark was not found. Install Wireshark, or set its location in Edit > Prefer
 Could not start Wireshark.	Wiresharkを起動できませんでした。
 Started Wireshark live capture on USB %1 (%2). The channel is set in Wireshark: Capture > Options > the gear icon of the interface.	USB %1（%2）でWiresharkのライブキャプチャを開始しました。チャンネルはWiresharkの「キャプチャ ＞ オプション」で、インターフェースの歯車アイコンから設定します。
 A Wireshark live capture is running: the dongle stays connected to WSL for it.	Wiresharkのライブキャプチャ中のため、ドングルはWSLにつないだままにします。
+Capture	キャプチャ
+Width	帯域幅
+Each supported dongle can capture a different channel at the same time. A dongle that is also transmitting is retuned to the capture channel.	対応ドングルごとに、別々のチャンネルを同時にキャプチャーできます。送信にも使っているドングルは、キャプチャーのチャンネルに切り替わります。
+Show in one Wireshark window	1つのWiresharkウィンドウにまとめて表示
+On: all checked dongles in one Wireshark window (frames merged; the interface column tells them apart). Off: one Wireshark window per dongle.	オン：チェックしたドングルをすべて1つのWiresharkウィンドウに表示します（フレームはまとめて表示され、どのドングルで受信したかはインターフェースの列で分かります）。オフ：ドングルごとに別のWiresharkウィンドウを開きます。
+Opens Wireshark capturing live from the checked dongles on the chosen channels. In Wireshark each dongle is also listed as "Wi-Fi monitor: ..." (channel: the gear icon next to it). Works with or without the transmit agent.	チェックしたドングルで、選んだチャンネルのキャプチャーを始めた状態のWiresharkを開きます。Wiresharkのインターフェース一覧にも、各ドングルが「Wi-Fi monitor: …」として表示されます（チャンネルは横の歯車アイコンで設定）。送信用エージェントを動かしていてもいなくても使えます。
+Check at least one dongle to capture from.	キャプチャーするドングルを1つ以上チェックしてください。
+Live capture: USB %1 (%2) on %3 MHz, %4 MHz wide.	ライブキャプチャ: USB %1（%2）、%3 MHz、帯域幅 %4 MHz
+Started Wireshark with %n dongle(s) in one window.	%n 本のドングルを1つのウィンドウにまとめてWiresharkを起動しました。
+Started %n Wireshark window(s), one per dongle.	ドングルごとに %n 個のWiresharkウィンドウを起動しました。
+Check at least one dongle in the capture list.	キャプチャーの一覧でドングルを1つ以上チェックしてください。
+Channel	チャンネル

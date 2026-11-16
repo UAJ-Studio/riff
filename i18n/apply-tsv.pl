@@ -14,9 +14,15 @@ while (<$t>) { chomp; s/\r$//; next unless /\t/; my ($k, $v) = split /\t/, $_, 2
 close $t;
 open(my $f, '<', $ts) or die "$ts: $!"; local $/; my $x = <$f>; close $f;
 my ($done, $left) = (0, 0);
-$x =~ s{(<message>(?:(?!</message>).)*?<source>((?:(?!</message>).)*?)</source>(?:(?!</message>).)*?)<translation type="unfinished">((?:(?!</message>).)*?)</translation>}{
+$x =~ s{(<message[^>]*>(?:(?!</message>).)*?<source>((?:(?!</message>).)*?)</source>(?:(?!</message>).)*?)<translation type="unfinished">((?:(?!</message>).)*?)</translation>}{
     my ($pre, $src) = ($1, unesc($2));
-    if (exists $tr{$src}) { $done++; $pre . '<translation>' . esc($tr{$src}) . '</translation>' }
+    if (exists $tr{$src}) {
+        $done++;
+        my $t = esc($tr{$src});
+        # numerus messages: one form in Japanese
+        $t = "<numerusform>$t</numerusform>" if $pre =~ /numerus="yes"/;
+        $pre . '<translation>' . $t . '</translation>'
+    }
     else { $left++; $& }
 }gse;
 open($f, '>', $ts) or die; print $f $x; close $f;

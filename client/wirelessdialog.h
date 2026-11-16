@@ -22,12 +22,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include <QDialog>
 
+class QCheckBox;
 class QComboBox;
 class QLabel;
 class QPlainTextEdit;
 class QPushButton;
 class QTreeWidget;
-class WirelessManager;
+#include "wirelessmanager.h"
 
 // Tools > Wireless dongle: set up and run USB Wi-Fi dongles through WSL
 class WirelessDialog : public QDialog
@@ -50,6 +51,8 @@ private slots:
 
 private:
     void setCheck(QLabel *label, bool ok, const QString &text);
+    void fillCaptureList(const QList<WirelessManager::UsbDevice> &list);
+    void saveCaptureSettings();
     void updateButtons();
 
     WirelessManager *manager_;
@@ -62,6 +65,8 @@ private:
     QComboBox *channel_;
     QPushButton *startButton_;
     QPushButton *refreshButton_;
+    QTreeWidget *capList_;
+    QCheckBox *oneWindow_;
     QLabel *captureStatus_;
     QPushButton *captureButton_;
     QPlainTextEdit *log_;

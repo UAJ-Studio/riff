@@ -5087,7 +5087,7 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     </message>
     <message>
         <source>Opens Wireshark capturing live from the checked dongle. In Wireshark the dongle is also listed as &quot;Wi-Fi monitor: ...&quot; - choose the channel with the gear icon next to it. Works with or without the transmit agent.</source>
-        <translation>チェックしたドングルでキャプチャーを始めた状態のWiresharkを開きます。Wiresharkのインターフェース一覧にも「Wi-Fi monitor: …」として表示されます。チャンネルは、その横の歯車アイコンで選びます。送信用エージェントを動かしていてもいなくても使えます。</translation>
+        <translation type="vanished">チェックしたドングルでキャプチャーを始めた状態のWiresharkを開きます。Wiresharkのインターフェース一覧にも「Wi-Fi monitor: …」として表示されます。チャンネルは、その横の歯車アイコンで選びます。送信用エージェントを動かしていてもいなくても使えます。</translation>
     </message>
     <message>
         <source>Wireshark was not found. Install it (or set its location in Edit &gt; Preferences) to capture live.</source>
@@ -5099,7 +5099,39 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     </message>
     <message>
         <source>Check a supported dongle in the list first.</source>
-        <translation>先に一覧で対応ドングルにチェックを入れてください。</translation>
+        <translation type="vanished">先に一覧で対応ドングルにチェックを入れてください。</translation>
+    </message>
+    <message>
+        <source>Capture</source>
+        <translation>キャプチャ</translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation>チャンネル</translation>
+    </message>
+    <message>
+        <source>Width</source>
+        <translation>帯域幅</translation>
+    </message>
+    <message>
+        <source>Each supported dongle can capture a different channel at the same time. A dongle that is also transmitting is retuned to the capture channel.</source>
+        <translation>対応ドングルごとに、別々のチャンネルを同時にキャプチャーできます。送信にも使っているドングルは、キャプチャーのチャンネルに切り替わります。</translation>
+    </message>
+    <message>
+        <source>Show in one Wireshark window</source>
+        <translation>1つのWiresharkウィンドウにまとめて表示</translation>
+    </message>
+    <message>
+        <source>On: all checked dongles in one Wireshark window (frames merged; the interface column tells them apart). Off: one Wireshark window per dongle.</source>
+        <translation>オン：チェックしたドングルをすべて1つのWiresharkウィンドウに表示します（フレームはまとめて表示され、どのドングルで受信したかはインターフェースの列で分かります）。オフ：ドングルごとに別のWiresharkウィンドウを開きます。</translation>
+    </message>
+    <message>
+        <source>Opens Wireshark capturing live from the checked dongles on the chosen channels. In Wireshark each dongle is also listed as &quot;Wi-Fi monitor: ...&quot; (channel: the gear icon next to it). Works with or without the transmit agent.</source>
+        <translation>チェックしたドングルで、選んだチャンネルのキャプチャーを始めた状態のWiresharkを開きます。Wiresharkのインターフェース一覧にも、各ドングルが「Wi-Fi monitor: …」として表示されます（チャンネルは横の歯車アイコンで設定）。送信用エージェントを動かしていてもいなくても使えます。</translation>
+    </message>
+    <message>
+        <source>Check at least one dongle in the capture list.</source>
+        <translation>キャプチャーの一覧でドングルを1つ以上チェックしてください。</translation>
     </message>
 </context>
 <context>
@@ -5234,11 +5266,27 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     </message>
     <message>
         <source>Started Wireshark live capture on USB %1 (%2). The channel is set in Wireshark: Capture &gt; Options &gt; the gear icon of the interface.</source>
-        <translation>USB %1（%2）でWiresharkのライブキャプチャを開始しました。チャンネルはWiresharkの「キャプチャ ＞ オプション」で、インターフェースの歯車アイコンから設定します。</translation>
+        <translation type="vanished">USB %1（%2）でWiresharkのライブキャプチャを開始しました。チャンネルはWiresharkの「キャプチャ ＞ オプション」で、インターフェースの歯車アイコンから設定します。</translation>
     </message>
     <message>
         <source>A Wireshark live capture is running: the dongle stays connected to WSL for it.</source>
         <translation>Wiresharkのライブキャプチャ中のため、ドングルはWSLにつないだままにします。</translation>
+    </message>
+    <message>
+        <source>Check at least one dongle to capture from.</source>
+        <translation>キャプチャーするドングルを1つ以上チェックしてください。</translation>
+    </message>
+    <message>
+        <source>Live capture: USB %1 (%2) on %3 MHz, %4 MHz wide.</source>
+        <translation>ライブキャプチャ: USB %1（%2）、%3 MHz、帯域幅 %4 MHz</translation>
+    </message>
+    <message numerus="yes">
+        <source>Started Wireshark with %n dongle(s) in one window.</source>
+        <translation><numerusform>%n 本のドングルを1つのウィンドウにまとめてWiresharkを起動しました。</numerusform></translation>
+    </message>
+    <message numerus="yes">
+        <source>Started %n Wireshark window(s), one per dongle.</source>
+        <translation><numerusform>ドングルごとに %n 個のWiresharkウィンドウを起動しました。</numerusform></translation>
     </message>
 </context>
 <context>

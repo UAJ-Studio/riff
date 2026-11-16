@@ -71,8 +71,19 @@ public:
     QString extcapTarget() const;
     bool isExtcapCurrent() const;
     bool installExtcap(QString *error = 0);
-    // opens Wireshark capturing live from the given dongle
-    bool startLiveCapture(const UsbDevice &dev, QString *error = 0);
+    // one dongle to capture from, with the channel (control frequency in
+    // MHz) and width it should use
+    struct CaptureTarget {
+        UsbDevice dev;
+        int freq;
+        int width;
+    };
+    static QString captureInterface(const UsbDevice &dev);
+    // opens Wireshark capturing live from the dongles - all in one window
+    // (interfaces merged) or one window per dongle
+    bool startLiveCapture(const QList<CaptureTarget> &targets,
+                          const QString &country, bool oneWindow,
+                          QString *error = 0);
     bool isCaptureRunning();
 
     State state() const { return state_; }
