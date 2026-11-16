@@ -19,7 +19,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "wirelessmanager.h"
 
+#include "settings.h"
+
 #include <QCoreApplication>
+#include <QCryptographicHash>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -47,6 +50,102 @@ WirelessManager::~WirelessManager()
 {
     if (state_ != Idle)
         stop();
+}
+
+// ---- Wireshark live capture (extcap) -------------------------------------
+
+QString WirelessManager::wiresharkPath() const
+{
+    QString p = appSettings->value(kWiresharkPathKey,
+                                   kWiresharkPathDefaultValue).toString();
+    return QFile::exists(p) ? p : QString();
+}
+
+QString WirelessManager::extcapSource() const
+{
+    return QCoreApplication::applicationDirPath()
+            + "/wireless/riff-wifi-extcap.exe";
+}
+
+QString WirelessManager::extcapTarget() const
+{
+    // Wireshark's personal extcap folder: no administrator rights needed
+    QString appData = qEnvironmentVariable("APPDATA");
+    return QDir(appData).filePath("Wireshark/extcap/riff-wifi-extcap.exe");
+}
+
+static QByteArray fileHash(const QString &path)
+{
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly))
+        return QByteArray();
+    QCryptographicHash h(QCryptographicHash::Sha256);
+    h.addData(&f);
+    return h.result();
+}
+
+bool WirelessManager::isExtcapCurrent() const
+{
+    QByteArray src = fileHash(extcapSource());
+    return !src.isEmpty() && src == fileHash(extcapTarget());
+}
+
+bool WirelessManager::installExtcap(QString *error)
+{
+    if (!QFile::exists(extcapSource())) {
+        if (error)
+            *error = tr("The Wireshark plugin file was not found: %1")
+                        .arg(QDir::toNativeSeparators(extcapSource()));
+        return false;
+    }
+    if (isExtcapCurrent())
+        return true;
+    QDir().mkpath(QFileInfo(extcapTarget()).absolutePath());
+    QFile::remove(extcapTarget());
+    if (!QFile::copy(extcapSource(), extcapTarget())) {
+        if (error)
+            *error = tr("Could not copy the Wireshark plugin to %1 (is a "
+                        "capture running in Wireshark?)")
+                        .arg(QDir::toNativeSeparators(extcapTarget()));
+        return false;
+    }
+    emit message(tr("Installed the Wireshark plugin (Riff Wi-Fi capture)."),
+                 false);
+    return true;
+}
+
+bool WirelessManager::startLiveCapture(const UsbDevice &dev, QString *error)
+{
+    QString ws = wiresharkPath();
+    if (ws.isEmpty()) {
+        if (error)
+            *error = tr("Wireshark was not found. Install Wireshark, or set "
+                        "its location in Edit > Preferences.");
+        return false;
+    }
+    if (!installExtcap(error))
+        return false;
+    // the extcap names its interfaces riffwifi_<vid>_<pid>_<bus>_<port>
+    QString iface = QString("riffwifi_%1_%2")
+            .arg(QString(dev.vidPid).replace(':', '_'),
+                 QString(dev.busId).replace('-', '_').replace('.', '_'));
+    if (!QProcess::startDetached(ws, {"-i", iface, "-k"})) {
+        if (error)
+            *error = tr("Could not start Wireshark.");
+        return false;
+    }
+    emit message(tr("Started Wireshark live capture on USB %1 (%2). The "
+                    "channel is set in Wireshark: Capture > Options > the "
+                    "gear icon of the interface.").arg(dev.busId, dev.name),
+                 false);
+    return true;
+}
+
+bool WirelessManager::isCaptureRunning()
+{
+    QString out;
+    return runWsl({"-d", kDistro, "-u", "root", "--", "pgrep", "-x",
+                   "tcpdump"}, &out, 10000) == 0;
 }
 
 // Run a program and wait. Output decoding: wsl.exe prints UTF-8 with
@@ -514,9 +613,18 @@ void WirelessManager::cleanup()
         agent_->deleteLater();
         agent_ = 0;
     }
+    // A Wireshark live capture may still be using the dongle: then leave it
+    // in WSL (the capture hands it back to Windows when it stops)
+    bool capturing = isCaptureRunning();
     QString usbipd = usbipdPath();
-    foreach (QString id, attached_)
-        run(usbipd, {"detach", "--busid", id}, 0, 20000);
+    if (!capturing) {
+        foreach (QString id, attached_)
+            run(usbipd, {"detach", "--busid", id}, 0, 20000);
+    }
+    else {
+        emit message(tr("A Wireshark live capture is running: the dongle "
+                        "stays connected to WSL for it."), false);
+    }
     attached_.clear();
     if (keepAlive_) {
         keepAlive_->kill();
@@ -525,7 +633,8 @@ void WirelessManager::cleanup()
         keepAlive_ = 0;
     }
     // stops only Riff's own distribution
-    runWsl({"--terminate", kDistro}, 0, 20000);
+    if (!capturing)
+        runWsl({"--terminate", kDistro}, 0, 20000);
     agentHost_.clear();
     setState(Idle);
 }

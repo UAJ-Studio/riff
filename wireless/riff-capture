@@ -1,0 +1,177 @@
+#!/bin/sh
+# riff-capture (from WiFiCap's wificap-start): put a USB Wi-Fi adapter into monitor mode on the requested
+# frequency and stream radiotap pcap to stdout.
+#
+# Usage: riff-capture <country> <ctrl_freq_mhz> <width_mhz> <center1_mhz> <busid|-> <opts> [bpf filter...]
+#   busid    Windows-side USB bus id from usbipd, optionally "@vid:pid"
+#            (e.g. 9-2@0b05:1997); "-" = first adapter.
+#            usbipd attaches it with devid = bus<<16 | port, which vhci_hcd
+#            shows in its status table, so we can find exactly that device
+#            even when several identical adapters are attached.
+#   opts     comma list ("-" = none):
+#              release  hand the adapter back to Windows when the capture ends
+#              fcsfail  also deliver frames with bad FCS / PLCP errors (flagged in radiotap)
+# All diagnostics go to stderr; stdout carries only pcap data. Several
+# instances (one per adapter) can run at the same time.
+
+COUNTRY="$1"; FREQ="$2"; WIDTH="$3"; CENTER="$4"; BUSID="$5"; OPTS=",$6,"
+has_opt() { case "$OPTS" in *",$1,"*) return 0;; esac; return 1; }
+shift 6 2>/dev/null
+FILTER="$*"
+VHCI=/sys/devices/platform/vhci_hcd.0
+
+# stdout must carry pcap only: keep it on fd 3 and send everything else
+# (including usage text iw prints on bad arguments) to stderr.
+exec 3>&1 1>&2
+
+T0=$(cut -d' ' -f1 /proc/uptime)
+log() { echo "[riff-capture] +$(awk -v t="$T0" '{printf "%.1f", $1 - t}' /proc/uptime)s $*" >&2; }
+die() { echo "[riff-capture] ERROR: $*" >&2; exit 2; }
+
+[ -n "$FREQ" ] && [ -n "$WIDTH" ] && [ -n "$CENTER" ] || die "usage: riff-capture COUNTRY FREQ WIDTH CENTER BUSID RELEASE [filter]"
+
+# Drivers: built into the kernel or Riff's wireless pack for this kernel
+sh /opt/riff/riff-load.sh "${COUNTRY:-JP}" >&2
+case $? in
+    0) ;;
+    3) die "WSL has been updated (kernel $(uname -r)): open Riff > Tools > Wireless Dongle to rebuild the dongle drivers." ;;
+    *) die "could not load the Wi-Fi drivers" ;;
+esac
+
+# Riff is using the dongle for transmitting: keep it in WSL after the capture
+if pgrep -x riff-agent >/dev/null 2>&1; then
+    OPTS=$(echo "$OPTS" | sed "s/,release,/,/")
+    log "Riff's transmit agent is running: the dongle stays in WSL"
+fi
+
+HWID=""
+case "$BUSID" in *@*) HWID="${BUSID#*@}"; BUSID="${BUSID%%@*}";; esac
+DEVID=""
+if [ -n "$BUSID" ] && [ "$BUSID" != "-" ]; then
+    DEVID=$(printf '%04x%04x' "${BUSID%%-*}" "${BUSID#*-}")
+fi
+
+# usb_dir <phy>: sysfs dir of the USB device behind a wiphy.
+usb_dir() {
+    d=$(readlink -f "/sys/class/ieee80211/$1/device")
+    while [ -n "$d" ] && [ "$d" != "/" ] && [ ! -f "$d/idVendor" ]; do d=$(dirname "$d"); done
+    echo "$d"
+}
+# phy_free <phy>: true if no capture is running on the phy's netdev.
+phy_free() {
+    n=$(ls "/sys/class/ieee80211/$1/device/net/" 2>/dev/null | head -n 1)
+    [ -n "$n" ] && ! pgrep -f "^tcpdump -i $n " >/dev/null
+}
+# local_busid: Linux-side USB bus id (e.g. 1-1) of the device usbipd attached as $DEVID.
+local_busid() {
+    awk -v dev="$DEVID" 'tolower($5) == dev {print $7; exit}' $VHCI/status* 2>/dev/null
+}
+
+# Wait (up to ~40 s) for the adapter to show up after usbipd attaches it and
+# the driver finishes loading its firmware.
+PHY=""
+i=0
+while [ $i -lt 160 ]; do
+    want=""
+    [ -n "$DEVID" ] && want=$(local_busid)
+    if [ -z "$DEVID" ] || [ -n "$want" ]; then
+        for p in /sys/class/ieee80211/*; do
+            [ -e "$p" ] || continue
+            ls "$p/device/net/" 2>/dev/null | grep -q . || continue   # netdev not ready yet
+            if [ -n "$want" ] && [ "$(basename "$(usb_dir "$(basename "$p")")")" != "$want" ]; then
+                continue
+            fi
+            PHY=$(basename "$p"); break
+        done
+    elif [ -n "$HWID" ] && [ $i -ge 32 ]; then
+        # The dongle re-enumerated under another bus id (USB 3 mode switch):
+        # after 8 s, accept an idle adapter of the same model.
+        for p in /sys/class/ieee80211/*; do
+            [ -e "$p" ] || continue
+            ph=$(basename "$p")
+            u=$(usb_dir "$ph")
+            [ "$(cat "$u/idVendor" 2>/dev/null):$(cat "$u/idProduct" 2>/dev/null)" = "$HWID" ] || continue
+            phy_free "$ph" || continue
+            PHY=$ph; log "USB $BUSID not seen; using same model on $(basename "$u")"; break
+        done
+    fi
+    [ -n "$PHY" ] && break
+    i=$((i + 1))
+    sleep 0.25
+done
+[ -n "$PHY" ] || die "Wi-Fi adapter (USB $BUSID) not found in WSL (driver not loaded?). Check that the dongle is supported."
+
+DEV=$(ls "/sys/class/ieee80211/$PHY/device/net/" 2>/dev/null | head -n 1)
+[ -n "$DEV" ] || die "no network interface on $PHY"
+log "using USB $BUSID -> $PHY / $DEV"
+
+# Only one capture at a time per adapter (other adapters keep running).
+pkill -f "^tcpdump -i $DEV " 2>/dev/null && sleep 0.3
+
+if [ -n "$COUNTRY" ] && [ "$COUNTRY" != "00" ] && ! iw reg get 2>/dev/null | grep -q "country $COUNTRY:"; then
+    iw reg set "$COUNTRY" 2>/dev/null || log "warning: could not set regulatory domain $COUNTRY"
+    sleep 0.3
+    log "regulatory domain $COUNTRY"
+fi
+
+# Monitor flags are applied on every start (the adapter may still be in
+# monitor mode from a previous capture with different options).
+MFLAGS="control otherbss"
+has_opt fcsfail && MFLAGS="fcsfail plcpfail $MFLAGS"
+STATE=/run/riff-capture-$DEV.flags
+if [ "$(iw dev "$DEV" info 2>/dev/null | awk '/type/ {print $2}')" != "monitor" ] || [ "$(cat "$STATE" 2>/dev/null)" != "$MFLAGS" ]; then
+    # Bringing the link down/up costs ~5 s on rtw89 USB: only when needed.
+    ip link set dev "$DEV" down 2>/dev/null
+    iw dev "$DEV" set type monitor 2>/dev/null
+    [ "$(iw dev "$DEV" info 2>/dev/null | awk '/type/ {print $2}')" = "monitor" ] || die "adapter/driver refused monitor mode"
+    iw dev "$DEV" set monitor $MFLAGS || log "warning: driver rejected monitor flags: $MFLAGS"
+    echo "$MFLAGS" > "$STATE"
+    log "monitor mode ($MFLAGS)"
+fi
+ip link set dev "$DEV" up || die "could not bring $DEV up"
+log "interface up"
+
+if [ "$WIDTH" = "20" ]; then
+    iw dev "$DEV" set freq "$FREQ" HT20 2>/dev/null || iw dev "$DEV" set freq "$FREQ" 20 "$FREQ" 2>/dev/null || iw dev "$DEV" set freq "$FREQ" \
+        || die "could not tune to $FREQ MHz. The adapter may not support this band/channel (e.g. 6 GHz needs a Wi-Fi 6E/7 adapter), or it is not allowed in country $COUNTRY."
+else
+    iw dev "$DEV" set freq "$FREQ" "$WIDTH" "$CENTER" \
+        || die "could not tune to $FREQ MHz / ${WIDTH} MHz (center $CENTER). The adapter may not support this width, or the channel is not allowed in country $COUNTRY."
+fi
+log "tuned: $(iw dev "$DEV" info 2>/dev/null | grep -i channel | sed 's/^[[:space:]]*//')"
+
+# Hand the adapter back to Windows when this capture ends. Wireshark kills
+# the Windows side on Stop, which kills this session; so the watcher runs in
+# its own session and waits for our PID (tcpdump is exec'd into it).
+if has_opt release; then
+    LBUS=$(basename "$(usb_dir "$PHY")")   # e.g. 1-1 on the vhci bus
+    setsid sh -c '
+        while kill -0 '"$$"' 2>/dev/null; do sleep 0.5; done
+        sleep 0.5
+        pgrep -f "^tcpdump -i '"$DEV"' " >/dev/null && exit 0     # a new capture on this adapter took over
+        port=$(awk -v id='"$LBUS"' "\$7 == id {print \$2 + 0; exit}" '"$VHCI"'/status* 2>/dev/null)
+        [ -n "$port" ] && echo "$port" > '"$VHCI"'/detach
+    ' </dev/null >/dev/null 2>&1 3>&- &
+fi
+
+# Report capture/drop counters every 10 s: tcpdump prints them to stderr on
+# SIGUSR1 (Wireshark's Stop kills us before tcpdump can print final stats).
+setsid sh -c '
+    sleep 10
+    while kill -USR1 '"$$"' 2>/dev/null; do sleep 10; done
+' </dev/null >/dev/null 2>&1 3>&- &
+
+# -B: 64 MiB socket buffer. No --immediate-mode: in immediate mode libpcap uses
+# TPACKET_V2, whose ring slots are snaplen-sized (~256 KiB), so 64 MiB held
+# only ~250 frames and a brief Windows-side stall dropped frames. TPACKET_V3
+# packs frames densely (tens of thousands fit); -U still flushes each block.
+# Trade-off: on a quiet channel frames reach Wireshark up to ~1 s later.
+# (Old note follows.)
+# were dropped on a busy 80 MHz channel; 64 MiB measured 0 drops.
+BUF=65536
+if [ -n "$FILTER" ]; then
+    set -f  # no globbing of the BPF expression
+    exec tcpdump -i "$DEV" -y IEEE802_11_RADIO -U -s 0 -B $BUF -w - $FILTER >&3 3>&-
+else
+    exec tcpdump -i "$DEV" -y IEEE802_11_RADIO -U -s 0 -B $BUF -w - >&3 3>&-
+fi

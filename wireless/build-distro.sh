@@ -60,7 +60,7 @@ fi
 
 echo "== [2/3] runtime root"
 R=$WORK/riffwireless-root; mkroot $R
-inroot $R "apk add -q --no-cache qt5-qtbase qt5-qtscript libpcap libnl3 iw kmod zstd tar && rm -rf /var/cache/apk/*"
+inroot $R "apk add -q --no-cache qt5-qtbase qt5-qtscript libpcap libnl3 iw kmod zstd tar tcpdump && rm -rf /var/cache/apk/*"
 install -m755 "$AGENT" $R/usr/local/bin/riff-agent
 # portable-mode ini next to the binary: only show the Wi-Fi dongle(s) in Riff
 cat > $R/usr/local/bin/riff-agent.ini <<'INI'
@@ -68,7 +68,8 @@ cat > $R/usr/local/bin/riff-agent.ini <<'INI'
 Include=wlan*
 INI
 install -d $R/opt/riff/packs
-install -m755 "$HERE/riff-start.sh" "$HERE/riff-channel.sh" $R/opt/riff/
+install -m755 "$HERE/riff-start.sh" "$HERE/riff-channel.sh" "$HERE/riff-load.sh" \
+               "$HERE/riff-capture" $R/opt/riff/
 cp "$HERE"/packs/riff-wifi-*.tar.zst $R/opt/riff/packs/ 2>/dev/null || echo "   (no packs in $HERE/packs yet)"
 # supported USB IDs for the Windows side (same driver set in every pack)
 P1=$(ls "$HERE"/packs/riff-wifi-*.tar.zst 2>/dev/null | tail -1)
@@ -87,8 +88,10 @@ echo "== [3/3] rootfs tarball"
 rm -f $R/etc/resolv.conf
 # content version: Riff compares the installed distro's /opt/riff/VERSION
 # with the bundled one and offers to update the distro when they differ
-V=$( (cat "$AGENT" "$HERE/riff-start.sh" "$HERE/riff-channel.sh"; \
-      ls -l $R/opt/riff/packs; cat /dev/null) | sha256sum | cut -c1-12)
+V=$( (cat "$AGENT" "$HERE/riff-start.sh" "$HERE/riff-channel.sh" \
+          "$HERE/riff-load.sh" "$HERE/riff-capture"; \
+      ls -l $R/opt/riff/packs; apk_list=$(chroot $R apk info 2>/dev/null); \
+      echo "$apk_list") | sha256sum | cut -c1-12)
 echo "$V" > $R/opt/riff/VERSION
 echo "$V" > "$OUT/riffwireless-version.txt"
 echo "   content version $V"

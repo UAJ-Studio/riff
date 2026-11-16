@@ -64,6 +64,17 @@ public:
 
     QList<UsbDevice> listUsbDevices(QString *error = 0);
 
+    // Wireshark live capture: the Riff Wi-Fi extcap (wireless/riff-wifi-
+    // extcap.exe) goes to Wireshark's personal extcap folder
+    QString wiresharkPath() const;
+    QString extcapSource() const;
+    QString extcapTarget() const;
+    bool isExtcapCurrent() const;
+    bool installExtcap(QString *error = 0);
+    // opens Wireshark capturing live from the given dongle
+    bool startLiveCapture(const UsbDevice &dev, QString *error = 0);
+    bool isCaptureRunning();
+
     State state() const { return state_; }
     QString agentHost() const { return agentHost_; }
 

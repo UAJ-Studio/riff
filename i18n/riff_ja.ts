@@ -4951,7 +4951,7 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     </message>
     <message>
         <source>3. Radio</source>
-        <translation>3. 電波</translation>
+        <translation type="vanished">3. 電波</translation>
     </message>
     <message>
         <source>Japan</source>
@@ -5073,6 +5073,34 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
         <source>Update</source>
         <translation>更新</translation>
     </message>
+    <message>
+        <source>3. Transmit (use the dongle as a Riff port)</source>
+        <translation>3. 送信（ドングルをRiffのポートとして使う）</translation>
+    </message>
+    <message>
+        <source>4. Live capture (Wireshark)</source>
+        <translation>4. ライブキャプチャ（Wireshark）</translation>
+    </message>
+    <message>
+        <source>Live Capture in Wireshark</source>
+        <translation>Wiresharkでライブキャプチャ</translation>
+    </message>
+    <message>
+        <source>Opens Wireshark capturing live from the checked dongle. In Wireshark the dongle is also listed as &quot;Wi-Fi monitor: ...&quot; - choose the channel with the gear icon next to it. Works with or without the transmit agent.</source>
+        <translation>チェックしたドングルでキャプチャーを始めた状態のWiresharkを開きます。Wiresharkのインターフェース一覧にも「Wi-Fi monitor: …」として表示されます。チャンネルは、その横の歯車アイコンで選びます。送信用エージェントを動かしていてもいなくても使えます。</translation>
+    </message>
+    <message>
+        <source>Wireshark was not found. Install it (or set its location in Edit &gt; Preferences) to capture live.</source>
+        <translation>Wiresharkが見つかりません。ライブキャプチャにはWiresharkをインストールしてください（場所は「編集 ＞ 設定」で変更できます）。</translation>
+    </message>
+    <message>
+        <source>Ready. In Wireshark the dongle is listed as &quot;Wi-Fi monitor: ...&quot; too.</source>
+        <translation>準備完了。Wiresharkのインターフェース一覧にも「Wi-Fi monitor: …」として表示されます。</translation>
+    </message>
+    <message>
+        <source>Check a supported dongle in the list first.</source>
+        <translation>先に一覧で対応ドングルにチェックを入れてください。</translation>
+    </message>
 </context>
 <context>
     <name>WirelessManager</name>
@@ -5183,6 +5211,34 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     <message>
         <source>Removing the old wireless environment ...</source>
         <translation>古い無線環境を削除しています...</translation>
+    </message>
+    <message>
+        <source>The Wireshark plugin file was not found: %1</source>
+        <translation>Wireshark用プラグインのファイルが見つかりません: %1</translation>
+    </message>
+    <message>
+        <source>Could not copy the Wireshark plugin to %1 (is a capture running in Wireshark?)</source>
+        <translation>Wireshark用プラグインを %1 にコピーできませんでした（Wiresharkでキャプチャー中ではありませんか？）</translation>
+    </message>
+    <message>
+        <source>Installed the Wireshark plugin (Riff Wi-Fi capture).</source>
+        <translation>Wireshark用プラグイン（Riff Wi-Fiキャプチャー）をインストールしました。</translation>
+    </message>
+    <message>
+        <source>Wireshark was not found. Install Wireshark, or set its location in Edit &gt; Preferences.</source>
+        <translation>Wiresharkが見つかりません。Wiresharkをインストールするか、「編集 ＞ 設定」で場所を指定してください。</translation>
+    </message>
+    <message>
+        <source>Could not start Wireshark.</source>
+        <translation>Wiresharkを起動できませんでした。</translation>
+    </message>
+    <message>
+        <source>Started Wireshark live capture on USB %1 (%2). The channel is set in Wireshark: Capture &gt; Options &gt; the gear icon of the interface.</source>
+        <translation>USB %1（%2）でWiresharkのライブキャプチャを開始しました。チャンネルはWiresharkの「キャプチャ ＞ オプション」で、インターフェースの歯車アイコンから設定します。</translation>
+    </message>
+    <message>
+        <source>A Wireshark live capture is running: the dongle stays connected to WSL for it.</source>
+        <translation>Wiresharkのライブキャプチャ中のため、ドングルはWSLにつないだままにします。</translation>
     </message>
 </context>
 <context>

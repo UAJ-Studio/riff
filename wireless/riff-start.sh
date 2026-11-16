@@ -7,21 +7,7 @@
 # Status lines start with RIFF_ so Riff can show them to the user.
 set -u
 CC=${1:-JP}; CH=${2:-1}; PORT=${3:-7879}
-R=$(uname -r)
-PK=/opt/riff/packs/riff-wifi-$R.tar.zst
-P=/run/riff-pack
-if [ -d /sys/module/mac80211 ] && ! grep -q '^mac80211 ' /proc/modules; then
-  # wireless stack built into this kernel (e.g. a custom kernel such as
-  # WiFiCap's set in .wslconfig): use it as it is, no pack needed
-  echo "RIFF_WIFI_BUILTIN kernel=$R"
-  iw reg set "$CC" 2>/dev/null
-else
-  if [ ! -f "$P/RELEASE" ] || [ "$(cat $P/RELEASE)" != "$R" ]; then
-    if [ ! -f "$PK" ]; then echo "RIFF_NEED_REBUILD kernel=$R"; exit 3; fi
-    rm -rf $P; mkdir -p $P; tar --zstd -xf "$PK" -C $P || { echo "RIFF_ERROR pack extract"; exit 1; }
-  fi
-  sh $P/riff-wifi-load.sh $P "$CC" || exit $?
-fi
+sh /opt/riff/riff-load.sh "$CC" || exit $?
 
 # wait for the attached dongle(s) to come up (firmware load takes a few s)
 W=""

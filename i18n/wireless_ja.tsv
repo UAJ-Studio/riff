@@ -74,3 +74,17 @@ This WSL kernel (%1) already contains Wi-Fi drivers; using them.	このWSLカー
 Removing the old wireless environment ...	古い無線環境を削除しています...
 Installed - an update is available (click Update).	インストール済み - 更新があります（「更新」を押してください）。
 Update	更新
+3. Transmit (use the dongle as a Riff port)	3. 送信（ドングルをRiffのポートとして使う）
+4. Live capture (Wireshark)	4. ライブキャプチャ（Wireshark）
+Live Capture in Wireshark	Wiresharkでライブキャプチャ
+Opens Wireshark capturing live from the checked dongle. In Wireshark the dongle is also listed as "Wi-Fi monitor: ..." - choose the channel with the gear icon next to it. Works with or without the transmit agent.	チェックしたドングルでキャプチャーを始めた状態のWiresharkを開きます。Wiresharkのインターフェース一覧にも「Wi-Fi monitor: …」として表示されます。チャンネルは、その横の歯車アイコンで選びます。送信用エージェントを動かしていてもいなくても使えます。
+Wireshark was not found. Install it (or set its location in Edit > Preferences) to capture live.	Wiresharkが見つかりません。ライブキャプチャにはWiresharkをインストールしてください（場所は「編集 ＞ 設定」で変更できます）。
+Ready. In Wireshark the dongle is listed as "Wi-Fi monitor: ..." too.	準備完了。Wiresharkのインターフェース一覧にも「Wi-Fi monitor: …」として表示されます。
+Check a supported dongle in the list first.	先に一覧で対応ドングルにチェックを入れてください。
+The Wireshark plugin file was not found: %1	Wireshark用プラグインのファイルが見つかりません: %1
+Could not copy the Wireshark plugin to %1 (is a capture running in Wireshark?)	Wireshark用プラグインを %1 にコピーできませんでした（Wiresharkでキャプチャー中ではありませんか？）
+Installed the Wireshark plugin (Riff Wi-Fi capture).	Wireshark用プラグイン（Riff Wi-Fiキャプチャー）をインストールしました。
+Wireshark was not found. Install Wireshark, or set its location in Edit > Preferences.	Wiresharkが見つかりません。Wiresharkをインストールするか、「編集 ＞ 設定」で場所を指定してください。
+Could not start Wireshark.	Wiresharkを起動できませんでした。
+Started Wireshark live capture on USB %1 (%2). The channel is set in Wireshark: Capture > Options > the gear icon of the interface.	USB %1（%2）でWiresharkのライブキャプチャを開始しました。チャンネルはWiresharkの「キャプチャ ＞ オプション」で、インターフェースの歯車アイコンから設定します。
+A Wireshark live capture is running: the dongle stays connected to WSL for it.	Wiresharkのライブキャプチャ中のため、ドングルはWSLにつないだままにします。

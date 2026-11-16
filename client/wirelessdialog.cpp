@@ -45,7 +45,8 @@ static const char *kWirelessBusIdsKey = "Wireless/BusIds";
 
 WirelessDialog::WirelessDialog(WirelessManager *manager, QWidget *parent)
     : QDialog(parent), manager_(manager),
-      wslOk_(false), usbipdOk_(false), distroOk_(false), distroUpdate_(false)
+      wslOk_(false), usbipdOk_(false), distroOk_(false), distroUpdate_(false),
+      wiresharkOk_(false)
 {
     setWindowTitle(tr("Wireless Dongle"));
     resize(720, 640);
@@ -104,7 +105,8 @@ WirelessDialog::WirelessDialog(WirelessManager *manager, QWidget *parent)
     top->addWidget(dg);
 
     // 3. radio settings + start
-    QGroupBox *rg = new QGroupBox(tr("3. Radio"));
+    QGroupBox *rg = new QGroupBox(tr("3. Transmit (use the dongle as a "
+                                     "Riff port)"));
     QHBoxLayout *rh = new QHBoxLayout(rg);
     country_ = new QComboBox;
     const char *countries[][2] = {
@@ -139,6 +141,20 @@ WirelessDialog::WirelessDialog(WirelessManager *manager, QWidget *parent)
     rh->addWidget(startButton_);
     top->addWidget(rg);
 
+    // 4. live capture in Wireshark (extcap)
+    QGroupBox *cg = new QGroupBox(tr("4. Live capture (Wireshark)"));
+    QHBoxLayout *ch4 = new QHBoxLayout(cg);
+    captureStatus_ = new QLabel;
+    captureStatus_->setWordWrap(true);
+    captureButton_ = new QPushButton(tr("Live Capture in Wireshark"));
+    captureButton_->setToolTip(tr("Opens Wireshark capturing live from the "
+            "checked dongle. In Wireshark the dongle is also listed as "
+            "\"Wi-Fi monitor: ...\" - choose the channel with the gear "
+            "icon next to it. Works with or without the transmit agent."));
+    ch4->addWidget(captureStatus_, 1);
+    ch4->addWidget(captureButton_);
+    top->addWidget(cg);
+
     log_ = new QPlainTextEdit;
     log_->setReadOnly(true);
     log_->setMaximumBlockCount(500);
@@ -159,6 +175,7 @@ WirelessDialog::WirelessDialog(WirelessManager *manager, QWidget *parent)
     connect(refreshButton_, &QPushButton::clicked, this, &WirelessDialog::refresh);
     connect(installButton_, &QPushButton::clicked, this, &WirelessDialog::onInstall);
     connect(startButton_, &QPushButton::clicked, this, &WirelessDialog::onStartStop);
+    connect(captureButton_, &QPushButton::clicked, this, &WirelessDialog::onLiveCapture);
     connect(channel_, static_cast<void (QComboBox::*)(int)>(
                 &QComboBox::currentIndexChanged),
             this, &WirelessDialog::onChannelChanged);
@@ -256,6 +273,21 @@ void WirelessDialog::refresh()
             if (c != 2)
                 devices_->resizeColumnToContents(c);
     }
+    // Wireshark + the Riff Wi-Fi extcap (installed/updated automatically)
+    wiresharkOk_ = !manager_->wiresharkPath().isEmpty();
+    if (!wiresharkOk_) {
+        setCheck(captureStatus_, false, tr("Wireshark was not found. Install "
+            "it (or set its location in Edit > Preferences) to capture live."));
+    }
+    else {
+        QString err;
+        bool ok = manager_->installExtcap(&err);
+        setCheck(captureStatus_, ok, ok
+            ? tr("Ready. In Wireshark the dongle is listed as \"Wi-Fi "
+                 "monitor: ...\" too.")
+            : err);
+    }
+
     QApplication::restoreOverrideCursor();
     updateButtons();
 }
@@ -289,6 +321,8 @@ void WirelessDialog::updateButtons()
     devices_->setEnabled(idle);
     refreshButton_->setEnabled(idle);
     country_->setEnabled(idle);
+    captureButton_->setEnabled(wslOk_ && usbipdOk_ && distroOk_
+                               && wiresharkOk_);
 }
 
 void WirelessDialog::onInstall()
@@ -369,4 +403,28 @@ void WirelessDialog::onNeedRebuild(QString kernel)
            "<p>Rebuilding takes about an hour and needs an Internet "
            "connection. Your other WSL distributions are not affected.</p>")
            .arg(kernel));
+}
+
+void WirelessDialog::onLiveCapture()
+{
+    // the first checked supported dongle
+    WirelessManager::UsbDevice dev;
+    for (int i = 0; i < devices_->topLevelItemCount(); i++) {
+        QTreeWidgetItem *it = devices_->topLevelItem(i);
+        if (it->checkState(0) != Qt::Checked
+                || it->text(3) == tr("Not supported"))
+            continue;
+        dev.busId = it->text(1);
+        dev.name = it->text(2);
+        dev.vidPid = it->toolTip(2);
+        break;
+    }
+    if (dev.busId.isEmpty()) {
+        QMessageBox::information(this, windowTitle(),
+                tr("Check a supported dongle in the list first."));
+        return;
+    }
+    QString err;
+    if (!manager_->startLiveCapture(dev, &err))
+        QMessageBox::warning(this, windowTitle(), err);
 }

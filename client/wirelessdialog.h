@@ -46,6 +46,7 @@ private slots:
     void onStateChanged(int state);
     void onNeedRebuild(QString kernel);
     void onChannelChanged(int index);
+    void onLiveCapture();
 
 private:
     void setCheck(QLabel *label, bool ok, const QString &text);
@@ -61,8 +62,10 @@ private:
     QComboBox *channel_;
     QPushButton *startButton_;
     QPushButton *refreshButton_;
+    QLabel *captureStatus_;
+    QPushButton *captureButton_;
     QPlainTextEdit *log_;
-    bool wslOk_, usbipdOk_, distroOk_, distroUpdate_;
+    bool wslOk_, usbipdOk_, distroOk_, distroUpdate_, wiresharkOk_;
 };
 
 #endif

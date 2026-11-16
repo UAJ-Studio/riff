@@ -44,5 +44,6 @@ cp "$ROOT/win/README-windows.txt" "$OUT/README.txt" 2>/dev/null || true
 if [ -f "$ROOT/wireless/dist/riffwireless-rootfs.tar.gz" ]; then
     mkdir -p "$OUT/wireless"
     cp "$ROOT/wireless/dist/riffwireless-rootfs.tar.gz" "$ROOT/wireless/dist/riff-wifi-usbids.txt" "$ROOT/wireless/dist/riffwireless-version.txt" "$OUT/wireless/"
+    cp "$ROOT/wireless/dist/riff-wifi-extcap.exe" "$OUT/wireless/" 2>/dev/null || true
 fi
 echo "Packaged into $OUT"
