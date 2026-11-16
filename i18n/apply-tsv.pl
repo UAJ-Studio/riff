@@ -10,7 +10,7 @@ sub unesc { my $s = shift; $s =~ s/&lt;/</g; $s =~ s/&gt;/>/g; $s =~ s/&quot;/"/
 sub esc { my $s = shift; $s =~ s/&/&amp;/g; $s =~ s/</&lt;/g; $s =~ s/>/&gt;/g; return $s; }
 my %tr;
 open(my $t, '<', $tsv) or die "$tsv: $!";
-while (<$t>) { chomp; s/\r$//; next unless /\t/; my ($k, $v) = split /\t/, $_, 2; $tr{$k} = $v; }
+while (<$t>) { chomp; s/\r$//; next unless /\t/; my ($k, $v) = split /\t/, $_, 2; s/\\n/\n/g for $k, $v; $tr{$k} = $v; }
 close $t;
 open(my $f, '<', $ts) or die "$ts: $!"; local $/; my $x = <$f>; close $f;
 my ($done, $left) = (0, 0);

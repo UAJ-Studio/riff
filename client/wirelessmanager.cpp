@@ -176,15 +176,21 @@ bool WirelessManager::registerDongle(const QString &busId, QString *error)
     if (target.registered)
         return true;
     if (!others.isEmpty()) {
-        // stopping one of two adapters of the same Windows driver is what
-        // crashes some drivers (rtwlanu6: shared buffer freed twice)
+        // Some drivers crash when two of their adapters stop one after the
+        // other (rtwlanu6 frees a shared buffer at every stop: two stops
+        // in a row free it twice). Once two run on Windows, any further
+        // stop - unplugging included - can crash, so don't add one here.
         if (error)
-            *error = tr("Another Wi-Fi dongle is still used by Windows (%1). "
-                        "Some Wi-Fi drivers crash Windows when one of two "
-                        "of their dongles is stopped, so dongles are "
-                        "registered one at a time: unplug the other "
-                        "dongle(s), register this one, then plug the next "
-                        "one in and register it.").arg(others.join(", "));
+            *error = tr("Another Wi-Fi dongle also runs on its Windows driver "
+                        "(%1). Some Wi-Fi drivers crash Windows when two of "
+                        "their dongles have been in use and are stopped one "
+                        "after the other - and from this state that can "
+                        "happen with any next step (unplugging, registering, "
+                        "shutting down).\n\nSave your work, unplug all but "
+                        "one dongle and restart the PC. Then register the "
+                        "dongles one at a time: register the plugged-in one, "
+                        "and plug the next one in only after that.")
+                        .arg(others.join(", "));
         return false;
     }
     emit message(tr("Registering USB %1 for Riff: the Windows Wi-Fi driver is "

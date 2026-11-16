@@ -101,8 +101,9 @@ WirelessDialog::WirelessDialog(WirelessManager *manager, QWidget *parent)
     QHBoxLayout *dh = new QHBoxLayout;
     QLabel *hint = new QLabel(tr("Check the dongle(s) to use. \"Supported\" "
             "dongles have a driver in Riff. Register each dongle for Riff "
-            "once, one at a time (only one unregistered dongle plugged in): "
-            "registered dongles stay with Riff and are safe to use together."));
+            "once: plug in one dongle, register it, and plug in the next "
+            "one only after that. Registered dongles stay with Riff and are "
+            "safe to use together."));
     hint->setWordWrap(true);
     registerButton_ = new QPushButton(tr("Register for Riff"));
     registerButton_->setToolTip(tr("Take the selected dongle away from its "
@@ -317,6 +318,19 @@ void WirelessDialog::refresh()
         for (int c = 0; c < devices_->columnCount(); c++)
             if (c != 2)
                 devices_->resizeColumnToContents(c);
+        // two or more dongles on their Windows driver: some drivers crash
+        // Windows when they stop one after the other (see registerDongle)
+        QStringList onWindows;
+        foreach (const WirelessManager::UsbDevice &d, list)
+            if (!d.driver.isEmpty() && !d.registered)
+                onWindows << d.busId;
+        if (onWindows.size() > 1)
+            onMessage(tr("Warning: %1 dongles (USB %2) run on their Windows "
+                         "driver at the same time. With some drivers Windows "
+                         "crashes when they stop (also at shutdown). Save "
+                         "your work, unplug all but one and restart the PC, "
+                         "then register them one at a time.")
+                      .arg(onWindows.size()).arg(onWindows.join(", ")), true);
         fillCaptureList(list);
     }
     else {

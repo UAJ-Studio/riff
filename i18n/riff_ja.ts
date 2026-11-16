@@ -441,7 +441,7 @@ Riff modifications (c) 2026</translation>
 A device group is a set of one or more devices/hosts which will be emulated by Ostinato
 
 Right-click to create/edit a device group</source>
-        <translation>選択したポートのデバイスグループ一覧です
+        <translation type="vanished">選択したポートのデバイスグループ一覧です
 
 デバイスグループは、Ostinato がエミュレートする1台以上のデバイス/ホストの集合です
 
@@ -1406,7 +1406,7 @@ This replaces the whole packet.</source>
     </message>
     <message>
         <source>Ostinato application logs are displayed here</source>
-        <translation>Ostinato アプリケーションのログがここに表示されます</translation>
+        <translation type="vanished">Ostinato アプリケーションのログがここに表示されます</translation>
     </message>
     <message>
         <source>Riff application logs are displayed here</source>
@@ -5151,7 +5151,7 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     </message>
     <message>
         <source>Check the dongle(s) to use. &quot;Supported&quot; dongles have a driver in Riff. Register each dongle for Riff once, one at a time (only one unregistered dongle plugged in): registered dongles stay with Riff and are safe to use together.</source>
-        <translation>使うドングルにチェックを入れてください。「対応」のドングルは、Riffにドライバーが入っています。各ドングルは最初に1回だけ、1本ずつ（未登録のドングルを1本だけ挿した状態で）Riff専用に登録してください。登録済みのドングルはRiff専用になり、何本でも安全に同時に使えます。</translation>
+        <translation type="vanished">使うドングルにチェックを入れてください。「対応」のドングルは、Riffにドライバーが入っています。各ドングルは最初に1回だけ、1本ずつ（未登録のドングルを1本だけ挿した状態で）Riff専用に登録してください。登録済みのドングルはRiff専用になり、何本でも安全に同時に使えます。</translation>
     </message>
     <message>
         <source>Register for Riff</source>
@@ -5180,6 +5180,14 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     <message>
         <source>Warning: a dongle of the same model (USB %1) is already used by Windows. Some Wi-Fi drivers crash Windows when two of their dongles are in use and are stopped (for example when Windows shuts down) - with this model use only one at a time in Windows.</source>
         <translation>注意: 同じ機種のドングル（USB %1）がすでにWindowsで使われています。一部のWi-Fiドライバーには、同じドングルを2本使っている状態でそれらが止まる（Windowsのシャットダウン時など）とWindowsが停止する不具合があります。この機種は、Windowsでは1本ずつ使ってください。</translation>
+    </message>
+    <message>
+        <source>Check the dongle(s) to use. &quot;Supported&quot; dongles have a driver in Riff. Register each dongle for Riff once: plug in one dongle, register it, and plug in the next one only after that. Registered dongles stay with Riff and are safe to use together.</source>
+        <translation>使うドングルにチェックを入れてください。「対応」のドングルは、Riffにドライバーが入っています。各ドングルは最初に1回だけRiff専用に登録します。ドングルを1本挿して登録し、終わってから次の1本を挿してください。登録済みのドングルはRiff専用になり、何本でも安全に同時に使えます。</translation>
+    </message>
+    <message>
+        <source>Warning: %1 dongles (USB %2) run on their Windows driver at the same time. With some drivers Windows crashes when they stop (also at shutdown). Save your work, unplug all but one and restart the PC, then register them one at a time.</source>
+        <translation>注意: %1 本のドングル（USB %2）が同時にWindowsのドライバーで動いています。ドライバーによっては、これらが停止するとき（シャットダウン時を含む）にWindowsが停止します。作業を保存してから、1本だけ残して抜き、PCを再起動してください。そのあと1本ずつ登録してください。</translation>
     </message>
 </context>
 <context>
@@ -5374,7 +5382,7 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     </message>
     <message>
         <source>Another Wi-Fi dongle is still used by Windows (%1). Some Wi-Fi drivers crash Windows when one of two of their dongles is stopped, so dongles are registered one at a time: unplug the other dongle(s), register this one, then plug the next one in and register it.</source>
-        <translation>ほかのWi-Fiドングルがまだ Windows で使われています（%1）。一部のWi-Fiドライバーには、同じドライバーのドングル2本のうち1本を止めるとWindowsが停止する不具合があるため、ドングルは1本ずつ登録します。ほかのドングルを抜いてからこのドングルを登録し、そのあと次のドングルを挿して登録してください。</translation>
+        <translation type="vanished">ほかのWi-Fiドングルがまだ Windows で使われています（%1）。一部のWi-Fiドライバーには、同じドライバーのドングル2本のうち1本を止めるとWindowsが停止する不具合があるため、ドングルは1本ずつ登録します。ほかのドングルを抜いてからこのドングルを登録し、そのあと次のドングルを挿して登録してください。</translation>
     </message>
     <message>
         <source>Registering USB %1 for Riff: the Windows Wi-Fi driver is taken off it - please allow the administrator prompt.</source>
@@ -5407,6 +5415,14 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     <message>
         <source>USB %1 is used by Windows again.</source>
         <translation>USB %1 は、再びWindowsで使えるようになりました。</translation>
+    </message>
+    <message>
+        <source>Another Wi-Fi dongle also runs on its Windows driver (%1). Some Wi-Fi drivers crash Windows when two of their dongles have been in use and are stopped one after the other - and from this state that can happen with any next step (unplugging, registering, shutting down).
+
+Save your work, unplug all but one dongle and restart the PC. Then register the dongles one at a time: register the plugged-in one, and plug the next one in only after that.</source>
+        <translation>ほかのWi-Fiドングルも、Windowsのドライバーで動いています（%1）。一部のWi-Fiドライバーには、同じドライバーのドングルを2本使ったあと、それらが続けて停止するとWindowsが停止する不具合があります。この状態からは、次のどの操作（抜く、登録する、シャットダウンする）でも起きる可能性があります。
+
+作業を保存してから、ドングルを1本だけ残して抜き、PCを再起動してください。そのあと1本ずつ登録します。挿さっている1本を登録し、終わってから次の1本を挿してください。</translation>
     </message>
 </context>
 <context>

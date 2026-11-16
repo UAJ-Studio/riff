@@ -50,6 +50,13 @@ after the other one was re-initialised) frees the same buffer twice. This is
 independent of WSL and usbipd; any vendor driver may have similar
 multi-adapter bugs, so Riff keeps its dongles off the Windows driver.
 
+Rule (confirmed on a second PC with Device Manager only, no WSL/usbipd):
+every adapter start allocates the shared buffer and overwrites the global,
+every stop frees it - two stops in a row free it twice. So once two of
+these dongles have run on the Windows driver at the same time, Windows
+will crash when they go away (unplugging, disabling, shutdown). Safe
+procedure: plug in one dongle, register it, and only then plug in the next.
+
 Also: Linux rtw89 normally switches USB 2 connected dongles to USB 3 mode
 (the chip re-enumerates and keeps the setting until power-off). The pack's
 rtw89 has `switch_usb_mode` (default N) so a dongle keeps its identity and
