@@ -27,7 +27,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "../common/qtport.h"
 
 #include <QByteArray>
+#include <QFile>
 #include <QHash>
+#include <QSet>
 #include <QTime>
 
 #include <errno.h>
@@ -70,6 +72,14 @@ LinuxPort::LinuxPort(int id, const char *device)
 {
     isPromisc_ = true;
     clearPromisc_ = false;
+
+    // Riff: injected frames on a Wi-Fi interface in monitor mode are not
+    // counted in the kernel's netdev TX statistics - use the transmit
+    // thread's own counters for such ports
+    softTxStats_ = QFile::exists(
+            QString("/sys/class/net/%1/phy80211").arg(device));
+    if (softTxStats_)
+        useSoftwareTxStats();
 
     populateInterfaceInfo();
 
@@ -572,6 +582,8 @@ int LinuxPort::StatsMonitor::netlinkStats()
     QHash<uint, PortStats*> portStats;
     QHash<uint, quint64*> portMaxStatsValue;
     QHash<uint, OstProto::LinkState*> linkState;
+    QSet<uint> softTx;                 // ports with software TX stats
+    QHash<uint, quint64> softTxPrevPkts, softTxPrevBytes;
     int fd;
     struct sockaddr_nl local;
     struct sockaddr_nl kernel;
@@ -751,6 +763,8 @@ _retry:
                 portMaxStatsValue[uint(ifi->ifi_index)] = 
                         &(port->maxStatsValue_);
                 linkState[uint(ifi->ifi_index)] = &(port->linkState_);
+                if (port->softTxStats_)
+                    softTx.insert(uint(ifi->ifi_index));
 
                 if (setPromisc(port->name()))
                     port->clearPromisc_ = true;
@@ -877,6 +891,18 @@ _retry_recv:
                     stats->rxPkts  = rtnlStats->rx_packets;
                     stats->rxBytes = rtnlStats->rx_bytes;
 
+                    if (softTx.contains(uint(ifi->ifi_index))) {
+                        // counters kept by the transmit thread
+                        uint ix = uint(ifi->ifi_index);
+                        quint64 p = stats->txPkts, b = stats->txBytes;
+                        quint64 pp = softTxPrevPkts.value(ix, p);
+                        quint64 pb = softTxPrevBytes.value(ix, b);
+                        stats->txPps = p >= pp ? (p - pp) / kRefreshFreq_ : 0;
+                        stats->txBps = b >= pb ? (b - pb) / kRefreshFreq_ : 0;
+                        softTxPrevPkts[ix] = p;
+                        softTxPrevBytes[ix] = b;
+                    }
+                    else {
                     if (rtnlStats->tx_packets >= stats->txPkts) {
                         stats->txPps = (rtnlStats->tx_packets - stats->txPkts)
                                             / kRefreshFreq_;
@@ -907,6 +933,7 @@ _retry_recv:
 
                     stats->txPkts  = rtnlStats->tx_packets;
                     stats->txBytes = rtnlStats->tx_bytes;
+                    }
 
                     // TODO: export detailed error stats
                     stats->rxDrops =   rtnlStats->rx_dropped 

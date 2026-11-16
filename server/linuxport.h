@@ -63,6 +63,7 @@ protected:
 
     bool isPromisc_;
     bool clearPromisc_;
+    bool softTxStats_;     // Riff: count TX in software (Wi-Fi monitor mode)
     static QList<LinuxPort*> allPorts_;
     static StatsMonitor *monitor_; // rx/tx stats for ALL ports
 

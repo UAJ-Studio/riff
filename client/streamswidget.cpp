@@ -560,11 +560,17 @@ void StreamsWidget::setHexContent(Stream *stream, const QByteArray &bytes)
             OstProto::Protocol::kHexDumpFieldNumber);
     OstProto::HexDump *hexDump = proto->MutableExtension(OstProto::hexDump);
     hexDump->set_content(bytes.constData(), size_t(bytes.size()));
-    hexDump->set_pad_until_end(true); // zero-pad short frames to 60 bytes
+    // Ethernet: zero-pad short frames to the 60 byte minimum. 802.11
+    // (radiotap) frames for a wireless dongle are sent exactly as they are:
+    // padding would turn into bogus bytes at the end of the frame
+    bool wifi = PacketDecoder::guessLinkType(bytes)
+                    == PacketDecoder::LinkRadiotap;
+    hexDump->set_pad_until_end(!wifi);
 
-    // Fixed length = the bytes (min. Ethernet size) + 4 byte FCS
+    // Fixed length = the bytes + 4 byte FCS (not sent; the NIC adds it)
     s.mutable_core()->set_len_mode(OstProto::StreamCore::e_fl_fixed);
-    s.mutable_core()->set_frame_len(quint32(qMax(bytes.size(), 60) + 4));
+    s.mutable_core()->set_frame_len(
+            quint32((wifi ? bytes.size() : qMax(bytes.size(), 60)) + 4));
 
     stream->protoDataCopyFrom(s);
 }

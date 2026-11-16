@@ -595,10 +595,10 @@ void HexPacketEditor::updateStatus()
                      .arg(QString("%1").arg(pos, 4, 16, QChar('0')).toUpper())
                      .arg(pos);
     }
-    if (len && len < 60)
+    if (link_ == PacketDecoder::LinkEthernet && len && len < 60)
         parts << tr("shorter than the 60-byte Ethernet minimum - zero "
                     "padding is added when sent");
-    else if (len > 1514)
+    else if (link_ == PacketDecoder::LinkEthernet && len > 1514)
         parts << tr("longer than a standard 1514-byte frame (jumbo)");
     status_->setText(parts.join(QString::fromUtf8("  \xC2\xB7  ")));
 }

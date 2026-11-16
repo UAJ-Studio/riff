@@ -93,6 +93,10 @@ public:
     virtual int sendEmulationPacket(PacketBuffer *pktBuf);
 
 protected:
+    // Riff: report TX stats from the transmit thread's own counters
+    // (for interfaces whose OS counters miss injected frames)
+    void useSoftwareTxStats() { transmitter_->useExternalStats(&stats_); }
+
     enum Direction
     {
         kDirectionRx,
