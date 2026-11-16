@@ -50,7 +50,7 @@ static const char *kWirelessCapturePrefix = "Wireless/Capture/";
 WirelessDialog::WirelessDialog(WirelessManager *manager, QWidget *parent)
     : QDialog(parent), manager_(manager),
       wslOk_(false), usbipdOk_(false), distroOk_(false), distroUpdate_(false),
-      wiresharkOk_(false)
+      wiresharkOk_(false), driverWarned_(false)
 {
     setWindowTitle(tr("Wireless Dongle"));
     resize(760, 780);
@@ -331,6 +331,14 @@ void WirelessDialog::refresh()
                          "your work first, then unplug all of them and "
                          "register them one at a time.")
                       .arg(onWindows.size()).arg(onWindows.join(", ")), true);
+        // known-buggy Windows driver installed: say once how to fix it
+        if (!driverWarned_) {
+            QString w = manager_->windowsDriverWarning(list);
+            if (!w.isEmpty()) {
+                onMessage(w, true);
+                driverWarned_ = true;
+            }
+        }
         fillCaptureList(list);
     }
     else {

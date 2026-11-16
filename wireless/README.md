@@ -62,6 +62,11 @@ register it, and only then plug in the next (verified: start 1, register 1,
 start 2, register 2). Best effort from two running: save work, unplug all, then register one at
 a time.
 
+Fix: rtwlanu6 5001.0.15.110 (ASUS USB-AX56 driver, 2022-07) does not crash -
+disabling two running dongles one after the other went through on the
+second PC. Riff warns when an older rtwlanu6.sys is installed and a rtw89
+dongle is plugged in (WirelessManager::windowsDriverWarning).
+
 Also: Linux rtw89 normally switches USB 2 connected dongles to USB 3 mode
 (the chip re-enumerates and keeps the setting until power-off). The pack's
 rtw89 has `switch_usb_mode` (default N) so a dongle keeps its identity and

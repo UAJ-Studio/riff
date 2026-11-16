@@ -3,6 +3,7 @@ CONFIG += qt ver_info
 macx: TARGET = Ostinato
 win32: TARGET = riff
 win32:RC_FILE = ostinato.rc
+win32:LIBS += -lversion
 QT += widgets network script xml svg
 INCLUDEPATH += "../rpc/" "../common/" "../extra/qhexedit2/src"
 win32 {

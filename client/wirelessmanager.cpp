@@ -325,6 +325,54 @@ QString WirelessManager::captureInterface(const UsbDevice &dev)
                  QString(dev.busId).replace('-', '_').replace('.', '_'));
 }
 
+// Realtek rtwlanu6 (RTL8852AU/8832AU, e.g. ASUS USB-AX56) before
+// 5001.0.15.110 keeps a per-adapter buffer in a global variable: once two
+// dongles ran, stopping them frees it twice and Windows crashes
+// (BAD_POOL_HEADER). 5001.0.15.110 does not crash (tested on two PCs).
+static quint64 fileVersion(const QString &path)
+{
+    std::wstring p = QDir::toNativeSeparators(path).toStdWString();
+    DWORD dummy = 0;
+    DWORD size = GetFileVersionInfoSizeW(p.c_str(), &dummy);
+    if (!size)
+        return 0;
+    QByteArray buf(int(size), 0);
+    if (!GetFileVersionInfoW(p.c_str(), 0, size, buf.data()))
+        return 0;
+    VS_FIXEDFILEINFO *info = 0;
+    UINT len = 0;
+    if (!VerQueryValueW(buf.data(), L"\\", (void **)&info, &len) || !info)
+        return 0;
+    return (quint64(info->dwFileVersionMS) << 32) | info->dwFileVersionLS;
+}
+
+QString WirelessManager::windowsDriverWarning(const QList<UsbDevice> &list) const
+{
+    bool realtek = false;
+    foreach (const UsbDevice &d, list)
+        if (d.driver.startsWith("rtw89_"))
+            realtek = true;
+    if (!realtek)
+        return QString();
+    QString sysRoot = QString::fromLocal8Bit(qgetenv("SystemRoot"));
+    if (sysRoot.isEmpty())
+        sysRoot = "C:/Windows";
+    quint64 v = fileVersion(sysRoot + "/System32/drivers/rtwlanu6.sys");
+    const quint64 fixed = (quint64(5001) << 48) | (quint64(0) << 32)
+                        | (quint64(15) << 16) | 110;
+    if (!v || v >= fixed)
+        return QString();
+    QString ver = QString("%1.%2.%3.%4").arg(v >> 48).arg((v >> 32) & 0xffff)
+                    .arg((v >> 16) & 0xffff).arg(v & 0xffff);
+    return tr("The Realtek Wi-Fi driver on this PC (rtwlanu6 %1) has a bug: "
+              "if two of its dongles run on Windows at the same time, "
+              "Windows crashes when they stop (unplugging, disabling, "
+              "shutdown). Version 5001.0.15.110 or later fixes this: get it "
+              "from the maker of your dongle (for the ASUS USB-AX56: ASUS "
+              "support site, USB-AX56 > Driver & Tools). Until then, "
+              "register the dongles for Riff one at a time.").arg(ver);
+}
+
 bool WirelessManager::startLiveCapture(const QList<CaptureTarget> &targets,
                                        const QString &country, bool oneWindow,
                                        QString *error)

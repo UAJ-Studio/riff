@@ -5448,6 +5448,14 @@ Save your work first. Then unplug all of these dongles and register them one at 
 
 先に作業を保存してください。そのあと、これらのドングルをすべて抜いてから1本ずつ登録します。1本挿して登録し、終わってから次の1本を挿してください。</translation>
     </message>
+    <message>
+        <source>The Realtek Wi-Fi driver on this PC (rtwlanu6 %1) has a bug: if two of its dongles run on Windows at the same time, Windows crashes when they stop (unplugging, disabling, shutdown). Version 5001.0.15.110 or later fixes this - for the ASUS USB-AX56 it is on the ASUS support site (USB-AX56 &gt; Driver &amp; Tools). Until then, register the dongles for Riff one at a time.</source>
+        <translation type="vanished">このPCのRealtek Wi-Fiドライバー（rtwlanu6 %1）には不具合があります。このドライバーのドングルが2本同時にWindowsで動くと、停止するとき（抜く、無効化、シャットダウン）にWindowsが停止します。バージョン 5001.0.15.110 以降で修正されています。ASUS USB-AX56 の場合は、ASUSのサポートサイト（USB-AX56 ＞ ドライバーとツール）から入手できます。更新するまでは、ドングルを1本ずつRiffに登録してください。</translation>
+    </message>
+    <message>
+        <source>The Realtek Wi-Fi driver on this PC (rtwlanu6 %1) has a bug: if two of its dongles run on Windows at the same time, Windows crashes when they stop (unplugging, disabling, shutdown). Version 5001.0.15.110 or later fixes this: get it from the maker of your dongle (for the ASUS USB-AX56: ASUS support site, USB-AX56 &gt; Driver &amp; Tools). Until then, register the dongles for Riff one at a time.</source>
+        <translation>このPCのRealtek Wi-Fiドライバー（rtwlanu6 %1）には不具合があります。このドライバーのドングルが2本同時にWindowsで動くと、停止するとき（抜く、無効化、シャットダウン）にWindowsが停止します。バージョン 5001.0.15.110 以降で修正されています。お使いのドングルのメーカーから入手してください（ASUS USB-AX56 の場合: ASUSのサポートサイト ＞ USB-AX56 ＞ ドライバーとツール）。更新するまでは、ドングルを1本ずつRiffに登録してください。</translation>
+    </message>
 </context>
 <context>
     <name>dot3</name>

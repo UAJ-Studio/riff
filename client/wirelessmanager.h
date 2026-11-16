@@ -84,6 +84,10 @@ public:
         int width;
     };
     static QString captureInterface(const UsbDevice &dev);
+    // Non-empty when a Windows Wi-Fi driver with a known multi-dongle
+    // crash bug is installed for one of the listed dongles (Realtek
+    // rtwlanu6 older than 5001.0.15.110): a warning with the fix.
+    QString windowsDriverWarning(const QList<UsbDevice> &list) const;
     // opens Wireshark capturing live from the dongles - all in one window
     // (interfaces merged) or one window per dongle
     bool startLiveCapture(const QList<CaptureTarget> &targets,
