@@ -56,13 +56,16 @@ int main(int argc, char **argv)
 
     // --pcap <file>: write every template to a pcap (for cross-checking
     // with Wireshark/tshark) and exit
-    if (argc == 3 && QByteArray(argv[1]) == "--pcap") {
+    if (argc >= 3 && QByteArray(argv[1]) == "--pcap") {
         FILE *fp = std::fopen(argv[2], "wb");
         if (!fp)
             return 2;
-        const quint32 hdr[] = {0xa1b2c3d4, 0x00040002, 0, 0, 65535, 1};
+        const quint32 hdr[] = {0xa1b2c3d4, 0x00040002, 0, 0, 65535,
+                               quint32(argc == 4 ? 127 : 1)};
         std::fwrite(hdr, 1, sizeof(hdr), fp);   // little-endian host
         for (int i = 0; i < PacketTemplates::count(); i++) {
+            if (PacketTemplates::isWifi(i) != (argc == 4))
+                continue;   // --pcap <file> wifi: radiotap templates (DLT 127)
             QByteArray p = PacketTemplates::build(i);
             const quint32 rec[] = {quint32(i + 1), 0, quint32(p.size()),
                                    quint32(p.size())};
@@ -185,12 +188,25 @@ int main(int argc, char **argv)
         {"Ethernet", "LLDP"},
         {"Ethernet", "LLC", "Spanning Tree (BPDU)"},
         {"Ethernet", "IPv4", "IGMP"},
+        {"Radiotap", "IEEE 802.11", "Beacon", "SSID", "Supported Rates",
+         "DS Parameter Set"},
+        {"Radiotap", "IEEE 802.11", "Probe Request", "SSID"},
+        {"Radiotap", "IEEE 802.11", "IPv4", "UDP"},
+        {"Radiotap", "IEEE 802.11", "IPv4", "UDP"},
+        {"Radiotap", "IEEE 802.11"},
+        {"Radiotap", "IEEE 802.11"},
+        {"Radiotap", "IEEE 802.11"},
+        {"Radiotap", "IEEE 802.11"},
     };
     check(expected.size() == PacketTemplates::count(),
           "template table and expectations have the same size");
     for (int i = 0; i < PacketTemplates::count(); i++) {
         QByteArray pkt = PacketTemplates::build(i);
-        PacketDecoder d(pkt);
+        const PacketDecoder::LinkType link = PacketTemplates::isWifi(i)
+            ? PacketDecoder::LinkRadiotap : PacketDecoder::LinkEthernet;
+        check(PacketDecoder::guessLinkType(pkt) == link,
+              QString("template %1: link type guessed").arg(i).toUtf8().constData());
+        PacketDecoder d(pkt, link);
         QStringList seen;
         collectHeaders(d.fields(), seen);
         bool ok = !anyError(d.fields());
@@ -211,7 +227,7 @@ int main(int argc, char **argv)
 
         // robustness: every prefix and deterministic byte flips
         for (int len = 0; len < pkt.size(); len++)
-            PacketDecoder trunc(pkt.left(len));
+            PacketDecoder trunc(pkt.left(len), link);
         quint32 seed = 0x12345u + quint32(i);
         for (int k = 0; k < 300; k++) {
             QByteArray m = pkt;
@@ -219,12 +235,45 @@ int main(int argc, char **argv)
                 seed = seed * 1103515245u + 12345u;
                 m[int((seed >> 8) % quint32(m.size()))] = char(seed >> 24);
             }
-            PacketDecoder fuzz(m);
+            PacketDecoder fuzz(m, link);
             QByteArray fixedm = m;
-            PacketDecoder::fixChecksums(fixedm);
+            PacketDecoder::fixChecksums(fixedm, link);
         }
     }
     check(true, "templates survive truncation and byte-flip fuzzing");
+
+    // ---- Wi-Fi specifics ----
+    {
+        const auto RT = PacketDecoder::LinkRadiotap;
+        QByteArray wd = PacketTemplates::build(24);     // data + IPv4/UDP
+        // radiotap 12 + 802.11 24 + SNAP 8 + IPv4 20 -> UDP checksum at +6
+        int udpCk = 12 + 24 + 8 + 20 + 6;
+        QByteArray bad = wd;
+        bad[udpCk] = char(bad.at(udpCk) ^ 0x5A);
+        check(PacketDecoder::fixChecksums(bad, RT) == 1 && bad == wd,
+              "wifi data: UDP checksum inside 802.11/SNAP fixed");
+
+        PacketDecoder dw(wd, RT);
+        const DecodedField *seq = find(dw.fields(), "Sequence number");
+        check(seq && seq->littleEndian, "wifi: sequence number is LE");
+        if (seq) {
+            QByteArray w = wd;
+            PacketDecoder::writeUInt(w, *seq, 0x123);
+            // sequence control = 0x1230 stored little-endian: 30 12
+            check(quint8(w.at(12 + 22)) == 0x30
+                      && quint8(w.at(12 + 23)) == 0x12,
+                  "wifi: sequence number written little-endian");
+            check(PacketDecoder::readUInt(w, *seq) == 0x123,
+                  "wifi: sequence number reads back");
+        }
+        PacketDecoder db(PacketTemplates::build(22), RT);
+        const DecodedField *ss = find(db.fields(), "SSID");
+        check(ss && ss->value.contains("Riff-Test"),
+              "wifi: beacon SSID shown");
+        check(PacketDecoder::guessLinkType(PacketTemplates::build(0))
+                  == PacketDecoder::LinkEthernet,
+              "wifi: Ethernet frames are not mistaken for radiotap");
+    }
 
     // ---- Tunnel specifics ----
     {

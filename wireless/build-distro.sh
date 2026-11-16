@@ -85,5 +85,12 @@ inroot $R "ldd /usr/local/bin/riff-agent | grep 'not found' && exit 1; /usr/loca
 
 echo "== [3/3] rootfs tarball"
 rm -f $R/etc/resolv.conf
+# content version: Riff compares the installed distro's /opt/riff/VERSION
+# with the bundled one and offers to update the distro when they differ
+V=$( (cat "$AGENT" "$HERE/riff-start.sh" "$HERE/riff-channel.sh"; \
+      ls -l $R/opt/riff/packs; cat /dev/null) | sha256sum | cut -c1-12)
+echo "$V" > $R/opt/riff/VERSION
+echo "$V" > "$OUT/riffwireless-version.txt"
+echo "   content version $V"
 tar -czf "$OUT/riffwireless-rootfs.tar.gz" -C $R .
 echo "DISTRO_OK $OUT/riffwireless-rootfs.tar.gz ($(du -h "$OUT/riffwireless-rootfs.tar.gz" | cut -f1))"

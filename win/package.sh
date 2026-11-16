@@ -43,6 +43,6 @@ cp "$ROOT/win/README-windows.txt" "$OUT/README.txt" 2>/dev/null || true
 # the list of supported USB IDs, built by wireless/build-distro.sh
 if [ -f "$ROOT/wireless/dist/riffwireless-rootfs.tar.gz" ]; then
     mkdir -p "$OUT/wireless"
-    cp "$ROOT/wireless/dist/riffwireless-rootfs.tar.gz" "$ROOT/wireless/dist/riff-wifi-usbids.txt" "$OUT/wireless/"
+    cp "$ROOT/wireless/dist/riffwireless-rootfs.tar.gz" "$ROOT/wireless/dist/riff-wifi-usbids.txt" "$ROOT/wireless/dist/riffwireless-version.txt" "$OUT/wireless/"
 fi
 echo "Packaged into $OUT"

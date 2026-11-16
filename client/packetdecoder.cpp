@@ -156,11 +156,19 @@ quint16 internetChecksum(const QByteArray &data, quint32 sum)
 
 // ------------------------------------------------------------------------
 
-PacketDecoder::PacketDecoder(const QByteArray &packet)
+PacketDecoder::PacketDecoder(const QByteArray &packet, LinkType link)
     : pkt_(packet)
 {
-    if (!pkt_.isEmpty())
-        decodeEthernet(0, pkt_.size(), fields_, 0);
+    if (pkt_.isEmpty())
+        return;
+    if (link == LinkRadiotap) {
+        bool fcs = false;
+        int pos = decodeRadiotap(0, pkt_.size(), fields_, &fcs);
+        if (pos > 0)
+            decode80211(pos, pkt_.size(), fcs, fields_, 0);
+        return;
+    }
+    decodeEthernet(0, pkt_.size(), fields_, 0);
 }
 
 DecodedField PacketDecoder::header(const QString &name, int off, int len,
@@ -176,7 +184,7 @@ DecodedField PacketDecoder::header(const QString &name, int off, int len,
 }
 
 DecodedField PacketDecoder::uintField(const QString &name, int off, int len,
-        quint64 mask, int shift, const QString &meaning, bool hexStyle)
+        quint64 mask, int shift, const QString &meaning, bool hexStyle, bool littleEndian)
 {
     DecodedField f;
     f.name = name;
@@ -186,6 +194,7 @@ DecodedField PacketDecoder::uintField(const QString &name, int off, int len,
     f.mask = mask;
     f.shift = shift;
     f.hexStyle = hexStyle;
+    f.littleEndian = littleEndian;
 
     quint64 v = readUInt(pkt_, f);
     if (hexStyle) {
@@ -1275,8 +1284,9 @@ int PacketDecoder::decodeCapwap(int off, int end, bool dataChannel,
         out << cw;
         if (!t)
             return decodeEthernet(pos, end, out, depth + 1);
-        addData(pos, end - pos, wbid == 1 ? tr("IEEE 802.11 frame")
-                                          : tr("Native frame"), out);
+        if (wbid == 1 && depth < kMaxDepth)
+            return decode80211(pos, end, false, out, depth + 1);
+        addData(pos, end - pos, tr("Native frame"), out);
         return end;
     }
 
@@ -1564,7 +1574,9 @@ quint64 PacketDecoder::readUInt(const QByteArray &pkt, const DecodedField &f)
 {
     quint64 raw = 0;
     for (int i = 0; i < f.length && f.offset + i < pkt.size(); i++)
-        raw = (raw << 8) | quint8(pkt.at(f.offset + i));
+        raw = f.littleEndian
+            ? raw | (quint64(quint8(pkt.at(f.offset + i))) << (8 * i))
+            : (raw << 8) | quint8(pkt.at(f.offset + i));
     if (f.mask)
         raw = (raw & f.mask) >> f.shift;
     return raw;
@@ -1577,13 +1589,16 @@ void PacketDecoder::writeUInt(QByteArray &pkt, const DecodedField &f,
         return;
     quint64 raw = 0;
     for (int i = 0; i < f.length; i++)
-        raw = (raw << 8) | quint8(pkt.at(f.offset + i));
+        raw = f.littleEndian
+            ? raw | (quint64(quint8(pkt.at(f.offset + i))) << (8 * i))
+            : (raw << 8) | quint8(pkt.at(f.offset + i));
     if (f.mask)
         raw = (raw & ~f.mask) | ((v << f.shift) & f.mask);
     else
         raw = v;
-    for (int i = f.length - 1; i >= 0; i--) {
-        pkt[f.offset + i] = char(raw & 0xFF);
+    for (int i = 0; i < f.length; i++) {
+        int pos = f.littleEndian ? f.offset + i : f.offset + f.length - 1 - i;
+        pkt[pos] = char(raw & 0xFF);
         raw >>= 8;
     }
 }
@@ -1678,15 +1693,16 @@ bool PacketDecoder::writeText(QByteArray &pkt, const DecodedField &f,
     }
 }
 
-int PacketDecoder::fixChecksums(QByteArray &pkt)
+int PacketDecoder::fixChecksums(QByteArray &pkt, LinkType link)
 {
-    return fixChecksums(pkt, QSet<int>() << -1);
+    return fixChecksums(pkt, QSet<int>() << -1, link);
 }
 
-QSet<int> PacketDecoder::correctChecksums(const QByteArray &pkt)
+QSet<int> PacketDecoder::correctChecksums(const QByteArray &pkt,
+                                          LinkType link)
 {
     QSet<int> set;
-    PacketDecoder dec(pkt);
+    PacketDecoder dec(pkt, link);
     for (const ChecksumSpot &spot : dec.checksums()) {
         quint16 cur = quint16((quint8(pkt.at(spot.offset)) << 8)
                               | quint8(pkt.at(spot.offset + 1)));
@@ -1697,7 +1713,8 @@ QSet<int> PacketDecoder::correctChecksums(const QByteArray &pkt)
 }
 
 // onlyAt containing -1 means "all checksums"
-int PacketDecoder::fixChecksums(QByteArray &pkt, const QSet<int> &onlyAt)
+int PacketDecoder::fixChecksums(QByteArray &pkt, const QSet<int> &onlyAt,
+                                LinkType link)
 {
     const bool all = onlyAt.contains(-1);
     const QByteArray original = pkt;
@@ -1705,7 +1722,7 @@ int PacketDecoder::fixChecksums(QByteArray &pkt, const QSet<int> &onlyAt)
     // outer checksum must be recomputed - iterate until nothing changes
     QSet<int> spots;
     for (int pass = 0; pass < kMaxDepth + 3; pass++) {
-        PacketDecoder dec(pkt);
+        PacketDecoder dec(pkt, link);
         int n = 0;
         for (const ChecksumSpot &spot : dec.checksums()) {
             if (!all && !onlyAt.contains(spot.offset))
@@ -1808,4 +1825,418 @@ bool PacketDecoder::parseHexText(const QString &text, QByteArray *out,
     }
     *out = result;
     return true;
+}
+
+// ------------------------------------------------------------------------
+// Wi-Fi: radiotap header + IEEE 802.11 frame (monitor-mode capture and
+// injection through a USB dongle). All fields here are little-endian.
+
+PacketDecoder::LinkType PacketDecoder::guessLinkType(const QByteArray &p)
+{
+    // radiotap: version 0, pad 0, little-endian length >= 8 that leaves
+    // room for at least an 802.11 ACK (10 bytes), and an 802.11 frame
+    // control with protocol version 0 and a valid type after it
+    if (p.size() < 18 || p.at(0) != 0 || p.at(1) != 0)
+        return LinkEthernet;
+    int len = quint8(p.at(2)) | (quint8(p.at(3)) << 8);
+    if (len < 8 || len > 256 || len + 10 > p.size() || (len & 1))
+        return LinkEthernet;
+    quint8 fc0 = quint8(p.at(len));
+    if ((fc0 & 0x03) != 0 || ((fc0 >> 2) & 0x03) == 3)
+        return LinkEthernet;
+    return LinkRadiotap;
+}
+
+int PacketDecoder::decodeRadiotap(int off, int end, Out &out, bool *hasFcs)
+{
+    *hasFcs = false;
+    if (!has(off, 8) || off + 8 > end)
+        return -1;
+    int len = int(u16le(off + 2));
+    if (len < 8 || off + len > end) {
+        DecodedField bad = header(tr("Radiotap"), off, qMin(8, end - off),
+                                  tr("bad length"));
+        bad.error = true;
+        out << bad;
+        return -1;
+    }
+    DecodedField rt = header(tr("Radiotap"), off, len,
+                             tr("%1 bytes").arg(len));
+    rt.children
+        << uintField(tr("Version"), off, 1)
+        << uintField(tr("Pad"), off + 1, 1)
+        << uintField(tr("Length"), off + 2, 2, 0, 0, QString(), false, true);
+
+    // present bitmaps (bit 31 = another bitmap follows)
+    QList<quint32> present;
+    int pos = off + 4;
+    do {
+        if (pos + 4 > off + len)
+            break;
+        present << u32le(pos);
+        rt.children << uintField(tr("Present flags"), pos, 4, 0, 0,
+                                 QString(), true, true);
+        pos += 4;
+    } while (present.last() & 0x80000000u);
+
+    // field alignment/size in the standard namespace (first bitmap)
+    struct Spec { int align, size; const char *name; };
+    static const Spec spec[] = {
+        {8, 8, QT_TR_NOOP("TSFT")},             {1, 1, QT_TR_NOOP("Flags")},
+        {1, 1, QT_TR_NOOP("Rate")},             {2, 4, QT_TR_NOOP("Channel")},
+        {2, 2, QT_TR_NOOP("FHSS")},             {1, 1, QT_TR_NOOP("Signal (dBm)")},
+        {1, 1, QT_TR_NOOP("Noise (dBm)")},      {2, 2, QT_TR_NOOP("Lock quality")},
+        {2, 2, QT_TR_NOOP("TX attenuation")},   {2, 2, QT_TR_NOOP("TX attenuation (dB)")},
+        {1, 1, QT_TR_NOOP("TX power (dBm)")},   {1, 1, QT_TR_NOOP("Antenna")},
+        {1, 1, QT_TR_NOOP("Signal (dB)")},      {1, 1, QT_TR_NOOP("Noise (dB)")},
+        {2, 2, QT_TR_NOOP("RX flags")},         {2, 2, QT_TR_NOOP("TX flags")},
+        {1, 1, QT_TR_NOOP("RTS retries")},      {1, 1, QT_TR_NOOP("Data retries")},
+        {4, 8, QT_TR_NOOP("XChannel")},         {1, 3, QT_TR_NOOP("MCS")},
+        {4, 8, QT_TR_NOOP("A-MPDU status")},    {2, 12, QT_TR_NOOP("VHT")},
+        {8, 12, QT_TR_NOOP("Timestamp")},       {2, 12, QT_TR_NOOP("HE")},
+        {2, 12, QT_TR_NOOP("HE-MU")},           {2, 6, QT_TR_NOOP("HE-MU other user")},
+        {1, 1, QT_TR_NOOP("0-length PSDU")},    {2, 4, QT_TR_NOOP("L-SIG")},
+    };
+    const int nspec = int(sizeof(spec) / sizeof(spec[0]));
+    quint32 bits = present.isEmpty() ? 0 : present.first();
+    for (int b = 0; b < nspec; b++) {
+        if (!(bits & (1u << b)))
+            continue;
+        const Spec &s = spec[b];
+        int rel = pos - off;
+        rel = (rel + s.align - 1) / s.align * s.align;
+        int fpos = off + rel;
+        if (fpos + s.size > off + len) {
+            pos = off + len;
+            break;
+        }
+        QString name = tr(s.name);
+        switch (b) {
+        case 1: {   // Flags
+            quint32 fl = u8(fpos);
+            if (fl & 0x10)
+                *hasFcs = true;
+            DecodedField f = uintField(name, fpos, 1, 0, 0,
+                    (fl & 0x10) ? tr("FCS at end") : QString(), true);
+            f.children
+                << uintField(tr("Short preamble"), fpos, 1, 0x02, 1)
+                << uintField(tr("WEP"), fpos, 1, 0x04, 2)
+                << uintField(tr("Fragmented"), fpos, 1, 0x08, 3)
+                << uintField(tr("FCS at end"), fpos, 1, 0x10, 4)
+                << uintField(tr("Bad FCS"), fpos, 1, 0x40, 6)
+                << uintField(tr("Short GI"), fpos, 1, 0x80, 7);
+            rt.children << f;
+            break;
+        }
+        case 2:     // Rate, 500 kb/s units
+            rt.children << uintField(name, fpos, 1, 0, 0,
+                    tr("%1 Mb/s").arg(u8(fpos) / 2.0));
+            break;
+        case 3: {   // Channel: frequency + flags
+            int freq = int(u16le(fpos));
+            int ch = freq == 2484 ? 14 : freq < 2484 ? (freq - 2407) / 5
+                   : freq >= 5955 ? (freq - 5950) / 5   // 6 GHz
+                   : (freq - 5000) / 5;
+            DecodedField f = header(name, fpos, 4,
+                    tr("%1 MHz (channel %2)").arg(freq).arg(ch));
+            f.children
+                << uintField(tr("Frequency (MHz)"), fpos, 2, 0, 0,
+                             QString(), false, true)
+                << uintField(tr("Channel flags"), fpos + 2, 2, 0, 0,
+                             QString(), true, true);
+            rt.children << f;
+            break;
+        }
+        case 5: case 6: case 10:    // signed dBm
+            rt.children << uintField(name, fpos, 1, 0, 0,
+                    QString("%1 dBm").arg(qint8(u8(fpos))));
+            break;
+        case 19: {  // MCS: known, flags, index
+            DecodedField f = header(name, fpos, 3,
+                    tr("MCS index %1").arg(u8(fpos + 2)));
+            f.children
+                << uintField(tr("Known"), fpos, 1, 0, 0, QString(), true)
+                << uintField(tr("Flags"), fpos + 1, 1, 0, 0, QString(), true)
+                << uintField(tr("MCS index"), fpos + 2, 1);
+            rt.children << f;
+            break;
+        }
+        default:
+            if (s.size <= 8)
+                rt.children << uintField(name, fpos, s.size, 0, 0, QString(),
+                                         s.size > 1, true);
+            else
+                addData(fpos, s.size, name, rt.children);
+            break;
+        }
+        pos = fpos + s.size;
+    }
+    if (pos < off + len)
+        addData(pos, off + len - pos, tr("Other radiotap fields"),
+                rt.children);
+    out << rt;
+    return off + len;
+}
+
+int PacketDecoder::decode80211(int off, int end, bool hasFcs, Out &out,
+                               int depth)
+{
+    int fcsLen = (hasFcs && end - off >= 14) ? 4 : 0;
+    int bodyEnd = end - fcsLen;
+    if (!has(off, 2) || off + 10 > bodyEnd) {
+        addData(off, end - off, tr("IEEE 802.11 (truncated)"), out);
+        return end;
+    }
+    quint32 fc = u16le(off);
+    int type = int((fc >> 2) & 0x3), subtype = int((fc >> 4) & 0xF);
+    bool toDs = fc & 0x0100, fromDs = fc & 0x0200;
+    bool prot = fc & 0x4000, order = fc & 0x8000;
+
+    static const char *mgmt[16] = {
+        QT_TR_NOOP("Association Request"), QT_TR_NOOP("Association Response"),
+        QT_TR_NOOP("Reassociation Request"), QT_TR_NOOP("Reassociation Response"),
+        QT_TR_NOOP("Probe Request"), QT_TR_NOOP("Probe Response"),
+        QT_TR_NOOP("Timing Advertisement"), QT_TR_NOOP("Reserved"),
+        QT_TR_NOOP("Beacon"), QT_TR_NOOP("ATIM"), QT_TR_NOOP("Disassociation"),
+        QT_TR_NOOP("Authentication"), QT_TR_NOOP("Deauthentication"),
+        QT_TR_NOOP("Action"), QT_TR_NOOP("Action No Ack"), QT_TR_NOOP("Reserved")};
+    static const char *ctrl[16] = {
+        QT_TR_NOOP("Reserved"), QT_TR_NOOP("Reserved"), QT_TR_NOOP("Trigger"),
+        QT_TR_NOOP("TACK"), QT_TR_NOOP("Beamforming Report Poll"),
+        QT_TR_NOOP("VHT/HE NDP Announcement"),
+        QT_TR_NOOP("Control Frame Extension"), QT_TR_NOOP("Control Wrapper"),
+        QT_TR_NOOP("Block Ack Request"), QT_TR_NOOP("Block Ack"),
+        QT_TR_NOOP("PS-Poll"), QT_TR_NOOP("RTS"), QT_TR_NOOP("CTS"),
+        QT_TR_NOOP("ACK"), QT_TR_NOOP("CF-End"), QT_TR_NOOP("CF-End + CF-Ack")};
+    static const char *data[16] = {
+        QT_TR_NOOP("Data"), QT_TR_NOOP("Data + CF-Ack"),
+        QT_TR_NOOP("Data + CF-Poll"), QT_TR_NOOP("Data + CF-Ack + CF-Poll"),
+        QT_TR_NOOP("Null"), QT_TR_NOOP("CF-Ack"), QT_TR_NOOP("CF-Poll"),
+        QT_TR_NOOP("CF-Ack + CF-Poll"), QT_TR_NOOP("QoS Data"),
+        QT_TR_NOOP("QoS Data + CF-Ack"), QT_TR_NOOP("QoS Data + CF-Poll"),
+        QT_TR_NOOP("QoS Data + CF-Ack + CF-Poll"), QT_TR_NOOP("QoS Null"),
+        QT_TR_NOOP("Reserved"), QT_TR_NOOP("QoS CF-Poll"),
+        QT_TR_NOOP("QoS CF-Ack + CF-Poll")};
+    QString typeName = type == 0 ? tr("Management") : type == 1 ? tr("Control")
+                     : type == 2 ? tr("Data") : tr("Extension");
+    QString subName = tr(type == 0 ? mgmt[subtype] : type == 1 ? ctrl[subtype]
+                         : type == 2 ? data[subtype] : "Reserved");
+
+    // which addresses/fields are present
+    int nAddr = 3;
+    bool hasSeq = true;
+    if (type == 1) {
+        hasSeq = false;
+        nAddr = (subtype == 12 || subtype == 13) ? 1 : 2;  // CTS/ACK: RA only
+    }
+    else if (type == 2 && toDs && fromDs) {
+        nAddr = 4;
+    }
+    bool qos = type == 2 && (subtype & 0x8);
+    bool htc = order && (qos || type == 0);
+    int hlen = 4 + 6 * qMin(nAddr, 3) + (hasSeq ? 2 : 0)
+             + (nAddr == 4 ? 6 : 0) + (qos ? 2 : 0) + (htc ? 4 : 0);
+    if (off + hlen > bodyEnd)
+        hlen = bodyEnd - off;
+
+    DecodedField h = header(tr("IEEE 802.11"), off, hlen,
+                            QString("%1 / %2").arg(typeName, subName));
+    DecodedField fcf = uintField(tr("Frame control"), off, 2, 0, 0,
+                                 subName, true, true);
+    fcf.children
+        << uintField(tr("Protocol version"), off, 2, 0x0003, 0, QString(),
+                     false, true)
+        << uintField(tr("Type"), off, 2, 0x000C, 2, typeName, false, true)
+        << uintField(tr("Subtype"), off, 2, 0x00F0, 4, subName, false, true)
+        << uintField(tr("To DS"), off, 2, 0x0100, 8, QString(), false, true)
+        << uintField(tr("From DS"), off, 2, 0x0200, 9, QString(), false, true)
+        << uintField(tr("More fragments"), off, 2, 0x0400, 10, QString(),
+                     false, true)
+        << uintField(tr("Retry"), off, 2, 0x0800, 11, QString(), false, true)
+        << uintField(tr("Power management"), off, 2, 0x1000, 12, QString(),
+                     false, true)
+        << uintField(tr("More data"), off, 2, 0x2000, 13, QString(),
+                     false, true)
+        << uintField(tr("Protected"), off, 2, 0x4000, 14, QString(),
+                     false, true)
+        << uintField(tr("+HTC / Order"), off, 2, 0x8000, 15, QString(),
+                     false, true);
+    h.children << fcf;
+    h.children << uintField((type == 1 && subtype == 10) ? tr("AID")
+                                                         : tr("Duration (us)"),
+                            off + 2, 2, 0, 0, QString(), false, true);
+
+    // address names depend on To DS / From DS
+    QStringList names;
+    if (type == 1)
+        names << tr("Receiver address") << tr("Transmitter address");
+    else if (!toDs && !fromDs)
+        names << tr("Destination") << tr("Source") << tr("BSSID");
+    else if (toDs && !fromDs)
+        names << tr("BSSID") << tr("Source") << tr("Destination");
+    else if (!toDs && fromDs)
+        names << tr("Destination") << tr("BSSID") << tr("Source");
+    else
+        names << tr("Receiver address") << tr("Transmitter address")
+              << tr("Destination") << tr("Source");
+
+    int pos = off + 4;
+    for (int i = 0; i < qMin(nAddr, 3) && pos + 6 <= off + hlen; i++, pos += 6)
+        h.children << macField(names.value(i), pos);
+    if (hasSeq && pos + 2 <= off + hlen) {
+        DecodedField sc = uintField(tr("Sequence control"), pos, 2, 0, 0,
+                                    QString(), true, true);
+        sc.children
+            << uintField(tr("Fragment number"), pos, 2, 0x000F, 0, QString(),
+                         false, true)
+            << uintField(tr("Sequence number"), pos, 2, 0xFFF0, 4, QString(),
+                         false, true);
+        h.children << sc;
+        pos += 2;
+    }
+    if (nAddr == 4 && pos + 6 <= off + hlen) {
+        h.children << macField(names.value(3), pos);
+        pos += 6;
+    }
+    if (qos && pos + 2 <= off + hlen) {
+        DecodedField q = uintField(tr("QoS control"), pos, 2, 0, 0, QString(),
+                                   true, true);
+        q.children
+            << uintField(tr("TID"), pos, 2, 0x000F, 0, QString(), false, true)
+            << uintField(tr("EOSP"), pos, 2, 0x0010, 4, QString(), false, true)
+            << uintField(tr("Ack policy"), pos, 2, 0x0060, 5, QString(),
+                         false, true)
+            << uintField(tr("A-MSDU present"), pos, 2, 0x0080, 7, QString(),
+                         false, true);
+        h.children << q;
+        pos += 2;
+    }
+    if (htc && pos + 4 <= off + hlen) {
+        h.children << uintField(tr("HT control"), pos, 4, 0, 0, QString(),
+                                true, true);
+        pos += 4;
+    }
+    out << h;
+    pos = off + hlen;
+
+    // body
+    if (pos < bodyEnd) {
+        if (prot) {
+            addData(pos, bodyEnd - pos, tr("Encrypted data"), out);
+        }
+        else if (type == 0) {
+            DecodedField body = header(subName, pos, bodyEnd - pos);
+            int p = pos;
+            auto fixed = [&](const QString &n, int len, bool hexv) {
+                if (p + len <= bodyEnd) {
+                    body.children << uintField(n, p, len, 0, 0, QString(),
+                                               hexv, true);
+                    p += len;
+                }
+            };
+            switch (subtype) {
+            case 0:     // association request
+                fixed(tr("Capability"), 2, true);
+                fixed(tr("Listen interval"), 2, false);
+                break;
+            case 1: case 3:     // (re)association response
+                fixed(tr("Capability"), 2, true);
+                fixed(tr("Status code"), 2, false);
+                fixed(tr("Association ID"), 2, false);
+                break;
+            case 2:     // reassociation request
+                fixed(tr("Capability"), 2, true);
+                fixed(tr("Listen interval"), 2, false);
+                if (p + 6 <= bodyEnd) {
+                    body.children << macField(tr("Current AP"), p);
+                    p += 6;
+                }
+                break;
+            case 5: case 8:     // probe response, beacon
+                fixed(tr("Timestamp"), 8, true);
+                fixed(tr("Beacon interval (TU)"), 2, false);
+                fixed(tr("Capability"), 2, true);
+                break;
+            case 10: case 12:   // disassociation, deauthentication
+                fixed(tr("Reason code"), 2, false);
+                break;
+            case 11:    // authentication
+                fixed(tr("Algorithm"), 2, false);
+                fixed(tr("Sequence"), 2, false);
+                fixed(tr("Status code"), 2, false);
+                break;
+            case 13: case 14:   // action
+                if (p + 2 <= bodyEnd) {
+                    body.children << uintField(tr("Category"), p, 1)
+                                  << uintField(tr("Action"), p + 1, 1);
+                    p += 2;
+                }
+                addData(p, bodyEnd - p, tr("Action details"), body.children);
+                p = bodyEnd;
+                break;
+            default:
+                break;
+            }
+            if (p < bodyEnd)
+                decode80211Ies(p, bodyEnd, body.children);
+            out << body;
+        }
+        else if (type == 2 && (subtype & 0x4) == 0) {
+            // data carrying an MSDU: LLC/SNAP + payload (IP, ARP...)
+            decodeLlc(pos, bodyEnd, out, depth);
+        }
+        else {
+            addData(pos, bodyEnd - pos, tr("Frame body"), out);
+        }
+    }
+    if (fcsLen)
+        out << uintField(tr("FCS"), bodyEnd, 4, 0, 0, QString(), true, true);
+    return end;
+}
+
+int PacketDecoder::decode80211Ies(int off, int end, Out &out)
+{
+    static const QMap<int, QString> ieNames {
+        {0, "SSID"}, {1, "Supported Rates"}, {3, "DS Parameter Set"},
+        {5, "TIM"}, {7, "Country"}, {11, "BSS Load"},
+        {32, "Power Constraint"}, {42, "ERP"}, {45, "HT Capabilities"},
+        {48, "RSN"}, {50, "Extended Supported Rates"}, {61, "HT Operation"},
+        {70, "RM Enabled Capabilities"}, {127, "Extended Capabilities"},
+        {191, "VHT Capabilities"}, {192, "VHT Operation"},
+        {221, "Vendor Specific"}, {255, "Extension"}};
+    int p = off;
+    while (p + 2 <= end) {
+        int id = int(u8(p)), len = int(u8(p + 1));
+        bool trunc = p + 2 + len > end;
+        int l = trunc ? end - p - 2 : len;
+        QString name = ieNames.value(id, tr("Element %1").arg(id));
+        QString value;
+        if (id == 0) {
+            value = (l == 0) ? tr("(wildcard)")
+                             : QString("\"%1\"").arg(QString::fromUtf8(
+                                   pkt_.mid(p + 2, l)));
+        }
+        else if (id == 3 && l >= 1) {
+            value = tr("channel %1").arg(u8(p + 2));
+        }
+        else if ((id == 1 || id == 50) && l > 0) {
+            QStringList r;
+            for (int i = 0; i < l; i++)
+                r << QString::number((u8(p + 2 + i) & 0x7F) / 2.0);
+            value = r.join(' ') + " Mb/s";
+        }
+        DecodedField ie = header(name, p, 2 + l, value);
+        ie.error = trunc;
+        ie.children << uintField(tr("Element ID"), p, 1)
+                    << uintField(tr("Length"), p + 1, 1);
+        if (id == 3 && l >= 1)
+            ie.children << uintField(tr("Channel"), p + 2, 1);
+        else
+            addData(p + 2, l, tr("Value"), ie.children);
+        out << ie;
+        p += 2 + l;
+    }
+    if (p < end)
+        addData(p, end - p, tr("Trailing bytes"), out);
+    return end;
 }

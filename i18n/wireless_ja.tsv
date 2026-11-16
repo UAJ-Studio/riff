@@ -71,3 +71,6 @@ Channel %1 was refused by the dongle or the country setting.	チャンネル %1 
 Stopping the wireless agent ...	無線エージェントを停止しています...
 Stopped.	停止しました。
 This WSL kernel (%1) already contains Wi-Fi drivers; using them.	このWSLカーネル（%1）には無線ドライバーが組み込まれているため、それを使います。
+Removing the old wireless environment ...	古い無線環境を削除しています...
+Installed - an update is available (click Update).	インストール済み - 更新があります（「更新」を押してください）。
+Update	更新

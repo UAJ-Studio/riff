@@ -1021,6 +1021,58 @@ This replaces the whole packet.</source>
         <source>Ctrl+Enter</source>
         <translation>Ctrl+Enter</translation>
     </message>
+    <message>
+        <source>Link type:</source>
+        <translation>リンク種別:</translation>
+    </message>
+    <message>
+        <source>Ethernet</source>
+        <translation>Ethernet</translation>
+    </message>
+    <message>
+        <source>802.11 + Radiotap (wireless dongle)</source>
+        <translation>802.11 + Radiotap（無線ドングル）</translation>
+    </message>
+    <message>
+        <source>What the packet starts with. Use &quot;802.11 + Radiotap&quot; for frames sent through a wireless dongle (Tools &gt; Wireless Dongle). Chosen automatically from the packet and the template.</source>
+        <translation>パケットの先頭が何か。無線ドングル（ツール ＞ 無線ドングル）から送るフレームには「802.11 + Radiotap」を使います。パケットの内容とテンプレートから自動で選ばれます。</translation>
+    </message>
+    <message>
+        <source>Wi-Fi (802.11, for a wireless dongle)</source>
+        <translation>Wi-Fi（802.11、無線ドングル用）</translation>
+    </message>
+    <message>
+        <source>Beacon</source>
+        <translation>ビーコン</translation>
+    </message>
+    <message>
+        <source>Probe Request</source>
+        <translation>プローブ要求</translation>
+    </message>
+    <message>
+        <source>Data (IPv4 + UDP, to AP)</source>
+        <translation>データ（IPv4 + UDP、APあて）</translation>
+    </message>
+    <message>
+        <source>QoS Data (IPv4 + UDP, to AP)</source>
+        <translation>QoSデータ（IPv4 + UDP、APあて）</translation>
+    </message>
+    <message>
+        <source>Null Data</source>
+        <translation>Nullデータ</translation>
+    </message>
+    <message>
+        <source>RTS</source>
+        <translation>RTS</translation>
+    </message>
+    <message>
+        <source>CTS</source>
+        <translation>CTS</translation>
+    </message>
+    <message>
+        <source>ACK</source>
+        <translation>ACK</translation>
+    </message>
 </context>
 <context>
     <name>Icmp</name>
@@ -2369,7 +2421,7 @@ Debug: %2</source>
     </message>
     <message>
         <source>IEEE 802.11 frame</source>
-        <translation>IEEE 802.11 フレーム</translation>
+        <translation type="vanished">IEEE 802.11 フレーム</translation>
     </message>
     <message>
         <source>Native frame</source>
@@ -2546,6 +2598,526 @@ Debug: %2</source>
     <message>
         <source> (not checked - fragment or truncated)</source>
         <translation> (未検証 - フラグメントまたは途中で切れたパケット)</translation>
+    </message>
+    <message>
+        <source>Radiotap</source>
+        <translation>Radiotap</translation>
+    </message>
+    <message>
+        <source>bad length</source>
+        <translation>長さが不正</translation>
+    </message>
+    <message>
+        <source>Pad</source>
+        <translation>パディング</translation>
+    </message>
+    <message>
+        <source>Present flags</source>
+        <translation>Presentフラグ</translation>
+    </message>
+    <message>
+        <source>TSFT</source>
+        <translation>TSFT</translation>
+    </message>
+    <message>
+        <source>Rate</source>
+        <translation>レート</translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation>チャンネル</translation>
+    </message>
+    <message>
+        <source>FHSS</source>
+        <translation>FHSS</translation>
+    </message>
+    <message>
+        <source>Signal (dBm)</source>
+        <translation>信号強度 (dBm)</translation>
+    </message>
+    <message>
+        <source>Noise (dBm)</source>
+        <translation>ノイズ (dBm)</translation>
+    </message>
+    <message>
+        <source>Lock quality</source>
+        <translation>ロック品質</translation>
+    </message>
+    <message>
+        <source>TX attenuation</source>
+        <translation>送信減衰</translation>
+    </message>
+    <message>
+        <source>TX attenuation (dB)</source>
+        <translation>送信減衰 (dB)</translation>
+    </message>
+    <message>
+        <source>TX power (dBm)</source>
+        <translation>送信出力 (dBm)</translation>
+    </message>
+    <message>
+        <source>Antenna</source>
+        <translation>アンテナ</translation>
+    </message>
+    <message>
+        <source>Signal (dB)</source>
+        <translation>信号強度 (dB)</translation>
+    </message>
+    <message>
+        <source>Noise (dB)</source>
+        <translation>ノイズ (dB)</translation>
+    </message>
+    <message>
+        <source>RX flags</source>
+        <translation>受信フラグ</translation>
+    </message>
+    <message>
+        <source>TX flags</source>
+        <translation>送信フラグ</translation>
+    </message>
+    <message>
+        <source>RTS retries</source>
+        <translation>RTS再送回数</translation>
+    </message>
+    <message>
+        <source>Data retries</source>
+        <translation>データ再送回数</translation>
+    </message>
+    <message>
+        <source>XChannel</source>
+        <translation>XChannel</translation>
+    </message>
+    <message>
+        <source>MCS</source>
+        <translation>MCS</translation>
+    </message>
+    <message>
+        <source>A-MPDU status</source>
+        <translation>A-MPDUステータス</translation>
+    </message>
+    <message>
+        <source>VHT</source>
+        <translation>VHT</translation>
+    </message>
+    <message>
+        <source>HE</source>
+        <translation>HE</translation>
+    </message>
+    <message>
+        <source>HE-MU</source>
+        <translation>HE-MU</translation>
+    </message>
+    <message>
+        <source>HE-MU other user</source>
+        <translation>HE-MU 他ユーザー</translation>
+    </message>
+    <message>
+        <source>0-length PSDU</source>
+        <translation>長さ0のPSDU</translation>
+    </message>
+    <message>
+        <source>L-SIG</source>
+        <translation>L-SIG</translation>
+    </message>
+    <message>
+        <source>FCS at end</source>
+        <translation>末尾にFCSあり</translation>
+    </message>
+    <message>
+        <source>Short preamble</source>
+        <translation>ショートプリアンブル</translation>
+    </message>
+    <message>
+        <source>WEP</source>
+        <translation>WEP</translation>
+    </message>
+    <message>
+        <source>Fragmented</source>
+        <translation>フラグメント</translation>
+    </message>
+    <message>
+        <source>Bad FCS</source>
+        <translation>FCS不正</translation>
+    </message>
+    <message>
+        <source>Short GI</source>
+        <translation>ショートGI</translation>
+    </message>
+    <message>
+        <source>%1 Mb/s</source>
+        <translation>%1 Mb/s</translation>
+    </message>
+    <message>
+        <source>%1 MHz (channel %2)</source>
+        <translation>%1 MHz（チャンネル %2）</translation>
+    </message>
+    <message>
+        <source>Frequency (MHz)</source>
+        <translation>周波数 (MHz)</translation>
+    </message>
+    <message>
+        <source>Channel flags</source>
+        <translation>チャンネルフラグ</translation>
+    </message>
+    <message>
+        <source>MCS index %1</source>
+        <translation>MCSインデックス %1</translation>
+    </message>
+    <message>
+        <source>Known</source>
+        <translation>Known</translation>
+    </message>
+    <message>
+        <source>MCS index</source>
+        <translation>MCSインデックス</translation>
+    </message>
+    <message>
+        <source>Other radiotap fields</source>
+        <translation>その他のRadiotapフィールド</translation>
+    </message>
+    <message>
+        <source>IEEE 802.11 (truncated)</source>
+        <translation>IEEE 802.11（途中で切れています）</translation>
+    </message>
+    <message>
+        <source>Association Request</source>
+        <translation>アソシエーション要求</translation>
+    </message>
+    <message>
+        <source>Association Response</source>
+        <translation>アソシエーション応答</translation>
+    </message>
+    <message>
+        <source>Reassociation Request</source>
+        <translation>再アソシエーション要求</translation>
+    </message>
+    <message>
+        <source>Reassociation Response</source>
+        <translation>再アソシエーション応答</translation>
+    </message>
+    <message>
+        <source>Probe Request</source>
+        <translation>プローブ要求</translation>
+    </message>
+    <message>
+        <source>Probe Response</source>
+        <translation>プローブ応答</translation>
+    </message>
+    <message>
+        <source>Timing Advertisement</source>
+        <translation>Timing Advertisement</translation>
+    </message>
+    <message>
+        <source>Beacon</source>
+        <translation>ビーコン</translation>
+    </message>
+    <message>
+        <source>ATIM</source>
+        <translation>ATIM</translation>
+    </message>
+    <message>
+        <source>Disassociation</source>
+        <translation>ディスアソシエーション</translation>
+    </message>
+    <message>
+        <source>Authentication</source>
+        <translation>認証</translation>
+    </message>
+    <message>
+        <source>Deauthentication</source>
+        <translation>認証解除</translation>
+    </message>
+    <message>
+        <source>Action</source>
+        <translation>アクション</translation>
+    </message>
+    <message>
+        <source>Action No Ack</source>
+        <translation>アクション（ACKなし）</translation>
+    </message>
+    <message>
+        <source>Trigger</source>
+        <translation>トリガー</translation>
+    </message>
+    <message>
+        <source>TACK</source>
+        <translation>TACK</translation>
+    </message>
+    <message>
+        <source>Beamforming Report Poll</source>
+        <translation>ビームフォーミングレポートポール</translation>
+    </message>
+    <message>
+        <source>VHT/HE NDP Announcement</source>
+        <translation>VHT/HE NDPアナウンスメント</translation>
+    </message>
+    <message>
+        <source>Control Frame Extension</source>
+        <translation>制御フレーム拡張</translation>
+    </message>
+    <message>
+        <source>Control Wrapper</source>
+        <translation>Control Wrapper</translation>
+    </message>
+    <message>
+        <source>Block Ack Request</source>
+        <translation>ブロックACK要求</translation>
+    </message>
+    <message>
+        <source>Block Ack</source>
+        <translation>ブロックACK</translation>
+    </message>
+    <message>
+        <source>PS-Poll</source>
+        <translation>PS-Poll</translation>
+    </message>
+    <message>
+        <source>RTS</source>
+        <translation>RTS</translation>
+    </message>
+    <message>
+        <source>CTS</source>
+        <translation>CTS</translation>
+    </message>
+    <message>
+        <source>ACK</source>
+        <translation>ACK</translation>
+    </message>
+    <message>
+        <source>CF-End</source>
+        <translation>CF-End</translation>
+    </message>
+    <message>
+        <source>CF-End + CF-Ack</source>
+        <translation>CF-End + CF-Ack</translation>
+    </message>
+    <message>
+        <source>Data + CF-Ack</source>
+        <translation>データ + CF-Ack</translation>
+    </message>
+    <message>
+        <source>Data + CF-Poll</source>
+        <translation>データ + CF-Poll</translation>
+    </message>
+    <message>
+        <source>Data + CF-Ack + CF-Poll</source>
+        <translation>データ + CF-Ack + CF-Poll</translation>
+    </message>
+    <message>
+        <source>Null</source>
+        <translation>Null</translation>
+    </message>
+    <message>
+        <source>CF-Ack</source>
+        <translation>CF-Ack</translation>
+    </message>
+    <message>
+        <source>CF-Poll</source>
+        <translation>CF-Poll</translation>
+    </message>
+    <message>
+        <source>CF-Ack + CF-Poll</source>
+        <translation>CF-Ack + CF-Poll</translation>
+    </message>
+    <message>
+        <source>QoS Data</source>
+        <translation>QoSデータ</translation>
+    </message>
+    <message>
+        <source>QoS Data + CF-Ack</source>
+        <translation>QoSデータ + CF-Ack</translation>
+    </message>
+    <message>
+        <source>QoS Data + CF-Poll</source>
+        <translation>QoSデータ + CF-Poll</translation>
+    </message>
+    <message>
+        <source>QoS Data + CF-Ack + CF-Poll</source>
+        <translation>QoSデータ + CF-Ack + CF-Poll</translation>
+    </message>
+    <message>
+        <source>QoS Null</source>
+        <translation>QoS Null</translation>
+    </message>
+    <message>
+        <source>QoS CF-Poll</source>
+        <translation>QoS CF-Poll</translation>
+    </message>
+    <message>
+        <source>QoS CF-Ack + CF-Poll</source>
+        <translation>QoS CF-Ack + CF-Poll</translation>
+    </message>
+    <message>
+        <source>Management</source>
+        <translation>管理</translation>
+    </message>
+    <message>
+        <source>Extension</source>
+        <translation>拡張</translation>
+    </message>
+    <message>
+        <source>IEEE 802.11</source>
+        <translation>IEEE 802.11</translation>
+    </message>
+    <message>
+        <source>Frame control</source>
+        <translation>フレーム制御</translation>
+    </message>
+    <message>
+        <source>Protocol version</source>
+        <translation>プロトコルバージョン</translation>
+    </message>
+    <message>
+        <source>Subtype</source>
+        <translation>サブタイプ</translation>
+    </message>
+    <message>
+        <source>To DS</source>
+        <translation>To DS</translation>
+    </message>
+    <message>
+        <source>From DS</source>
+        <translation>From DS</translation>
+    </message>
+    <message>
+        <source>Retry</source>
+        <translation>再送</translation>
+    </message>
+    <message>
+        <source>Power management</source>
+        <translation>省電力</translation>
+    </message>
+    <message>
+        <source>More data</source>
+        <translation>More data</translation>
+    </message>
+    <message>
+        <source>Protected</source>
+        <translation>保護（暗号化）</translation>
+    </message>
+    <message>
+        <source>+HTC / Order</source>
+        <translation>+HTC / Order</translation>
+    </message>
+    <message>
+        <source>AID</source>
+        <translation>AID</translation>
+    </message>
+    <message>
+        <source>Duration (us)</source>
+        <translation>Duration (μs)</translation>
+    </message>
+    <message>
+        <source>Receiver address</source>
+        <translation>受信者アドレス</translation>
+    </message>
+    <message>
+        <source>Transmitter address</source>
+        <translation>送信者アドレス</translation>
+    </message>
+    <message>
+        <source>BSSID</source>
+        <translation>BSSID</translation>
+    </message>
+    <message>
+        <source>Sequence control</source>
+        <translation>シーケンス制御</translation>
+    </message>
+    <message>
+        <source>Fragment number</source>
+        <translation>フラグメント番号</translation>
+    </message>
+    <message>
+        <source>QoS control</source>
+        <translation>QoS制御</translation>
+    </message>
+    <message>
+        <source>TID</source>
+        <translation>TID</translation>
+    </message>
+    <message>
+        <source>EOSP</source>
+        <translation>EOSP</translation>
+    </message>
+    <message>
+        <source>Ack policy</source>
+        <translation>ACKポリシー</translation>
+    </message>
+    <message>
+        <source>A-MSDU present</source>
+        <translation>A-MSDUあり</translation>
+    </message>
+    <message>
+        <source>HT control</source>
+        <translation>HT制御</translation>
+    </message>
+    <message>
+        <source>Capability</source>
+        <translation>ケーパビリティ</translation>
+    </message>
+    <message>
+        <source>Listen interval</source>
+        <translation>リッスン間隔</translation>
+    </message>
+    <message>
+        <source>Status code</source>
+        <translation>ステータスコード</translation>
+    </message>
+    <message>
+        <source>Association ID</source>
+        <translation>アソシエーションID</translation>
+    </message>
+    <message>
+        <source>Current AP</source>
+        <translation>現在のAP</translation>
+    </message>
+    <message>
+        <source>Beacon interval (TU)</source>
+        <translation>ビーコン間隔 (TU)</translation>
+    </message>
+    <message>
+        <source>Reason code</source>
+        <translation>理由コード</translation>
+    </message>
+    <message>
+        <source>Algorithm</source>
+        <translation>アルゴリズム</translation>
+    </message>
+    <message>
+        <source>Sequence</source>
+        <translation>シーケンス</translation>
+    </message>
+    <message>
+        <source>Category</source>
+        <translation>カテゴリ</translation>
+    </message>
+    <message>
+        <source>Action details</source>
+        <translation>アクションの詳細</translation>
+    </message>
+    <message>
+        <source>Frame body</source>
+        <translation>フレーム本体</translation>
+    </message>
+    <message>
+        <source>FCS</source>
+        <translation>FCS</translation>
+    </message>
+    <message>
+        <source>(wildcard)</source>
+        <translation>（ワイルドカード）</translation>
+    </message>
+    <message>
+        <source>channel %1</source>
+        <translation>チャンネル %1</translation>
+    </message>
+    <message>
+        <source>Element ID</source>
+        <translation>要素ID</translation>
+    </message>
+    <message>
+        <source>Trailing bytes</source>
+        <translation>末尾のバイト</translation>
     </message>
 </context>
 <context>
@@ -4493,6 +5065,14 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
         <source>&lt;p&gt;&lt;b&gt;WSL has been updated, so the dongle drivers need to be rebuilt.&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Windows updated the WSL kernel to %1. The dongle drivers included with Riff are built for a specific kernel, so they have to be rebuilt once for the new one.&lt;/p&gt;&lt;p&gt;Rebuilding takes about an hour and needs an Internet connection. Your other WSL distributions are not affected.&lt;/p&gt;</source>
         <translation>&lt;p&gt;&lt;b&gt;WSLが更新されたため、ドングルのドライバーを作り直す必要があります。&lt;/b&gt;&lt;/p&gt;&lt;p&gt;WindowsによってWSLのカーネルが %1 に更新されました。Riffに入っているドングルのドライバーは特定のカーネル向けに作られているため、新しいカーネル用に一度作り直す必要があります。&lt;/p&gt;&lt;p&gt;作り直しには1時間ほどかかり、インターネット接続が必要です。他のWSLディストリビューションには影響しません。&lt;/p&gt;</translation>
     </message>
+    <message>
+        <source>Installed - an update is available (click Update).</source>
+        <translation>インストール済み - 更新があります（「更新」を押してください）。</translation>
+    </message>
+    <message>
+        <source>Update</source>
+        <translation>更新</translation>
+    </message>
 </context>
 <context>
     <name>WirelessManager</name>
@@ -4599,6 +5179,10 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     <message>
         <source>This WSL kernel (%1) already contains Wi-Fi drivers; using them.</source>
         <translation>このWSLカーネル（%1）には無線ドライバーが組み込まれているため、それを使います。</translation>
+    </message>
+    <message>
+        <source>Removing the old wireless environment ...</source>
+        <translation>古い無線環境を削除しています...</translation>
     </message>
 </context>
 <context>

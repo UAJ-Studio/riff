@@ -45,7 +45,7 @@ static const char *kWirelessBusIdsKey = "Wireless/BusIds";
 
 WirelessDialog::WirelessDialog(WirelessManager *manager, QWidget *parent)
     : QDialog(parent), manager_(manager),
-      wslOk_(false), usbipdOk_(false), distroOk_(false)
+      wslOk_(false), usbipdOk_(false), distroOk_(false), distroUpdate_(false)
 {
     setWindowTitle(tr("Wireless Dongle"));
     resize(720, 640);
@@ -206,8 +206,15 @@ void WirelessDialog::refresh()
              "github.com/dorssel/usbipd-win</a>."));
 
     distroOk_ = wslOk_ && manager_->isDistroInstalled();
-    setCheck(distroStatus_, distroOk_, distroOk_ ? tr("Installed")
-        : tr("Not set up yet (about 70 MB, takes a minute)."));
+    QString bundled = manager_->bundledVersion();
+    distroUpdate_ = distroOk_ && !bundled.isEmpty()
+                    && manager_->installedVersion() != bundled;
+    if (distroUpdate_)
+        setCheck(distroStatus_, true, tr("Installed - an update is available "
+                                         "(click Update)."));
+    else
+        setCheck(distroStatus_, distroOk_, distroOk_ ? tr("Installed")
+            : tr("Not set up yet (about 70 MB, takes a minute)."));
 
     // keep the user's checks across refreshes
     QStringList checked = appSettings->value(kWirelessBusIdsKey).toStringList();
@@ -256,7 +263,8 @@ void WirelessDialog::refresh()
 void WirelessDialog::updateButtons()
 {
     int st = manager_->state();
-    installButton_->setVisible(wslOk_ && !distroOk_);
+    installButton_->setVisible(wslOk_ && (!distroOk_ || distroUpdate_));
+    installButton_->setText(distroOk_ ? tr("Update") : tr("Set up"));
     installButton_->setEnabled(st == WirelessManager::Idle);
     bool ready = wslOk_ && usbipdOk_ && distroOk_;
     switch (st) {

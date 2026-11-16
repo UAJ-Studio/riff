@@ -52,6 +52,7 @@ struct DecodedField
     quint64 mask{0};        // UInt: bits of the (length-byte) word; 0 = all
     int shift{0};           // UInt: right shift after masking
     bool hexStyle{false};   // UInt: show/edit as 0x.. rather than decimal
+    bool littleEndian{false}; // UInt: byte order (radiotap, 802.11)
     bool error{false};      // e.g. bad checksum - shown highlighted
     QList<DecodedField> children;
 
@@ -71,7 +72,18 @@ class PacketDecoder
     Q_DECLARE_TR_FUNCTIONS(PacketDecoder)
 
 public:
-    explicit PacketDecoder(const QByteArray &packet);
+    // What the first byte of the packet is
+    enum LinkType {
+        LinkEthernet,   // Ethernet II / 802.3
+        LinkRadiotap    // radiotap header + 802.11 frame (Wi-Fi monitor mode)
+    };
+
+    explicit PacketDecoder(const QByteArray &packet,
+                           LinkType link = LinkEthernet);
+
+    // Best guess for a stored frame (radiotap if it starts with a
+    // plausible radiotap header followed by an 802.11 frame)
+    static LinkType guessLinkType(const QByteArray &packet);
 
     const QList<DecodedField>& fields() const { return fields_; }
     const QList<ChecksumSpot>& checksums() const { return checksums_; }
@@ -91,11 +103,13 @@ public:
 
     // Overwrite every known checksum with its correct value.
     // Returns the number of checksums that changed.
-    static int fixChecksums(QByteArray &pkt);
+    static int fixChecksums(QByteArray &pkt, LinkType link = LinkEthernet);
     // Same, but only touches checksums at the given offsets
-    static int fixChecksums(QByteArray &pkt, const QSet<int> &onlyAt);
+    static int fixChecksums(QByteArray &pkt, const QSet<int> &onlyAt,
+                            LinkType link = LinkEthernet);
     // Offsets of the checksums that are currently correct
-    static QSet<int> correctChecksums(const QByteArray &pkt);
+    static QSet<int> correctChecksums(const QByteArray &pkt,
+                                      LinkType link = LinkEthernet);
 
     // Parse hex text in common formats (plain, spaced, 0x.., hex dumps
     // with offsets from Wireshark, tcpdump or xxd). Returns false with
@@ -120,6 +134,11 @@ private:
     int decodeMpls(int off, int end, Out &out, int depth);
     int decodePppoe(int off, int end, bool session, Out &out, int depth);
     int decodeLldp(int off, int end, Out &out);
+
+    // Wi-Fi
+    int decodeRadiotap(int off, int end, Out &out, bool *hasFcs);
+    int decode80211(int off, int end, bool hasFcs, Out &out, int depth);
+    int decode80211Ies(int off, int end, Out &out);
 
     // Layer 3
     int decodeIpv4(int off, int end, Out &out, int depth);
@@ -159,7 +178,8 @@ private:
     DecodedField uintField(const QString &name, int off, int len,
                            quint64 mask = 0, int shift = 0,
                            const QString &meaning = QString(),
-                           bool hexStyle = false);
+                           bool hexStyle = false,
+                           bool littleEndian = false);
     DecodedField macField(const QString &name, int off);
     DecodedField ipv4Field(const QString &name, int off);
     DecodedField ipv6Field(const QString &name, int off);
@@ -180,6 +200,8 @@ private:
     quint32 u8(int off) const { return quint8(pkt_.at(off)); }
     quint32 u16(int off) const { return (u8(off) << 8) | u8(off + 1); }
     quint32 u32(int off) const { return (u16(off) << 16) | u16(off + 2); }
+    quint32 u16le(int off) const { return u8(off) | (u8(off + 1) << 8); }
+    quint32 u32le(int off) const { return u16le(off) | (u16le(off + 2) << 16); }
 
     const QByteArray pkt_;
     QList<DecodedField> fields_;

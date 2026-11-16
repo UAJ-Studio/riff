@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QDialog>
 
 class QCheckBox;
+class QComboBox;
 class QHexEdit;
 class QLabel;
 class QTreeWidget;
@@ -70,9 +71,11 @@ private slots:
     void onCopyHex();
     void onFixChecksums();
     void onInsertModeToggled(bool insert);
+    void onLinkTypeChanged(int index);
 
 private:
     void setPacket(const QByteArray &pkt);
+    void setLinkType(PacketDecoder::LinkType link);
     void rebuildTree();
     void addFields(QTreeWidgetItem *parent, const QList<DecodedField> &fields,
                    const QString &path);
@@ -84,6 +87,8 @@ private:
     QLabel *status_{nullptr};
     QCheckBox *autoChecksum_{nullptr};
     QCheckBox *insertMode_{nullptr};
+    QComboBox *linkCombo_{nullptr};
+    PacketDecoder::LinkType link_{PacketDecoder::LinkEthernet};
 
     QList<DecodedField> fieldsByItem_;  // indexed by item's UserRole data
     bool syncing_{false};

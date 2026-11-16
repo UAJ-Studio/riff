@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QApplication>
 #include <QCheckBox>
 #include <QClipboard>
+#include <QComboBox>
 #include <QDialogButtonBox>
 #include <QFontDatabase>
 #include <QHBoxLayout>
@@ -151,6 +152,22 @@ HexPacketEditor::HexPacketEditor(const QByteArray &packet, QWidget *parent)
     connect(fixButton, SIGNAL(clicked()), SLOT(onFixChecksums()));
     tools->addWidget(fixButton);
 
+    tools->addSpacing(12);
+    QLabel *linkLabel = new QLabel(tr("Link type:"), this);
+    tools->addWidget(linkLabel);
+    linkCombo_ = new QComboBox(this);
+    linkCombo_->addItem(tr("Ethernet"), int(PacketDecoder::LinkEthernet));
+    linkCombo_->addItem(tr("802.11 + Radiotap (wireless dongle)"),
+                        int(PacketDecoder::LinkRadiotap));
+    linkCombo_->setToolTip(tr("What the packet starts with. Use \"802.11 + "
+            "Radiotap\" for frames sent through a wireless dongle (Tools > "
+            "Wireless Dongle). Chosen automatically from the packet and "
+            "the template."));
+    linkLabel->setBuddy(linkCombo_);
+    connect(linkCombo_, SIGNAL(currentIndexChanged(int)),
+            SLOT(onLinkTypeChanged(int)));
+    tools->addWidget(linkCombo_);
+
     tools->addStretch();
 
     autoChecksum_ = new QCheckBox(tr("Update checksums after field edits"),
@@ -245,6 +262,7 @@ HexPacketEditor::HexPacketEditor(const QByteArray &packet, QWidget *parent)
     // setData() (not setPacket()) so that the initial bytes are the
     // baseline for "changed bytes" highlighting and aren't undoable
     hexEdit_->setData(packet.left(kMaxLength));
+    setLinkType(PacketDecoder::guessLinkType(packet));
     rebuildTree();
     updateStatus();
     tree_->expandAll();
@@ -320,7 +338,7 @@ void HexPacketEditor::rebuildTree()
     tree_->clear();
     fieldsByItem_.clear();
 
-    PacketDecoder decoder(hexEdit_->data());
+    PacketDecoder decoder(hexEdit_->data(), link_);
     addFields(nullptr, decoder.fields(), QString());
 
     for (QTreeWidgetItemIterator it(tree_); *it; ++it) {
@@ -466,10 +484,10 @@ void HexPacketEditor::onTreeItemDoubleClicked(QTreeWidgetItem *item,
             if (autoChecksum_->isChecked()) {
                 // Keep correct checksums correct - but leave deliberately
                 // wrong ones alone, including the one just typed in
-                QSet<int> keep = PacketDecoder::correctChecksums(pkt);
+                QSet<int> keep = PacketDecoder::correctChecksums(pkt, link_);
                 for (int off = f.offset - 1; off < f.offset + f.length; off++)
                     keep.remove(off);
-                PacketDecoder::fixChecksums(newPkt, keep);
+                PacketDecoder::fixChecksums(newPkt, keep, link_);
             }
             setPacket(newPkt);
             hexEdit_->selectRange(f.offset, f.length);
@@ -490,7 +508,10 @@ void HexPacketEditor::onTemplateChosen()
                    "(You can undo this with Ctrl+Z.)").arg(action->text()))
                 != QMessageBox::Yes)
         return;
-    setPacket(templatePacket(action->data().toInt()));
+    int index = action->data().toInt();
+    setLinkType(PacketTemplates::isWifi(index) ? PacketDecoder::LinkRadiotap
+                                               : PacketDecoder::LinkEthernet);
+    setPacket(templatePacket(index));
     tree_->expandAll();
 }
 
@@ -520,6 +541,7 @@ void HexPacketEditor::onPasteHex()
         if (parseHexText(text, &bytes, &error)) {
             if (bytes.isEmpty())
                 return;
+            setLinkType(PacketDecoder::guessLinkType(bytes));
             setPacket(bytes);
             tree_->expandAll();
             return;
@@ -547,7 +569,7 @@ void HexPacketEditor::onCopyHex()
 void HexPacketEditor::onFixChecksums()
 {
     QByteArray pkt = hexEdit_->data();
-    int n = PacketDecoder::fixChecksums(pkt);
+    int n = PacketDecoder::fixChecksums(pkt, link_);
     if (n)
         setPacket(pkt);
     updateStatus();
@@ -579,4 +601,25 @@ void HexPacketEditor::updateStatus()
     else if (len > 1514)
         parts << tr("longer than a standard 1514-byte frame (jumbo)");
     status_->setText(parts.join(QString::fromUtf8("  \xC2\xB7  ")));
+}
+
+void HexPacketEditor::setLinkType(PacketDecoder::LinkType link)
+{
+    link_ = link;
+    int i = linkCombo_->findData(int(link));
+    if (i >= 0 && i != linkCombo_->currentIndex()) {
+        syncing_ = true;    // no rebuild from the slot; callers rebuild
+        linkCombo_->setCurrentIndex(i);
+        syncing_ = false;
+    }
+}
+
+void HexPacketEditor::onLinkTypeChanged(int index)
+{
+    if (syncing_)
+        return;
+    link_ = PacketDecoder::LinkType(linkCombo_->itemData(index).toInt());
+    rebuildTree();
+    updateStatus();
+    tree_->expandAll();
 }

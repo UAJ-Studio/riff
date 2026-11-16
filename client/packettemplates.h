@@ -32,6 +32,7 @@ namespace PacketTemplates {
     const char* name(int index);
     const char* group(int index);
     QByteArray build(int index);  // with correct checksums
+    bool isWifi(int index);       // radiotap + 802.11 (wireless dongle)
 }
 
 #endif

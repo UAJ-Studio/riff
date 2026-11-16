@@ -62,7 +62,7 @@ private:
     QPushButton *startButton_;
     QPushButton *refreshButton_;
     QPlainTextEdit *log_;
-    bool wslOk_, usbipdOk_, distroOk_;
+    bool wslOk_, usbipdOk_, distroOk_, distroUpdate_;
 };
 
 #endif

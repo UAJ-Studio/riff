@@ -123,6 +123,42 @@ QByteArray outerIpv4(int proto, const QByteArray &payload)
            + ipv4(proto, kSrcIp, kDstIp, payload);
 }
 
+// ---- Wi-Fi helpers ----
+const QByteArray kBroadcast(6, char(0xFF));
+const QByteArray kApMac = mac("02:00:00:00:01:00");
+const QByteArray kStaMac = mac("02:00:00:00:02:00");
+
+// Radiotap header for injection: present = Rate + TX flags,
+// rate 6 Mb/s (valid on 2.4 and 5 GHz), TX flags 0
+QByteArray radiotapTx()
+{
+    return QByteArray::fromHex("00000c00" "04800000" "0c00" "0000");
+}
+
+// 802.11 header with three addresses + sequence control (frame control
+// is given as its 16-bit value and stored little-endian)
+QByteArray wifiHeader(int fc, const QByteArray &a1, const QByteArray &a2,
+                      const QByteArray &a3)
+{
+    QByteArray h;
+    h.append(char(fc & 0xFF)).append(char((fc >> 8) & 0xFF));
+    h.append(QByteArray(2, 0));         // duration
+    h += a1 + a2 + a3;
+    h.append(QByteArray(2, 0));         // sequence control
+    return h;
+}
+
+QByteArray ie(int id, const QByteArray &value)
+{
+    return QByteArray(1, char(id)) + QByteArray(1, char(value.size()))
+           + value;
+}
+
+QByteArray snap(int etherType)
+{
+    return QByteArray::fromHex("aaaa03000000") + be16(etherType);
+}
+
 struct Template {
     const char *group;
     const char *name;
@@ -175,7 +211,26 @@ const Template kTemplates[] = {
      QT_TRANSLATE_NOOP("HexPacketEditor", "STP BPDU")},
     {QT_TRANSLATE_NOOP("HexPacketEditor", "Control / applications"),
      QT_TRANSLATE_NOOP("HexPacketEditor", "IGMPv2 Membership Report")},
+
+    // Wi-Fi (USB dongle in monitor mode): radiotap + 802.11, index >= kFirstWifi
+    {QT_TRANSLATE_NOOP("HexPacketEditor", "Wi-Fi (802.11, for a wireless dongle)"),
+     QT_TRANSLATE_NOOP("HexPacketEditor", "Beacon")},
+    {QT_TRANSLATE_NOOP("HexPacketEditor", "Wi-Fi (802.11, for a wireless dongle)"),
+     QT_TRANSLATE_NOOP("HexPacketEditor", "Probe Request")},
+    {QT_TRANSLATE_NOOP("HexPacketEditor", "Wi-Fi (802.11, for a wireless dongle)"),
+     QT_TRANSLATE_NOOP("HexPacketEditor", "Data (IPv4 + UDP, to AP)")},
+    {QT_TRANSLATE_NOOP("HexPacketEditor", "Wi-Fi (802.11, for a wireless dongle)"),
+     QT_TRANSLATE_NOOP("HexPacketEditor", "QoS Data (IPv4 + UDP, to AP)")},
+    {QT_TRANSLATE_NOOP("HexPacketEditor", "Wi-Fi (802.11, for a wireless dongle)"),
+     QT_TRANSLATE_NOOP("HexPacketEditor", "Null Data")},
+    {QT_TRANSLATE_NOOP("HexPacketEditor", "Wi-Fi (802.11, for a wireless dongle)"),
+     QT_TRANSLATE_NOOP("HexPacketEditor", "RTS")},
+    {QT_TRANSLATE_NOOP("HexPacketEditor", "Wi-Fi (802.11, for a wireless dongle)"),
+     QT_TRANSLATE_NOOP("HexPacketEditor", "CTS")},
+    {QT_TRANSLATE_NOOP("HexPacketEditor", "Wi-Fi (802.11, for a wireless dongle)"),
+     QT_TRANSLATE_NOOP("HexPacketEditor", "ACK")},
 };
+const int kFirstWifi = 22;
 const int kTemplateCount = int(sizeof(kTemplates) / sizeof(kTemplates[0]));
 
 QByteArray lldpTlv(int type, const QByteArray &value)
@@ -302,12 +357,50 @@ QByteArray buildTemplate(int index)
         return padTo60(ethernet(mac("01:80:c2:00:00:00"), kSrcMac,
                                 llc.size()) + llc);
     }
-    default: { // IGMPv2 report for 239.1.1.1
+    case 21: { // IGMPv2 report for 239.1.1.1
         QByteArray igmp = QByteArray::fromHex("1600") + be16(0)
                           + ip4(239, 1, 1, 1);
         return padTo60(ethernet(mac("01:00:5e:01:01:01"), kSrcMac, 0x0800)
                        + ipv4(2, kSrcIp, ip4(239, 1, 1, 1), igmp, 1));
     }
+
+    // ---- Wi-Fi: radiotap (TX: rate 6 Mb/s, TX flags 0) + 802.11 ----
+    // The driver adds the FCS. Addresses are locally administered examples.
+    case 22: { // Beacon for SSID "Riff-Test" on channel 1
+        QByteArray body = QByteArray(8, 0)                 // timestamp
+            + QByteArray::fromHex("6400")                  // interval 100 TU
+            + QByteArray::fromHex("0104")                  // ESS, short slot
+            + ie(0, QByteArray("Riff-Test"))
+            + ie(1, QByteArray::fromHex("8c129824b048606c"))
+            + ie(3, QByteArray(1, char(1)));
+        return radiotapTx() + wifiHeader(0x0080, kBroadcast, kApMac, kApMac)
+               + body;
+    }
+    case 23: // Probe Request, wildcard SSID
+        return radiotapTx()
+               + wifiHeader(0x0040, kBroadcast, kStaMac, kBroadcast)
+               + ie(0, QByteArray())
+               + ie(1, QByteArray::fromHex("8c129824b048606c"));
+    case 24: // Data to the AP (To DS): LLC/SNAP + IPv4 + UDP
+        return radiotapTx() + wifiHeader(0x0108, kApMac, kStaMac, kDstMac)
+               + snap(0x0800)
+               + ipv4(17, kSrcIp, kDstIp, udp(49152, 5000, "Hello Wi-Fi!",
+                                               true));
+    case 25: // QoS Data (TID 0) to the AP
+        return radiotapTx() + wifiHeader(0x0188, kApMac, kStaMac, kDstMac)
+               + QByteArray::fromHex("0000")               // QoS control
+               + snap(0x0800)
+               + ipv4(17, kSrcIp, kDstIp, udp(49152, 5000, "Hello QoS!",
+                                               true));
+    case 26: // Null data (To DS)
+        return radiotapTx() + wifiHeader(0x0148, kApMac, kStaMac, kApMac);
+    case 27: // RTS: duration 300 us, RA AP, TA station
+        return radiotapTx() + QByteArray::fromHex("b4002c01") + kApMac
+               + kStaMac;
+    case 28: // CTS to the station
+        return radiotapTx() + QByteArray::fromHex("c4000000") + kStaMac;
+    default: // ACK to the station
+        return radiotapTx() + QByteArray::fromHex("d4000000") + kStaMac;
     }
 }
 
@@ -332,10 +425,16 @@ const char* group(int index)
                                                   : "";
 }
 
+bool isWifi(int index)
+{
+    return index >= kFirstWifi && index < kTemplateCount;
+}
+
 QByteArray build(int index)
 {
     QByteArray pkt = buildTemplate(index);
-    PacketDecoder::fixChecksums(pkt);
+    PacketDecoder::fixChecksums(pkt, isWifi(index)
+            ? PacketDecoder::LinkRadiotap : PacketDecoder::LinkEthernet);
     return pkt;
 }
 

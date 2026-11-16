@@ -146,6 +146,24 @@ QString WirelessManager::distroDir() const
     return QDir(base).filePath("Riff/wsl/RiffWireless");
 }
 
+QString WirelessManager::bundledVersion() const
+{
+    QFile f(QCoreApplication::applicationDirPath()
+            + "/wireless/riffwireless-version.txt");
+    if (!f.open(QIODevice::ReadOnly))
+        return QString();
+    return QString::fromLatin1(f.readAll()).trimmed();
+}
+
+QString WirelessManager::installedVersion()
+{
+    QString out;
+    if (runWsl({"-d", kDistro, "-u", "root", "--", "cat", "/opt/riff/VERSION"},
+               &out, 20000) != 0)
+        return QString();
+    return out.trimmed();
+}
+
 void WirelessManager::installDistro()
 {
     if (!QFile::exists(rootfsPath())) {
@@ -153,6 +171,12 @@ void WirelessManager::installDistro()
                         .arg(QDir::toNativeSeparators(rootfsPath())), true);
         emit installFinished(false);
         return;
+    }
+    if (isDistroInstalled()) {
+        // update: replace Riff's own distribution with the bundled one
+        emit message(tr("Removing the old wireless environment ..."), false);
+        QString out;
+        runWsl({"--unregister", kDistro}, &out, 60000);
     }
     QDir().mkpath(distroDir());
     emit message(tr("Installing the Riff wireless environment "

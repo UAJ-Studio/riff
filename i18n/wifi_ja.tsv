@@ -1,0 +1,151 @@
+Link type:	リンク種別:
+Ethernet	Ethernet
+802.11 + Radiotap (wireless dongle)	802.11 + Radiotap（無線ドングル）
+What the packet starts with. Use "802.11 + Radiotap" for frames sent through a wireless dongle (Tools > Wireless Dongle). Chosen automatically from the packet and the template.	パケットの先頭が何か。無線ドングル（ツール ＞ 無線ドングル）から送るフレームには「802.11 + Radiotap」を使います。パケットの内容とテンプレートから自動で選ばれます。
+Wi-Fi (802.11, for a wireless dongle)	Wi-Fi（802.11、無線ドングル用）
+Beacon	ビーコン
+Probe Request	プローブ要求
+Data (IPv4 + UDP, to AP)	データ（IPv4 + UDP、APあて）
+QoS Data (IPv4 + UDP, to AP)	QoSデータ（IPv4 + UDP、APあて）
+Null Data	Nullデータ
+RTS	RTS
+CTS	CTS
+ACK	ACK
+Radiotap	Radiotap
+bad length	長さが不正
+Pad	パディング
+Present flags	Presentフラグ
+TSFT	TSFT
+Rate	レート
+Channel	チャンネル
+FHSS	FHSS
+Signal (dBm)	信号強度 (dBm)
+Noise (dBm)	ノイズ (dBm)
+Lock quality	ロック品質
+TX attenuation	送信減衰
+TX attenuation (dB)	送信減衰 (dB)
+TX power (dBm)	送信出力 (dBm)
+Antenna	アンテナ
+Signal (dB)	信号強度 (dB)
+Noise (dB)	ノイズ (dB)
+RX flags	受信フラグ
+TX flags	送信フラグ
+RTS retries	RTS再送回数
+Data retries	データ再送回数
+XChannel	XChannel
+MCS	MCS
+A-MPDU status	A-MPDUステータス
+VHT	VHT
+HE	HE
+HE-MU	HE-MU
+HE-MU other user	HE-MU 他ユーザー
+0-length PSDU	長さ0のPSDU
+L-SIG	L-SIG
+FCS at end	末尾にFCSあり
+Short preamble	ショートプリアンブル
+WEP	WEP
+Fragmented	フラグメント
+Bad FCS	FCS不正
+Short GI	ショートGI
+%1 Mb/s	%1 Mb/s
+%1 MHz (channel %2)	%1 MHz（チャンネル %2）
+Frequency (MHz)	周波数 (MHz)
+Channel flags	チャンネルフラグ
+MCS index %1	MCSインデックス %1
+Known	Known
+MCS index	MCSインデックス
+Other radiotap fields	その他のRadiotapフィールド
+IEEE 802.11 (truncated)	IEEE 802.11（途中で切れています）
+Association Request	アソシエーション要求
+Association Response	アソシエーション応答
+Reassociation Request	再アソシエーション要求
+Reassociation Response	再アソシエーション応答
+Probe Response	プローブ応答
+Timing Advertisement	Timing Advertisement
+ATIM	ATIM
+Disassociation	ディスアソシエーション
+Authentication	認証
+Deauthentication	認証解除
+Action	アクション
+Action No Ack	アクション（ACKなし）
+Trigger	トリガー
+TACK	TACK
+Beamforming Report Poll	ビームフォーミングレポートポール
+VHT/HE NDP Announcement	VHT/HE NDPアナウンスメント
+Control Frame Extension	制御フレーム拡張
+Control Wrapper	Control Wrapper
+Block Ack Request	ブロックACK要求
+Block Ack	ブロックACK
+PS-Poll	PS-Poll
+CF-End	CF-End
+CF-End + CF-Ack	CF-End + CF-Ack
+Data + CF-Ack	データ + CF-Ack
+Data + CF-Poll	データ + CF-Poll
+Data + CF-Ack + CF-Poll	データ + CF-Ack + CF-Poll
+Null	Null
+CF-Ack	CF-Ack
+CF-Poll	CF-Poll
+CF-Ack + CF-Poll	CF-Ack + CF-Poll
+QoS Data	QoSデータ
+QoS Data + CF-Ack	QoSデータ + CF-Ack
+QoS Data + CF-Poll	QoSデータ + CF-Poll
+QoS Data + CF-Ack + CF-Poll	QoSデータ + CF-Ack + CF-Poll
+QoS Null	QoS Null
+QoS CF-Poll	QoS CF-Poll
+QoS CF-Ack + CF-Poll	QoS CF-Ack + CF-Poll
+Management	管理
+Extension	拡張
+IEEE 802.11	IEEE 802.11
+Frame control	フレーム制御
+Protocol version	プロトコルバージョン
+Subtype	サブタイプ
+To DS	To DS
+From DS	From DS
+Retry	再送
+Power management	省電力
+More data	More data
+Protected	保護（暗号化）
++HTC / Order	+HTC / Order
+AID	AID
+Duration (us)	Duration (μs)
+Receiver address	受信者アドレス
+Transmitter address	送信者アドレス
+BSSID	BSSID
+Sequence control	シーケンス制御
+Fragment number	フラグメント番号
+QoS control	QoS制御
+TID	TID
+EOSP	EOSP
+Ack policy	ACKポリシー
+A-MSDU present	A-MSDUあり
+HT control	HT制御
+Capability	ケーパビリティ
+Listen interval	リッスン間隔
+Status code	ステータスコード
+Association ID	アソシエーションID
+Current AP	現在のAP
+Beacon interval (TU)	ビーコン間隔 (TU)
+Reason code	理由コード
+Algorithm	アルゴリズム
+Sequence	シーケンス
+Category	カテゴリ
+Action details	アクションの詳細
+Frame body	フレーム本体
+FCS	FCS
+(wildcard)	（ワイルドカード）
+channel %1	チャンネル %1
+Element ID	要素ID
+Trailing bytes	末尾のバイト
+Encrypted data	暗号化データ
+Destination	宛先
+Source	送信元
+Data	データ
+Control	制御
+Type	タイプ
+Length	長さ
+Version	バージョン
+Value	値
+Flags	フラグ
+Timestamp	タイムスタンプ
+Native frame	ネイティブフレーム
+Element %1	要素 %1

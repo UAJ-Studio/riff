@@ -55,6 +55,10 @@ public:
     bool isWslAvailable(QString *detail = 0);
     QString usbipdPath();
     bool isDistroInstalled();
+    // content version of the bundled rootfs and of the installed distro;
+    // different = the installed one is from an older Riff
+    QString bundledVersion() const;
+    QString installedVersion();
     QString rootfsPath() const;
     QString distroDir() const;
 
