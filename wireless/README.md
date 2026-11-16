@@ -62,10 +62,17 @@ register it, and only then plug in the next (verified: start 1, register 1,
 start 2, register 2). Best effort from two running: save work, unplug all, then register one at
 a time.
 
-Fix: rtwlanu6 5001.0.15.110 (ASUS USB-AX56 driver, 2022-07) does not crash -
-disabling two running dongles one after the other went through on the
-second PC. Riff warns when an older rtwlanu6.sys is installed and a rtw89
+Fix: rtwlanu6 5001.0.15.110 (ASUS USB-AX56 driver, 2022-07) does not crash.
+Tested with two running dongles: disabling them one after the other (second
+PC once, dev PC 3 cycles), restarting the PC, and force-binding both back to
+back - all went through, while 5001.0.13.105 crashed on each of these. Riff warns when an older rtwlanu6.sys is installed and a rtw89
 dongle is plugged in (WirelessManager::windowsDriverWarning).
+
+Identity: two AX56 report the same serial (00E04C000001, Realtek default),
+so Windows keys the second one by its USB port (instance ID 7&...&<port>).
+usbipd registration follows the instance ID: moved to another port, that
+dongle is a new, unregistered device. Keep registered dongles on the same
+port.
 
 Also: Linux rtw89 normally switches USB 2 connected dongles to USB 3 mode
 (the chip re-enumerates and keeps the setting until power-off). The pack's
