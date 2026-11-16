@@ -111,6 +111,7 @@ public slots:
     // (e.g. Realtek rtwlanu6 keeps one buffer in a global for all
     // adapters and frees it twice). Register one dongle at a time.
     bool registerDongle(const QString &busId, QString *error = 0);
+    bool registerDongles(const QStringList &busIds, QString *error = 0);
     bool unregisterDongle(const QString &busId, QString *error = 0);
 
 signals:

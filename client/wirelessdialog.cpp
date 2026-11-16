@@ -100,16 +100,13 @@ WirelessDialog::WirelessDialog(WirelessManager *manager, QWidget *parent)
     dv->addWidget(devices_);
     QHBoxLayout *dh = new QHBoxLayout;
     QLabel *hint = new QLabel(tr("Check the dongle(s) to use. \"Supported\" "
-            "dongles have a driver in Riff. Register each dongle for Riff "
-            "once: plug in one dongle, register it, and plug in the next "
-            "one only after that. Registered dongles stay with Riff and are "
-            "safe to use together."));
+            "dongles have a driver in Riff. A dongle is registered for Riff "
+            "the first time it is used and stays with Riff until you give it "
+            "back to Windows."));
     hint->setWordWrap(true);
     registerButton_ = new QPushButton(tr("Register for Riff"));
     registerButton_->setToolTip(tr("Take the selected dongle away from its "
-            "Windows Wi-Fi driver for good (until you give it back). Some "
-            "Wi-Fi drivers crash Windows when one of two of their dongles "
-            "is stopped; registered dongles never run on the Windows driver."));
+            "Windows Wi-Fi driver for good (until you give it back)."));
     returnButton_ = new QPushButton(tr("Give back to Windows"));
     returnButton_->setToolTip(tr("Let Windows use the selected dongle as a "
             "normal Wi-Fi adapter again."));
@@ -318,19 +315,6 @@ void WirelessDialog::refresh()
         for (int c = 0; c < devices_->columnCount(); c++)
             if (c != 2)
                 devices_->resizeColumnToContents(c);
-        // two or more dongles on their Windows driver: some drivers crash
-        // Windows when they stop one after the other (see registerDongle)
-        QStringList onWindows;
-        foreach (const WirelessManager::UsbDevice &d, list)
-            if (!d.driver.isEmpty() && !d.registered)
-                onWindows << d.busId;
-        if (onWindows.size() > 1)
-            onMessage(tr("Warning: %1 dongles (USB %2) run on their Windows "
-                         "driver at the same time. With some drivers Windows "
-                         "crashes when they stop (unplugging, shutdown). Save "
-                         "your work first, then unplug all of them and "
-                         "register them one at a time.")
-                      .arg(onWindows.size()).arg(onWindows.join(", ")), true);
         // known-buggy Windows driver installed: say once how to fix it
         if (!driverWarned_) {
             QString w = manager_->windowsDriverWarning(list);
@@ -616,23 +600,9 @@ void WirelessDialog::onGiveBack()
     QTreeWidgetItem *cur = devices_->currentItem();
     if (!cur)
         return;
-    // another dongle of the same model already on its Windows driver?
-    QStringList same;
-    for (int i = 0; i < devices_->topLevelItemCount(); i++) {
-        QTreeWidgetItem *it = devices_->topLevelItem(i);
-        if (it != cur && it->toolTip(2) == cur->toolTip(2)
-                && !it->data(3, Qt::UserRole).toBool())
-            same << it->text(1);
-    }
     QString text = tr("Give USB %1 back to Windows? It can then be used as a "
                       "normal Wi-Fi adapter, and Riff registers it again "
                       "when you use it next time.").arg(cur->text(1));
-    if (!same.isEmpty())
-        text += "\n\n" + tr("Warning: a dongle of the same model (USB %1) is "
-                "already used by Windows. Some Wi-Fi drivers crash Windows "
-                "when two of their dongles are in use and are stopped (for "
-                "example when Windows shuts down) - with this model use only "
-                "one at a time in Windows.").arg(same.join(", "));
     if (QMessageBox::question(this, windowTitle(), text) != QMessageBox::Yes)
         return;
     QString err;

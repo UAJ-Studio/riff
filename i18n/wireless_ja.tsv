@@ -14,7 +14,6 @@ Bus ID	バスID
 Device	デバイス
 Support	対応
 State	状態
-Check the dongle(s) to use. Devices marked "Supported" have a driver in Riff.	使うドングルにチェックを入れてください。「対応」と表示されたデバイスは、Riffにドライバーが入っています。
 Refresh	更新
 3. Radio	3. 電波
 Japan	日本
@@ -106,15 +105,11 @@ Giving USB %1 back to the Windows Wi-Fi driver - please allow the administrator 
 The dongle(s) can be used by Windows again.	ドングルを再びWindowsで使えるようにしました。
 The dongle(s) stay with WSL (the administrator prompt was declined). To give them back later: usbipd unbind --busid <bus id> as administrator.	ドングルはWSL用のままです（管理者の確認が拒否されました）。あとで戻すには、管理者のターミナルで usbipd unbind --busid <バスID> を実行してください。
 The dongles are needed by WSL for the capture, but they could not be taken from the Windows driver.	キャプチャーのためにドングルをWSLで使う必要がありますが、Windowsのドライバーから切り離せませんでした。
-Check the dongle(s) to use. "Supported" dongles have a driver in Riff. Register each dongle for Riff once, one at a time (only one unregistered dongle plugged in): registered dongles stay with Riff and are safe to use together.	使うドングルにチェックを入れてください。「対応」のドングルは、Riffにドライバーが入っています。各ドングルは最初に1回だけ、1本ずつ（未登録のドングルを1本だけ挿した状態で）Riff専用に登録してください。登録済みのドングルはRiff専用になり、何本でも安全に同時に使えます。
 Register for Riff	Riff専用に登録
-Take the selected dongle away from its Windows Wi-Fi driver for good (until you give it back). Some Wi-Fi drivers crash Windows when one of two of their dongles is stopped; registered dongles never run on the Windows driver.	選んだドングルを、Windowsに戻すまでの間、WindowsのWi-Fiドライバーから切り離します。一部のWi-Fiドライバーには、同じドライバーのドングル2本のうち1本を止めるとWindowsが停止する不具合があります。登録したドングルはWindowsのドライバーでは動かないので、この不具合が起きません。
 Give back to Windows	Windowsに戻す
 Let Windows use the selected dongle as a normal Wi-Fi adapter again.	選んだドングルを、再びWindowsの普通のWi-Fiアダプターとして使えるようにします。
 Riff only (%1)	Riff専用（%1）
 Give USB %1 back to Windows? It can then be used as a normal Wi-Fi adapter, and Riff registers it again when you use it next time.	USB %1 をWindowsに戻しますか？普通のWi-Fiアダプターとして使えるようになります。次にRiffで使うときに、もう一度登録します。
-Warning: a dongle of the same model (USB %1) is already used by Windows. Some Wi-Fi drivers crash Windows when two of their dongles are in use and are stopped (for example when Windows shuts down) - with this model use only one at a time in Windows.	注意: 同じ機種のドングル（USB %1）がすでにWindowsで使われています。一部のWi-Fiドライバーには、同じドングルを2本使っている状態でそれらが止まる（Windowsのシャットダウン時など）とWindowsが停止する不具合があります。この機種は、Windowsでは1本ずつ使ってください。
-USB %1 are not registered for Riff yet. Register them one at a time first (2. Dongle > Register for Riff).	USB %1 はまだRiff専用に登録されていません。先に1本ずつ登録してください（「2. ドングル」→「Riff専用に登録」）。
 USB %1 is not connected.	USB %1 は接続されていません。
 Another Wi-Fi dongle is still used by Windows (%1). Some Wi-Fi drivers crash Windows when one of two of their dongles is stopped, so dongles are registered one at a time: unplug the other dongle(s), register this one, then plug the next one in and register it.	ほかのWi-Fiドングルがまだ Windows で使われています（%1）。一部のWi-Fiドライバーには、同じドライバーのドングル2本のうち1本を止めるとWindowsが停止する不具合があるため、ドングルは1本ずつ登録します。ほかのドングルを抜いてからこのドングルを登録し、そのあと次のドングルを挿して登録してください。
 Registering USB %1 for Riff: the Windows Wi-Fi driver is taken off it - please allow the administrator prompt.	USB %1 をRiff専用に登録します（WindowsのWi-Fiドライバーから切り離します）。管理者の確認画面で許可してください。
@@ -125,7 +120,6 @@ Stop the Wireshark live capture first.	先にWiresharkのライブキャプチ�
 Giving USB %1 back to Windows - please allow the administrator prompt.	USB %1 をWindowsに戻します。管理者の確認画面で許可してください。
 USB %1 could not be given back to Windows (the administrator prompt was declined or failed).	USB %1 をWindowsに戻せませんでした（管理者の確認が拒否されたか、失敗しました）。
 USB %1 is used by Windows again.	USB %1 は、再びWindowsで使えるようになりました。
-Check the dongle(s) to use. "Supported" dongles have a driver in Riff. Register each dongle for Riff once: plug in one dongle, register it, and plug in the next one only after that. Registered dongles stay with Riff and are safe to use together.	使うドングルにチェックを入れてください。「対応」のドングルは、Riffにドライバーが入っています。各ドングルは最初に1回だけRiff専用に登録します。ドングルを1本挿して登録し、終わってから次の1本を挿してください。登録済みのドングルはRiff専用になり、何本でも安全に同時に使えます。
-Another Wi-Fi dongle also runs on its Windows driver (%1). Some Wi-Fi drivers crash Windows when two of their dongles have been in use and are stopped one after the other. From this state any next step (unplugging, registering, shutting down) can crash Windows.\n\nSave your work first. Then unplug all of these dongles and register them one at a time: plug one in, register it, and plug the next one in only after that.	ほかのWi-Fiドングルも、Windowsのドライバーで動いています（%1）。一部のWi-Fiドライバーには、同じドライバーのドングルを2本使ったあと、それらが続けて停止するとWindowsが停止する不具合があります。この状態からは、次のどの操作（抜く、登録する、シャットダウンする）でも起きる可能性があります。\n\n先に作業を保存してください。そのあと、これらのドングルをすべて抜いてから1本ずつ登録します。1本挿して登録し、終わってから次の1本を挿してください。
-Warning: %1 dongles (USB %2) run on their Windows driver at the same time. With some drivers Windows crashes when they stop (unplugging, shutdown). Save your work first, then unplug all of them and register them one at a time.	注意: %1 本のドングル（USB %2）が同時にWindowsのドライバーで動いています。ドライバーによっては、これらが停止するとき（抜く、シャットダウン）にWindowsが停止します。先に作業を保存してから、すべて抜いて1本ずつ登録してください。
-The Realtek Wi-Fi driver on this PC (rtwlanu6 %1) has a bug: if two of its dongles run on Windows at the same time, Windows crashes when they stop (unplugging, disabling, shutdown). Version 5001.0.15.110 or later fixes this: get it from the maker of your dongle (for the ASUS USB-AX56: ASUS support site, USB-AX56 > Driver & Tools). Until then, register the dongles for Riff one at a time.	このPCのRealtek Wi-Fiドライバー（rtwlanu6 %1）には不具合があります。このドライバーのドングルが2本同時にWindowsで動くと、停止するとき（抜く、無効化、シャットダウン）にWindowsが停止します。バージョン 5001.0.15.110 以降で修正されています。お使いのドングルのメーカーから入手してください（ASUS USB-AX56 の場合: ASUSのサポートサイト ＞ USB-AX56 ＞ ドライバーとツール）。更新するまでは、ドングルを1本ずつRiffに登録してください。
+Check the dongle(s) to use. "Supported" dongles have a driver in Riff. A dongle is registered for Riff the first time it is used and stays with Riff until you give it back to Windows.	使うドングルにチェックを入れてください。「対応」のドングルは、Riffにドライバーが入っています。ドングルは最初に使うときにRiff専用に登録され、Windowsに戻すまでRiff専用のままです。
+Take the selected dongle away from its Windows Wi-Fi driver for good (until you give it back).	選択したドングルをWindowsのWi-Fiドライバーから切り離します（Windowsに戻すまで）。
+The Realtek Wi-Fi driver on this PC (rtwlanu6 %1) is outdated. With two of its dongles plugged in, Windows can crash (blue screen) when they stop - unplugging, disabling, registering for Riff or shutting down. Install version 5001.0.15.110 or later from the maker of your dongle (for the ASUS USB-AX56: ASUS support site, USB-AX56 > Driver & Tools).	このPCのRealtek Wi-Fiドライバー（rtwlanu6 %1）は古いバージョンです。このドライバーのドングルを2本挿していると、停止するとき（抜く、無効化、Riffへの登録、シャットダウン）にWindowsが停止（ブルースクリーン）することがあります。お使いのドングルのメーカーから、バージョン 5001.0.15.110 以降のドライバーをインストールしてください（ASUS USB-AX56 の場合: ASUSのサポートサイト ＞ USB-AX56 ＞ ドライバーとツール）。

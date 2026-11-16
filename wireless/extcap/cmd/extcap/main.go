@@ -269,18 +269,7 @@ func capture(args map[string]string) error {
 	unlockOnce := sync.OnceFunc(unlock)
 	defer unlockOnce()
 	if !dev.IsForced {
-		// not registered for Riff yet: register it here only when no other
-		// supported dongle runs on its Windows driver (stopping one of two
-		// adapters is what crashes some drivers, e.g. Realtek rtwlanu6)
-		var others []string
-		for _, a := range adapters {
-			if a.BusId != dev.BusId && !a.IsForced {
-				others = append(others, a.BusId)
-			}
-		}
-		if len(others) > 0 {
-			return fmt.Errorf("USB %s のドングルは Riff にまだ登録されていません。ほかにも Windows で動いているドングルがあるため (USB %s)、安全のため自動では登録しません。Riff の「ツール ＞ 無線ドングル」で 1 本ずつ登録してください", dev.BusId, strings.Join(others, ", "))
-		}
+		// not registered for Riff yet: register it now
 		log.Printf("registering USB %s for Riff (force bind, UAC)", dev.BusId)
 		if err := usbip.ForceBind(*dev); err != nil {
 			return fmt.Errorf("ドングルを Windows のドライバーから切り離せませんでした (管理者の確認が必要です): %v", err)

@@ -37,8 +37,8 @@ injected frames would be dropped; the loader sets the configured country.
 ## Registered dongles (Windows crash avoidance)
 Riff uses a dongle only after it is "registered" (`usbipd bind --force`):
 the Windows Wi-Fi driver is unloaded from it once and never runs on it again
-until the user gives it back to Windows. Registration is done one dongle at
-a time, with no other unregistered supported dongle plugged in.
+until the user gives it back to Windows. Dongles are registered when first
+used (several at once, one administrator prompt).
 
 Why: on a test PC with two ASUS USB-AX56 (RTL8832AU), Windows crashed with
 BAD_POOL_HEADER (0x19, P1 0x22) in rtwlanu6.sys 5001.0.13.105, the Realtek
@@ -57,16 +57,16 @@ these dongles have run on the Windows driver at the same time, Windows
 can crash when they go away - disabling, registering, shutdown, and
 sometimes also unplugging (unplugging both once went through, another time
 unplugging the second one crashed: a double free does not always bugcheck
-at once). There is no reliably safe way out of that state. Safe procedure: plug in one dongle,
-register it, and only then plug in the next (verified: start 1, register 1,
-start 2, register 2). Best effort from two running: save work, unplug all, then register one at
-a time.
+at once). There is no reliably safe way out of that state with the old driver.
 
 Fix: rtwlanu6 5001.0.15.110 (ASUS USB-AX56 driver, 2022-07) does not crash.
 Tested with two running dongles: disabling them one after the other (second
 PC once, dev PC 3 cycles), restarting the PC, and force-binding both back to
-back - all went through, while 5001.0.13.105 crashed on each of these. Riff warns when an older rtwlanu6.sys is installed and a rtw89
-dongle is plugged in (WirelessManager::windowsDriverWarning).
+back - all went through, while 5001.0.13.105 crashed on each of these.
+So Riff does not work around the old driver (no one-at-a-time rule): it
+warns when an older rtwlanu6.sys is installed and a rtw89 dongle is plugged
+in, and asks to install the fixed version
+(WirelessManager::windowsDriverWarning).
 
 Identity: two AX56 report the same serial (00E04C000001, Realtek default),
 so Windows keys the second one by its USB port (instance ID 7&...&<port>).

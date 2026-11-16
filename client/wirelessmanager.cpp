@@ -133,88 +133,73 @@ bool WirelessManager::runElevatedCmd(const QString &cmdLine)
 #endif
 }
 
-// Starting with dongles that are not registered yet: register them now, but
-// only the safe case - one unregistered dongle and no other unregistered
-// supported dongle running on its Windows driver.
+// Starting with dongles that are not registered yet: register them now.
 bool WirelessManager::ensureRegistered(const QStringList &busIds,
                                        QString *error)
 {
-    QList<UsbDevice> devs = listUsbDevices();
-    QStringList need;
-    foreach (const QString &id, busIds)
-        foreach (const UsbDevice &d, devs)
-            if (d.busId == id && !d.registered)
-                need << id;
-    if (need.isEmpty())
-        return true;
-    if (need.size() > 1) {
-        if (error)
-            *error = tr("USB %1 are not registered for Riff yet. Register "
-                        "them one at a time first (2. Dongle > Register for "
-                        "Riff).").arg(need.join(", "));
-        return false;
-    }
-    return registerDongle(need.first(), error);
+    return registerDongles(busIds, error);
 }
 
 bool WirelessManager::registerDongle(const QString &busId, QString *error)
 {
+    return registerDongles(QStringList() << busId, error);
+}
+
+// Takes the dongles off their Windows Wi-Fi driver for good (usbipd bind
+// --force), all with one administrator prompt. Older Realtek rtwlanu6
+// drivers crash Windows when two of their adapters stop one after the
+// other; the dialog asks to update those (windowsDriverWarning()).
+bool WirelessManager::registerDongles(const QStringList &busIds,
+                                      QString *error)
+{
     QList<UsbDevice> devs = listUsbDevices();
-    UsbDevice target;
-    QStringList others;
-    foreach (const UsbDevice &d, devs) {
-        if (d.busId == busId)
-            target = d;
-        else if (!d.driver.isEmpty() && !d.registered)
-            others << QString("%1 %2").arg(d.busId, d.name);
+    QStringList need, missing;
+    foreach (const QString &id, busIds) {
+        bool found = false;
+        foreach (const UsbDevice &d, devs)
+            if (d.busId == id) {
+                found = true;
+                if (!d.registered)
+                    need << id;
+            }
+        if (!found)
+            missing << id;
     }
-    if (target.busId.isEmpty()) {
+    if (!missing.isEmpty()) {
         if (error)
-            *error = tr("USB %1 is not connected.").arg(busId);
+            *error = tr("USB %1 is not connected.").arg(missing.join(", "));
         return false;
     }
-    if (target.registered)
+    if (need.isEmpty())
         return true;
-    if (!others.isEmpty()) {
-        // Some drivers crash when two of their adapters stop one after the
-        // other (rtwlanu6 frees a shared buffer at every stop: two stops
-        // in a row free it twice). Once two run on Windows, any further
-        // stop - unplugging included - can crash, so don't add one here.
-        if (error)
-            *error = tr("Another Wi-Fi dongle also runs on its Windows driver "
-                        "(%1). Some Wi-Fi drivers crash Windows when two of "
-                        "their dongles have been in use and are stopped one "
-                        "after the other. From this state any next step "
-                        "(unplugging, registering, shutting down) can crash "
-                        "Windows.\n\nSave your work first. Then unplug all of "
-                        "these dongles and register them one at a time: plug "
-                        "one in, register it, and plug the next one in only "
-                        "after that.")
-                        .arg(others.join(", "));
-        return false;
-    }
+    QString ids = need.join(", ");
     emit message(tr("Registering USB %1 for Riff: the Windows Wi-Fi driver is "
                     "taken off it - please allow the administrator prompt.")
-                    .arg(busId), false);
+                    .arg(ids), false);
     QString exe = QDir::toNativeSeparators(usbipdPath());
+    QStringList cmds;
+    foreach (const QString &id, need)
+        cmds << QString("\"%1\" bind --busid %2 --force").arg(exe, id);
     bool ok;
     {
         HandoverLock lock;
-        ok = runElevatedCmd(QString("\"%1\" bind --busid %2 --force")
-                                .arg(exe, busId));
-        QThread::msleep(2000);  // the device restarts on the usbipd driver
+        ok = runElevatedCmd(cmds.join(" & "));
+        QThread::msleep(2000);  // the devices restart on the usbipd driver
     }
-    ok = ok && forcedState().value(busId, false);
+    QHash<QString, bool> forced = forcedState();
+    foreach (const QString &id, need)
+        ok = ok && forced.value(id, false);
     emit registrationChanged();
     if (!ok) {
         if (error)
             *error = tr("USB %1 could not be registered (the administrator "
-                        "prompt was declined or failed).").arg(busId);
+                        "prompt was declined or failed).").arg(ids);
         return false;
     }
     emit message(tr("USB %1 is registered for Riff. It stays with Riff until "
-                    "you give it back to Windows.").arg(busId), false);
+                    "you give it back to Windows.").arg(ids), false);
     return true;
+
 }
 
 bool WirelessManager::unregisterDongle(const QString &busId, QString *error)
@@ -364,13 +349,12 @@ QString WirelessManager::windowsDriverWarning(const QList<UsbDevice> &list) cons
         return QString();
     QString ver = QString("%1.%2.%3.%4").arg(v >> 48).arg((v >> 32) & 0xffff)
                     .arg((v >> 16) & 0xffff).arg(v & 0xffff);
-    return tr("The Realtek Wi-Fi driver on this PC (rtwlanu6 %1) has a bug: "
-              "if two of its dongles run on Windows at the same time, "
-              "Windows crashes when they stop (unplugging, disabling, "
-              "shutdown). Version 5001.0.15.110 or later fixes this: get it "
-              "from the maker of your dongle (for the ASUS USB-AX56: ASUS "
-              "support site, USB-AX56 > Driver & Tools). Until then, "
-              "register the dongles for Riff one at a time.").arg(ver);
+    return tr("The Realtek Wi-Fi driver on this PC (rtwlanu6 %1) is outdated. "
+              "With two of its dongles plugged in, Windows can crash (blue "
+              "screen) when they stop - unplugging, disabling, registering "
+              "for Riff or shutting down. Install version 5001.0.15.110 or "
+              "later from the maker of your dongle (for the ASUS USB-AX56: "
+              "ASUS support site, USB-AX56 > Driver & Tools).").arg(ver);
 }
 
 bool WirelessManager::startLiveCapture(const QList<CaptureTarget> &targets,
