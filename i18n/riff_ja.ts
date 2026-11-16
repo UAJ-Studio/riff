@@ -5191,7 +5191,11 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     </message>
     <message>
         <source>Warning: %1 dongles (USB %2) run on their Windows driver at the same time. With some drivers Windows crashes when they stop (also at shutdown). Do not restart now: unplug all of them, then plug them in and register them one at a time.</source>
-        <translation>注意: %1 本のドングル（USB %2）が同時にWindowsのドライバーで動いています。ドライバーによっては、これらが停止するとき（シャットダウン時を含む）にWindowsが停止します。今は再起動しないでください。すべて抜いてから、1本ずつ挿して登録してください。</translation>
+        <translation type="vanished">注意: %1 本のドングル（USB %2）が同時にWindowsのドライバーで動いています。ドライバーによっては、これらが停止するとき（シャットダウン時を含む）にWindowsが停止します。今は再起動しないでください。すべて抜いてから、1本ずつ挿して登録してください。</translation>
+    </message>
+    <message>
+        <source>Warning: %1 dongles (USB %2) run on their Windows driver at the same time. With some drivers Windows crashes when they stop (unplugging, shutdown). Save your work first, then unplug all of them and register them one at a time.</source>
+        <translation>注意: %1 本のドングル（USB %2）が同時にWindowsのドライバーで動いています。ドライバーによっては、これらが停止するとき（抜く、シャットダウン）にWindowsが停止します。先に作業を保存してから、すべて抜いて1本ずつ登録してください。</translation>
     </message>
 </context>
 <context>
@@ -5432,9 +5436,17 @@ Save your work, unplug all but one dongle and restart the PC. Then register the 
         <source>Another Wi-Fi dongle also runs on its Windows driver (%1). Some Wi-Fi drivers crash Windows when two of their dongles have been in use and are stopped one after the other - by registering, disabling or shutting down. Unplugging them is safe.
 
 Do not restart or shut down the PC now. Unplug all of these dongles, then register them one at a time: plug one in, register it, and plug the next one in only after that.</source>
-        <translation>ほかのWi-Fiドングルも、Windowsのドライバーで動いています（%1）。一部のWi-Fiドライバーには、同じドライバーのドングルを2本使ったあと、それらが続けて停止する（登録・無効化・シャットダウン）とWindowsが停止する不具合があります。抜くのは安全です。
+        <translation type="vanished">ほかのWi-Fiドングルも、Windowsのドライバーで動いています（%1）。一部のWi-Fiドライバーには、同じドライバーのドングルを2本使ったあと、それらが続けて停止する（登録・無効化・シャットダウン）とWindowsが停止する不具合があります。抜くのは安全です。
 
 今はPCを再起動・シャットダウンしないでください。これらのドングルをすべて抜いてから、1本ずつ登録します。1本挿して登録し、終わってから次の1本を挿してください。</translation>
+    </message>
+    <message>
+        <source>Another Wi-Fi dongle also runs on its Windows driver (%1). Some Wi-Fi drivers crash Windows when two of their dongles have been in use and are stopped one after the other. From this state any next step (unplugging, registering, shutting down) can crash Windows.
+
+Save your work first. Then unplug all of these dongles and register them one at a time: plug one in, register it, and plug the next one in only after that.</source>
+        <translation>ほかのWi-Fiドングルも、Windowsのドライバーで動いています（%1）。一部のWi-Fiドライバーには、同じドライバーのドングルを2本使ったあと、それらが続けて停止するとWindowsが停止する不具合があります。この状態からは、次のどの操作（抜く、登録する、シャットダウンする）でも起きる可能性があります。
+
+先に作業を保存してください。そのあと、これらのドングルをすべて抜いてから1本ずつ登録します。1本挿して登録し、終わってから次の1本を挿してください。</translation>
     </message>
 </context>
 <context>

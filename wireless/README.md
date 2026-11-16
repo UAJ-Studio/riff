@@ -54,12 +54,13 @@ Rule (confirmed on a second PC with Device Manager only, no WSL/usbipd):
 every adapter start allocates the shared buffer and overwrites the global,
 every stop frees it - two stops in a row free it twice. So once two of
 these dongles have run on the Windows driver at the same time, Windows
-will crash when the second one stops in an orderly way (disabling,
-registering, shutdown). A surprise removal (unplugging) does not take that
-path: unplugging both was safe. Safe procedure: plug in one dongle,
+can crash when they go away - disabling, registering, shutdown, and
+sometimes also unplugging (unplugging both once went through, another time
+unplugging the second one crashed: a double free does not always bugcheck
+at once). There is no reliably safe way out of that state. Safe procedure: plug in one dongle,
 register it, and only then plug in the next (verified: start 1, register 1,
-start 2, register 2). Recovery from two running: unplug all of them without
-restarting, then register them one at a time.
+start 2, register 2). Best effort from two running: save work, unplug all, then register one at
+a time.
 
 Also: Linux rtw89 normally switches USB 2 connected dongles to USB 3 mode
 (the chip re-enumerates and keeps the setting until power-off). The pack's
