@@ -1,0 +1,73 @@
+&Tools	ツール(&T)
+&Wireless Dongle...	無線ドングル(&W)...
+Send and capture 802.11 frames with a USB Wi-Fi dongle (through WSL)	USB無線ドングルで802.11フレームを送信・キャプチャーします（WSL経由）
+Wireless Dongle	無線ドングル
+Send and capture raw 802.11 frames through a USB Wi-Fi dongle, without connecting to an access point. The dongle is passed to Riff's own WSL environment; your other WSL distributions and settings are not changed.	USB無線ドングルを使って、アクセスポイントに接続せずに802.11フレームをそのまま送信・キャプチャーします。ドングルはRiff専用のWSL環境に渡されます。お使いの他のWSLディストリビューションや設定は変更しません。
+1. Preparation	1. 準備
+Set up	セットアップ
+WSL:	WSL:
+usbipd-win:	usbipd-win:
+Riff wireless environment:	Riff無線環境:
+2. Dongle	2. ドングル
+Use	使用
+Bus ID	バスID
+Device	デバイス
+Support	対応
+State	状態
+Check the dongle(s) to use. Devices marked "Supported" have a driver in Riff.	使うドングルにチェックを入れてください。「対応」と表示されたデバイスは、Riffにドライバーが入っています。
+Refresh	更新
+3. Radio	3. 電波
+Japan	日本
+United States	アメリカ
+United Kingdom	イギリス
+Germany	ドイツ
+France	フランス
+Korea	韓国
+Taiwan	台湾
+China	中国
+Australia	オーストラリア
+Canada	カナダ
+Transmission follows this country's radio rules (allowed channels and power).	送信はこの国の電波のルール（使えるチャンネルと出力）に従います。
+Country:	国:
+Channel:	チャンネル:
+Available	利用可能
+Not available. Install WSL from an administrator terminal with <code>wsl --install</code> and restart Windows.	利用できません。管理者のターミナルで <code>wsl --install</code> を実行してWSLをインストールし、Windowsを再起動してください。
+Installed	インストール済み
+Not installed. Install it with the Riff installer's "Wireless dongle" option, or from <a href='https://github.com/dorssel/usbipd-win/releases'>github.com/dorssel/usbipd-win</a>.	未インストールです。Riffのインストーラーで「無線ドングル」オプションを選ぶか、<a href='https://github.com/dorssel/usbipd-win/releases'>github.com/dorssel/usbipd-win</a> からインストールしてください。
+Not set up yet (about 70 MB, takes a minute).	まだセットアップされていません（約70MB、1分ほどかかります）。
+Supported (%1)	対応（%1）
+Not supported	非対応
+Start	開始
+Starting...	開始中...
+Stop	停止
+Stopping...	停止中...
+Check the dongle to use in the list.	一覧で使うドングルにチェックを入れてください。
+A checked device is not a supported Wi-Fi dongle. While it is used by Riff, Windows cannot use it (for example a keyboard or camera would stop working). Continue?	チェックしたデバイスの中に、対応している無線ドングルではないものがあります。Riffが使っている間はWindowsから使えなくなります（キーボードやカメラなら動かなくなります）。続けますか？
+WSL has been updated (kernel %1): the dongle drivers have to be rebuilt for it.	WSLが更新されました（カーネル %1）。ドングルのドライバーを作り直す必要があります。
+<p><b>WSL has been updated, so the dongle drivers need to be rebuilt.</b></p><p>Windows updated the WSL kernel to %1. The dongle drivers included with Riff are built for a specific kernel, so they have to be rebuilt once for the new one.</p><p>Rebuilding takes about an hour and needs an Internet connection. Your other WSL distributions are not affected.</p>	<p><b>WSLが更新されたため、ドングルのドライバーを作り直す必要があります。</b></p><p>WindowsによってWSLのカーネルが %1 に更新されました。Riffに入っているドングルのドライバーは特定のカーネル向けに作られているため、新しいカーネル用に一度作り直す必要があります。</p><p>作り直しには1時間ほどかかり、インターネット接続が必要です。他のWSLディストリビューションには影響しません。</p>
+timed out	タイムアウトしました
+The wireless environment file was not found: %1	無線環境のファイルが見つかりません: %1
+Installing the Riff wireless environment (WSL distribution "%1") ...	Riff無線環境（WSLディストリビューション「%1」）をインストールしています...
+The wireless environment is installed.	無線環境をインストールしました。
+Installing the wireless environment failed: %1	無線環境のインストールに失敗しました: %1
+The wireless environment was removed.	無線環境を削除しました。
+Removing the wireless environment failed: %1	無線環境の削除に失敗しました: %1
+usbipd-win is not installed	usbipd-winがインストールされていません
+Select a dongle first.	先にドングルを選んでください。
+Sharing USB device %1 with WSL - please allow the administrator prompt (only needed once).	USBデバイス %1 をWSLと共有します。管理者の確認画面で許可してください（最初の1回だけです）。
+USB device %1 could not be shared (the administrator prompt was declined or failed).	USBデバイス %1 を共有できませんでした（管理者の確認が拒否されたか、失敗しました）。
+Connecting USB device %1 to WSL ...	USBデバイス %1 をWSLに接続しています...
+Connecting USB device %1 failed: %2	USBデバイス %1 の接続に失敗しました: %2
+Loading the dongle drivers and starting the agent ...	ドングルのドライバーを読み込み、エージェントを起動しています...
+Drivers loaded (%1).	ドライバーを読み込みました（%1）。
+Dongle ready: %1 (driver %2, MAC %3), monitor mode	ドングルの準備ができました: %1（ドライバー %2、MAC %3）、モニターモード
+No Wi-Fi interface appeared. The dongle may not be supported, or it needs to be re-plugged.	無線インターフェースが現れませんでした。ドングルが非対応か、挿し直しが必要な可能性があります。
+Error: %1	エラー: %1
+The wireless agent is running (%1:%2).	無線エージェントが動作中です（%1:%2）。
+Riff could not connect to the wireless agent (port %1).	無線エージェントに接続できませんでした（ポート %1）。
+The wireless agent stopped (exit code %1).	無線エージェントが停止しました（終了コード %1）。
+Channel set to %1.	チャンネルを %1 に設定しました。
+Channel %1 was refused by the dongle or the country setting.	チャンネル %1 は、ドングルまたは国の設定によって拒否されました。
+Stopping the wireless agent ...	無線エージェントを停止しています...
+Stopped.	停止しました。
+This WSL kernel (%1) already contains Wi-Fi drivers; using them.	このWSLカーネル（%1）には無線ドライバーが組み込まれているため、それを使います。

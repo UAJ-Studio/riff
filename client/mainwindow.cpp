@@ -36,6 +36,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "settings.h"
 #include "ui_about.h"
 #include "updater.h"
+#include "wirelessdialog.h"
+#include "wirelessmanager.h"
 
 #include "fileformat.pb.h"
 
@@ -64,7 +66,8 @@ LogsModel        *appLogs;
 ClipboardHelper  *clipboardHelper;
 
 MainWindow::MainWindow(QWidget *parent) 
-    : QMainWindow (parent)
+    : QMainWindow (parent), wireless_(NULL), wirelessDialog_(NULL),
+      wirelessPortGroup_(NULL)
 {
     if (appParams.optLocalDrone()) {
         QString serverApp = QCoreApplication::applicationDirPath();
@@ -214,6 +217,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    // stop the WSL wireless agent and give the dongle back to Windows
+    if (wireless_)
+        wireless_->stop();
     stopLocalServerMonitor();
     if (localServer_) {
 #ifdef Q_OS_WIN32
@@ -663,3 +669,39 @@ _exit:
     return ret;
 }
 
+
+void MainWindow::on_actionWirelessDongle_triggered()
+{
+    if (!wireless_) {
+        wireless_ = new WirelessManager(this);
+        connect(wireless_, &WirelessManager::agentReady,
+                this, &MainWindow::onWirelessAgentReady);
+        connect(wireless_, &WirelessManager::agentStopped,
+                this, &MainWindow::onWirelessAgentStopped);
+    }
+    if (!wirelessDialog_)
+        wirelessDialog_ = new WirelessDialog(wireless_, this);
+    wirelessDialog_->show();
+    wirelessDialog_->raise();
+    wirelessDialog_->activateWindow();
+    // environment checks spawn wsl.exe/usbipd: run after the dialog is shown
+    QTimer::singleShot(0, wirelessDialog_, &WirelessDialog::refresh);
+}
+
+// The Linux agent in the RiffWireless distro is an extra port group; its
+// ports are the dongle's monitor-mode interface(s)
+void MainWindow::onWirelessAgentReady(QString host, quint16 port)
+{
+    if (wirelessPortGroup_)
+        return;
+    wirelessPortGroup_ = new PortGroup(host, port);
+    pgl->addPortGroup(*wirelessPortGroup_);
+}
+
+void MainWindow::onWirelessAgentStopped()
+{
+    if (!wirelessPortGroup_)
+        return;
+    pgl->removePortGroup(*wirelessPortGroup_);  // deletes it
+    wirelessPortGroup_ = NULL;
+}

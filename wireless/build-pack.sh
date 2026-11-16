@@ -96,5 +96,11 @@ grep -vE '^\s*(#|$)' "$HERE/drivers.list" > "$S/DRIVERS"
 cp "$HERE/riff-wifi-load.sh" "$S/"
 for m in $(cat "$S/DRIVERS"); do [ -f "$S/modules/$m.ko" ] || { echo "driver $m was not built"; exit 1; }; done
 [ "$(modinfo -F vermagic "$S/modules/mac80211.ko" | cut -d' ' -f1)" = "$REL" ] || { echo "vermagic mismatch"; exit 1; }
+# USB IDs the drivers bind to ("VVVV:PPPP driver"), so Riff can tell which
+# attached USB devices are supported dongles
+for m in $(cat "$S/DRIVERS"); do
+  modinfo -F alias "$S/modules/$m.ko" | sed -n "s/^usb:v\([0-9A-F]\{4\}\)p\([0-9A-F]\{4\}\).*/\1:\2 $m/p"
+done | sort -u > "$S/USBIDS"
+echo "   $(wc -l < "$S/USBIDS") USB IDs"
 tar --zstd -cf "$OUT/riff-wifi-$REL.tar.zst" -C "$S" .
 echo "PACK_OK $OUT/riff-wifi-$REL.tar.zst ($(du -h "$OUT/riff-wifi-$REL.tar.zst" | cut -f1), $(ls "$S/modules" | wc -l) modules)"

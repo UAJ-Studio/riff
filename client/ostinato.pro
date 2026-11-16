@@ -35,6 +35,8 @@ LIBS += -L"../extra/qhexedit2/$(OBJECTS_DIR)/" -lqhexedit2
 RESOURCES += ostinato.qrc riff.qrc
 HEADERS += \
     hexpacketeditor.h \
+    wirelessdialog.h \
+    wirelessmanager.h \
     logtranslator.h \
     protocolnames.h \
     packetdecoder.h \
@@ -98,6 +100,8 @@ FORMS += \
 
 SOURCES += \
     hexpacketeditor.cpp \
+    wirelessdialog.cpp \
+    wirelessmanager.cpp \
     logtranslator.cpp \
     protocolnames.cpp \
     packetdecoder.cpp \

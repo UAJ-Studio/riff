@@ -34,6 +34,11 @@ inroot $B "apk add -q --no-cache build-base cmake samurai curl linux-headers \
 #   git archive -o wireless/dist/src.tar $(git stash create || echo HEAD)
 SRC_TAR=${SRC_TAR:-$OUT/src.tar}
 [ -f "$SRC_TAR" ] || { echo "missing $SRC_TAR (see comment above)"; exit 1; }
+# the agent only depends on common/ rpc/ server/ (+ .pri): reuse a previous
+# build when those are unchanged
+H=$(tar -xOf "$SRC_TAR" --wildcards 'common/*' 'rpc/*' 'server/*' '*.pri' | sha256sum | cut -c1-16)
+AGENT=$WORK/agent-cache/riff-agent-$H
+if [ -f "$AGENT" ]; then echo "   riff-agent unchanged (cache $H)"; else
 rm -rf $B/src; mkdir -p $B/src && tar -xf "$SRC_TAR" -C $B/src
 inroot $B "set -e; cd /tmp
   if [ ! -x /opt/pb/bin/protoc ]; then curl -sSLf -o pb.tgz https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protobuf-cpp-$PBV.tar.gz
@@ -50,11 +55,13 @@ inroot $B "set -e; cd /tmp
     qmake-qt5 \$pro CONFIG+=release \"\$Q\" \"\$L\" >/dev/null && make -s -j\$(nproc) >/dev/null
   done
   strip /src/server/riff-agent; ls -la /src/server/riff-agent"
+mkdir -p "$(dirname "$AGENT")" && cp $B/src/server/riff-agent "$AGENT"
+fi
 
 echo "== [2/3] runtime root"
 R=$WORK/riffwireless-root; mkroot $R
 inroot $R "apk add -q --no-cache qt5-qtbase qt5-qtscript libpcap libnl3 iw kmod zstd tar && rm -rf /var/cache/apk/*"
-install -m755 $B/src/server/riff-agent $R/usr/local/bin/riff-agent
+install -m755 "$AGENT" $R/usr/local/bin/riff-agent
 # portable-mode ini next to the binary: only show the Wi-Fi dongle(s) in Riff
 cat > $R/usr/local/bin/riff-agent.ini <<'INI'
 [PortList]
@@ -63,6 +70,10 @@ INI
 install -d $R/opt/riff/packs
 install -m755 "$HERE/riff-start.sh" "$HERE/riff-channel.sh" $R/opt/riff/
 cp "$HERE"/packs/riff-wifi-*.tar.zst $R/opt/riff/packs/ 2>/dev/null || echo "   (no packs in $HERE/packs yet)"
+# supported USB IDs for the Windows side (same driver set in every pack)
+P1=$(ls "$HERE"/packs/riff-wifi-*.tar.zst 2>/dev/null | tail -1)
+[ -n "$P1" ] && tar --zstd -xOf "$P1" ./USBIDS > "$OUT/riff-wifi-usbids.txt" && \
+  echo "   $(wc -l < "$OUT/riff-wifi-usbids.txt") supported USB IDs -> dist/riff-wifi-usbids.txt"
 cat > $R/etc/wsl.conf <<'CONF'
 [automount]
 enabled = false

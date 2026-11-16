@@ -10,11 +10,18 @@ CC=${1:-JP}; CH=${2:-1}; PORT=${3:-7879}
 R=$(uname -r)
 PK=/opt/riff/packs/riff-wifi-$R.tar.zst
 P=/run/riff-pack
-if [ ! -f "$P/RELEASE" ] || [ "$(cat $P/RELEASE)" != "$R" ]; then
-  if [ ! -f "$PK" ]; then echo "RIFF_NEED_REBUILD kernel=$R"; exit 3; fi
-  rm -rf $P; mkdir -p $P; tar --zstd -xf "$PK" -C $P || { echo "RIFF_ERROR pack extract"; exit 1; }
+if [ -d /sys/module/mac80211 ] && ! grep -q '^mac80211 ' /proc/modules; then
+  # wireless stack built into this kernel (e.g. a custom kernel such as
+  # WiFiCap's set in .wslconfig): use it as it is, no pack needed
+  echo "RIFF_WIFI_BUILTIN kernel=$R"
+  iw reg set "$CC" 2>/dev/null
+else
+  if [ ! -f "$P/RELEASE" ] || [ "$(cat $P/RELEASE)" != "$R" ]; then
+    if [ ! -f "$PK" ]; then echo "RIFF_NEED_REBUILD kernel=$R"; exit 3; fi
+    rm -rf $P; mkdir -p $P; tar --zstd -xf "$PK" -C $P || { echo "RIFF_ERROR pack extract"; exit 1; }
+  fi
+  sh $P/riff-wifi-load.sh $P "$CC" || exit $?
 fi
-sh $P/riff-wifi-load.sh $P "$CC" || exit $?
 
 # wait for the attached dongle(s) to come up (firmware load takes a few s)
 W=""
@@ -30,5 +37,8 @@ for w in $W; do
   iw dev "$w" set channel "$CH" || echo "RIFF_WARN channel $CH refused on $w"
   echo "RIFF_DONGLE $w $(basename "$(readlink -f /sys/class/net/$w/device/driver)") $(cat /sys/class/net/$w/address)"
 done
+# localhost forwarding from Windows is not reliable in NAT mode: also give
+# Riff the VM's own address to connect to
+echo "RIFF_ADDR $(ip -4 -o addr show eth0 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | head -1)"
 echo "RIFF_AGENT_START port=$PORT"
 exec /usr/local/bin/riff-agent -p "$PORT"

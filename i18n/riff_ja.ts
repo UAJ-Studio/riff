@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
 <TS version="2.1" language="ja_JP">
 <context>
@@ -12,8 +12,8 @@
         <translation>Riff</translation>
     </message>
     <message>
-        <source>&lt;span style="font-size:22pt; font-weight:600;"&gt;Riff&lt;/span&gt;</source>
-        <translation>&lt;span style="font-size:22pt; font-weight:600;"&gt;Riff&lt;/span&gt;</translation>
+        <source>&lt;span style=&quot;font-size:22pt; font-weight:600;&quot;&gt;Riff&lt;/span&gt;</source>
+        <translation>&lt;span style=&quot;font-size:22pt; font-weight:600;&quot;&gt;Riff&lt;/span&gt;</translation>
     </message>
     <message>
         <source>Version/Revision Placeholder</source>
@@ -26,8 +26,8 @@ Riff modifications (c) 2026</source>
 Riff modifications (c) 2026</translation>
     </message>
     <message>
-        <source>Upstream project: &lt;a href="https://ostinato.org"&gt;ostinato.org&lt;/a&gt;</source>
-        <translation>上流プロジェクト: &lt;a href="https://ostinato.org"&gt;ostinato.org&lt;/a&gt;</translation>
+        <source>Upstream project: &lt;a href=&quot;https://ostinato.org&quot;&gt;ostinato.org&lt;/a&gt;</source>
+        <translation>上流プロジェクト: &lt;a href=&quot;https://ostinato.org&quot;&gt;ostinato.org&lt;/a&gt;</translation>
     </message>
     <message>
         <source>Icons (c): Mark James (http://www.famfamfam.com/lab/icons/silk/)</source>
@@ -38,8 +38,8 @@ Riff modifications (c) 2026</translation>
         <translation>ライセンス</translation>
     </message>
     <message>
-        <source>&lt;p&gt;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.&lt;/p&gt;&lt;p&gt;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.&lt;/p&gt;&lt;p&gt;You should have received a copy of the GNU General Public License along with this program. If not, see &lt;a href="https://www.gnu.org/licenses/"&gt;https://www.gnu.org/licenses/&lt;/a&gt;&lt;/p&gt;</source>
-        <translation>&lt;p&gt;本プログラムはフリーソフトウェアです。フリーソフトウェア財団が発行する GNU General Public License (バージョン3、または任意でそれ以降のバージョン) の条件に従って、再配布および/または改変することができます。&lt;/p&gt;&lt;p&gt;本プログラムは有用であることを期待して配布されていますが、商品性や特定目的への適合性に関する黙示の保証を含め、いかなる保証もありません。詳細は GNU General Public License をご覧ください。&lt;/p&gt;&lt;p&gt;本プログラムとともに GNU General Public License のコピーを受け取っているはずです。受け取っていない場合は &lt;a href="https://www.gnu.org/licenses/"&gt;https://www.gnu.org/licenses/&lt;/a&gt; をご覧ください。&lt;/p&gt;</translation>
+        <source>&lt;p&gt;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.&lt;/p&gt;&lt;p&gt;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.&lt;/p&gt;&lt;p&gt;You should have received a copy of the GNU General Public License along with this program. If not, see &lt;a href=&quot;https://www.gnu.org/licenses/&quot;&gt;https://www.gnu.org/licenses/&lt;/a&gt;&lt;/p&gt;</source>
+        <translation>&lt;p&gt;本プログラムはフリーソフトウェアです。フリーソフトウェア財団が発行する GNU General Public License (バージョン3、または任意でそれ以降のバージョン) の条件に従って、再配布および/または改変することができます。&lt;/p&gt;&lt;p&gt;本プログラムは有用であることを期待して配布されていますが、商品性や特定目的への適合性に関する黙示の保証を含め、いかなる保証もありません。詳細は GNU General Public License をご覧ください。&lt;/p&gt;&lt;p&gt;本プログラムとともに GNU General Public License のコピーを受け取っているはずです。受け取っていない場合は &lt;a href=&quot;https://www.gnu.org/licenses/&quot;&gt;https://www.gnu.org/licenses/&lt;/a&gt; をご覧ください。&lt;/p&gt;</translation>
     </message>
 </context>
 <context>
@@ -239,7 +239,7 @@ Riff modifications (c) 2026</translation>
         <translation>K: キープアライブ</translation>
     </message>
     <message>
-        <source>Off: the payload is an IEEE 802.3 (Ethernet) frame. On: the payload uses the binding's native format (e.g. IEEE 802.11).</source>
+        <source>Off: the payload is an IEEE 802.3 (Ethernet) frame. On: the payload uses the binding&apos;s native format (e.g. IEEE 802.11).</source>
         <translation>オフ: ペイロードは IEEE 802.3 (Ethernet) フレームです。オン: ペイロードはバインディング固有の形式 (IEEE 802.11 など) です。</translation>
     </message>
     <message>
@@ -526,8 +526,8 @@ To emulate a device, click on Configuration and create a device group</source>
         <translation>マスク</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align="center"&gt;Matches a field only if &lt;span style="white-space:nowrap"&gt;(FieldValue &amp;amp; FindMask) = FindValue&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align="center"&gt;次の条件を満たす場合のみフィールドに一致します: &lt;span style="white-space:nowrap"&gt;(FieldValue &amp;amp; FindMask) = FindValue&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Matches a field only if &lt;span style=&quot;white-space:nowrap&quot;&gt;(FieldValue &amp;amp; FindMask) = FindValue&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;次の条件を満たす場合のみフィールドに一致します: &lt;span style=&quot;white-space:nowrap&quot;&gt;(FieldValue &amp;amp; FindMask) = FindValue&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Match any value</source>
@@ -538,8 +538,8 @@ To emulate a device, click on Configuration and create a device group</source>
         <translation>置換後</translation>
     </message>
     <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align="center"&gt;New field value = &lt;span style="white-space:nowrap"&gt;(OldFieldValue &amp;amp; ~ReplaceMask) | (ReplaceValue &amp;amp; ReplaceMask)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align="center"&gt;新しいフィールド値 = &lt;span style="white-space:nowrap"&gt;(OldFieldValue &amp;amp; ~ReplaceMask) | (ReplaceValue &amp;amp; ReplaceMask)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;New field value = &lt;span style=&quot;white-space:nowrap&quot;&gt;(OldFieldValue &amp;amp; ~ReplaceMask) | (ReplaceValue &amp;amp; ReplaceMask)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;新しいフィールド値 = &lt;span style=&quot;white-space:nowrap&quot;&gt;(OldFieldValue &amp;amp; ~ReplaceMask) | (ReplaceValue &amp;amp; ReplaceMask)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Selected Streams Only</source>
@@ -880,7 +880,7 @@ To emulate a device, click on Configuration and create a device group</source>
         <translation>%1 の編集</translation>
     </message>
     <message>
-        <source>Replace the current packet with the "%1" template?
+        <source>Replace the current packet with the &quot;%1&quot; template?
 (You can undo this with Ctrl+Z.)</source>
         <translation>現在のパケットを「%1」テンプレートに置き換えますか?
 (Ctrl+Z で元に戻せます)</translation>
@@ -890,7 +890,7 @@ To emulate a device, click on Configuration and create a device group</source>
         <translation>16進数を貼り付け</translation>
     </message>
     <message>
-        <source>Paste the packet bytes as hex. Spaces, colons, 0x prefixes and hex dumps with offsets (e.g. Wireshark's "Copy as Hex Dump") are accepted.
+        <source>Paste the packet bytes as hex. Spaces, colons, 0x prefixes and hex dumps with offsets (e.g. Wireshark&apos;s &quot;Copy as Hex Dump&quot;) are accepted.
 This replaces the whole packet.</source>
         <translation>パケットのバイト列を16進数で貼り付けてください。スペース、コロン、0x 接頭辞、オフセット付きの16進ダンプ (Wireshark の「Copy as Hex Dump」など) に対応しています。
 パケット全体が置き換わります。</translation>
@@ -1147,7 +1147,7 @@ This replaces the whole packet.</source>
 <context>
     <name>LogTranslator</name>
     <message>
-        <source>Port %1: Could not resolve the source MAC of one or more streams - no device has the stream's source IP. Set the source MAC mode to "Self" to use the port's own MAC, or add a device with that IP on the Devices tab.</source>
+        <source>Port %1: Could not resolve the source MAC of one or more streams - no device has the stream&apos;s source IP. Set the source MAC mode to &quot;Self&quot; to use the port&apos;s own MAC, or add a device with that IP on the Devices tab.</source>
         <translation>ポート %1: 一部のストリームで送信元 MAC を解決できませんでした - ストリームの送信元 IP を持つデバイスがありません。送信元 MAC のモードを「自身」にするとポート自身の MAC を使います。または［デバイス］タブでその IP のデバイスを追加してください。</translation>
     </message>
     <message>
@@ -1259,7 +1259,7 @@ This replaces the whole packet.</source>
         <translation>バージョン確認に失敗しました: %1</translation>
     </message>
     <message>
-        <source>Port %1: The source MAC of one or more streams is 00:00:00:00:00:00 - this port's own MAC address is unknown (e.g. a loopback adapter). Set the source MAC to "Fixed" and enter it.</source>
+        <source>Port %1: The source MAC of one or more streams is 00:00:00:00:00:00 - this port&apos;s own MAC address is unknown (e.g. a loopback adapter). Set the source MAC to &quot;Fixed&quot; and enter it.</source>
         <translation>ポート %1: 一部のストリームの送信元 MAC が 00:00:00:00:00:00 になっています - このポート自身の MAC アドレスが不明です (ループバックアダプターなど)。送信元 MAC を「固定」にして入力してください。</translation>
     </message>
 </context>
@@ -1452,7 +1452,7 @@ This replaces the whole packet.</source>
         <translation>&lt;p&gt;ローカルの Riff エージェント (riff-agent) を起動できませんでした - エラー 0x%1、終了ステータス 0x%2、終了コード 0x%3。&lt;/p&gt;</translation>
     </message>
     <message>
-        <source>&lt;p&gt;The riff-agent program does not exist at %1 or you don't have sufficient permissions to execute it.&lt;/p&gt;</source>
+        <source>&lt;p&gt;The riff-agent program does not exist at %1 or you don&apos;t have sufficient permissions to execute it.&lt;/p&gt;</source>
         <translation>&lt;p&gt;%1 に riff-agent プログラムが存在しないか、実行に必要な権限がありません。&lt;/p&gt;</translation>
     </message>
     <message>
@@ -1460,28 +1460,28 @@ This replaces the whole packet.</source>
         <translation>&lt;p&gt;riff-agent が TCP ポート 7878 にバインドできませんでした - 別のエージェントプロセスがすでに実行中の可能性があります。&lt;/p&gt;</translation>
     </message>
     <message>
-        <source>&lt;p&gt;This is most likely because Packet.dll was not found - make sure you have &lt;a href='%1'&gt;npcap installed and accessible&lt;/a&gt;.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;Packet.dll が見つからないことが原因と考えられます - &lt;a href='%1'&gt;npcap がインストールされ、アクセス可能であること&lt;/a&gt;を確認してください。&lt;/p&gt;</translation>
+        <source>&lt;p&gt;This is most likely because Packet.dll was not found - make sure you have &lt;a href=&apos;%1&apos;&gt;npcap installed and accessible&lt;/a&gt;.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;Packet.dll が見つからないことが原因と考えられます - &lt;a href=&apos;%1&apos;&gt;npcap がインストールされ、アクセス可能であること&lt;/a&gt;を確認してください。&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Try running riff-agent.exe directly.</source>
         <translation>riff-agent.exe を直接実行してみてください。</translation>
     </message>
     <message>
-        <source>&lt;p&gt;If you have remote agents running, you can still add and connect to them.&lt;/p&gt;&lt;p&gt;If you don't want to start the local Riff agent (riff-agent) at startup, provide the &lt;b&gt;-c&lt;/b&gt; option to Riff on the command line.&lt;/p&gt;&lt;p&gt;Learn about the (upstream Ostinato) &lt;a href='%1'&gt;Controller-Agent architecture&lt;/a&gt;&lt;/p&gt;</source>
-        <translation>&lt;p&gt;リモートエージェントが稼働している場合は、引き続き追加して接続できます。&lt;/p&gt;&lt;p&gt;起動時にローカルの Riff エージェント (riff-agent) を起動したくない場合は、コマンドラインで Riff に &lt;b&gt;-c&lt;/b&gt; オプションを指定してください。&lt;/p&gt;&lt;p&gt;(アップストリーム Ostinato の) &lt;a href='%1'&gt;コントローラ-エージェント アーキテクチャ&lt;/a&gt;について&lt;/p&gt;</translation>
+        <source>&lt;p&gt;If you have remote agents running, you can still add and connect to them.&lt;/p&gt;&lt;p&gt;If you don&apos;t want to start the local Riff agent (riff-agent) at startup, provide the &lt;b&gt;-c&lt;/b&gt; option to Riff on the command line.&lt;/p&gt;&lt;p&gt;Learn about the (upstream Ostinato) &lt;a href=&apos;%1&apos;&gt;Controller-Agent architecture&lt;/a&gt;&lt;/p&gt;</source>
+        <translation>&lt;p&gt;リモートエージェントが稼働している場合は、引き続き追加して接続できます。&lt;/p&gt;&lt;p&gt;起動時にローカルの Riff エージェント (riff-agent) を起動したくない場合は、コマンドラインで Riff に &lt;b&gt;-c&lt;/b&gt; オプションを指定してください。&lt;/p&gt;&lt;p&gt;(アップストリーム Ostinato の) &lt;a href=&apos;%1&apos;&gt;コントローラ-エージェント アーキテクチャ&lt;/a&gt;について&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Update check</source>
         <translation>更新の確認</translation>
     </message>
     <message>
-        <source>&lt;p&gt;&lt;b&gt;Ostinato version %1 is now available&lt;/b&gt; (you have %2). See &lt;a href='%3'&gt;change log&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Visit &lt;a href='%4'&gt;ostinato.org&lt;/a&gt; to download.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;&lt;b&gt;Ostinato バージョン %1 が利用可能です&lt;/b&gt; (現在のバージョン: %2)。&lt;a href='%3'&gt;変更履歴&lt;/a&gt;をご覧ください。&lt;/p&gt;&lt;p&gt;ダウンロードは &lt;a href='%4'&gt;ostinato.org&lt;/a&gt; をご覧ください。&lt;/p&gt;</translation>
+        <source>&lt;p&gt;&lt;b&gt;Ostinato version %1 is now available&lt;/b&gt; (you have %2). See &lt;a href=&apos;%3&apos;&gt;change log&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Visit &lt;a href=&apos;%4&apos;&gt;ostinato.org&lt;/a&gt; to download.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;&lt;b&gt;Ostinato バージョン %1 が利用可能です&lt;/b&gt; (現在のバージョン: %2)。&lt;a href=&apos;%3&apos;&gt;変更履歴&lt;/a&gt;をご覧ください。&lt;/p&gt;&lt;p&gt;ダウンロードは &lt;a href=&apos;%4&apos;&gt;ostinato.org&lt;/a&gt; をご覧ください。&lt;/p&gt;</translation>
     </message>
     <message>
-        <source>New Ostinato version %1 available. Visit &lt;a href='%2'&gt;ostinato.org&lt;/a&gt; to download</source>
-        <translation>新しい Ostinato バージョン %1 が利用可能です。ダウンロードは &lt;a href='%2'&gt;ostinato.org&lt;/a&gt; をご覧ください</translation>
+        <source>New Ostinato version %1 available. Visit &lt;a href=&apos;%2&apos;&gt;ostinato.org&lt;/a&gt; to download</source>
+        <translation>新しい Ostinato バージョン %1 が利用可能です。ダウンロードは &lt;a href=&apos;%2&apos;&gt;ostinato.org&lt;/a&gt; をご覧ください</translation>
     </message>
     <message>
         <source>You are already running the latest Ostinato version - %1</source>
@@ -1490,6 +1490,18 @@ This replaces the whole packet.</source>
     <message>
         <source>Unknown session file format</source>
         <translation>不明なセッションファイル形式です</translation>
+    </message>
+    <message>
+        <source>&amp;Tools</source>
+        <translation>ツール(&amp;T)</translation>
+    </message>
+    <message>
+        <source>&amp;Wireless Dongle...</source>
+        <translation>無線ドングル(&amp;W)...</translation>
+    </message>
+    <message>
+        <source>Send and capture 802.11 frames with a USB Wi-Fi dongle (through WSL)</source>
+        <translation>USB無線ドングルで802.11フレームを送信・キャプチャーします（WSL経由）</translation>
     </message>
 </context>
 <context>
@@ -1808,7 +1820,7 @@ Debug: %2</source>
         <translation>識別子</translation>
     </message>
     <message>
-        <source>Don't fragment</source>
+        <source>Don&apos;t fragment</source>
         <translation>分割禁止 (DF)</translation>
     </message>
     <message>
@@ -2543,12 +2555,12 @@ Debug: %2</source>
         <translation>%1 を標準 PCAP 形式に変換できません</translation>
     </message>
     <message>
-        <source>&lt;p&gt;There is a diff between the original and imported streams. See details to review the diff.&lt;/p&gt;&lt;p&gt;Why a diff? See &lt;a href='%1'&gt;possible reasons&lt;/a&gt;.&lt;/p&gt;
+        <source>&lt;p&gt;There is a diff between the original and imported streams. See details to review the diff.&lt;/p&gt;&lt;p&gt;Why a diff? See &lt;a href=&apos;%1&apos;&gt;possible reasons&lt;/a&gt;.&lt;/p&gt;
 
 
 
 </source>
-        <translation>&lt;p&gt;元のストリームとインポートされたストリームに差異があります。詳細で差異を確認してください。&lt;/p&gt;&lt;p&gt;なぜ差異が生じるのか? &lt;a href='%1'&gt;考えられる理由&lt;/a&gt;をご覧ください。&lt;/p&gt;
+        <translation>&lt;p&gt;元のストリームとインポートされたストリームに差異があります。詳細で差異を確認してください。&lt;/p&gt;&lt;p&gt;なぜ差異が生じるのか? &lt;a href=&apos;%1&apos;&gt;考えられる理由&lt;/a&gt;をご覧ください。&lt;/p&gt;
 
 
 
@@ -2655,12 +2667,12 @@ Debug: %2</source>
         <translation>%1:%2 のエージェントはこの Riff バージョンと互換性がありません - %3</translation>
     </message>
     <message>
-        <source>&lt;p&gt;The portgroup %1:%2 does not contain any ports!&lt;p&gt;&lt;p&gt;Packet Transmit/Capture requires special privileges. Please ensure that you are running 'riff-agent' - the agent component of Riff with required privileges.&lt;p&gt;</source>
-        <translation>&lt;p&gt;ポートグループ %1:%2 にポートがありません。&lt;p&gt;&lt;p&gt;パケットの送信/キャプチャには特別な権限が必要です。必要な権限で Riff のエージェントコンポーネントである 'riff-agent' を実行していることを確認してください。&lt;p&gt;</translation>
+        <source>&lt;p&gt;The portgroup %1:%2 does not contain any ports!&lt;p&gt;&lt;p&gt;Packet Transmit/Capture requires special privileges. Please ensure that you are running &apos;riff-agent&apos; - the agent component of Riff with required privileges.&lt;p&gt;</source>
+        <translation>&lt;p&gt;ポートグループ %1:%2 にポートがありません。&lt;p&gt;&lt;p&gt;パケットの送信/キャプチャには特別な権限が必要です。必要な権限で Riff のエージェントコンポーネントである &apos;riff-agent&apos; を実行していることを確認してください。&lt;p&gt;</translation>
     </message>
     <message>
-        <source>See the &lt;a href='%1'&gt;(upstream) Ostinato FAQ&lt;/a&gt; for instructions to fix this problem</source>
-        <translation>この問題の解決方法は &lt;a href='%1'&gt;(アップストリーム) Ostinato FAQ&lt;/a&gt; をご覧ください</translation>
+        <source>See the &lt;a href=&apos;%1&apos;&gt;(upstream) Ostinato FAQ&lt;/a&gt; for instructions to fix this problem</source>
+        <translation>この問題の解決方法は &lt;a href=&apos;%1&apos;&gt;(アップストリーム) Ostinato FAQ&lt;/a&gt; をご覧ください</translation>
     </message>
     <message>
         <source>Open Session</source>
@@ -2976,18 +2988,18 @@ Debug: %2</source>
     <message>
         <source>&lt;p&gt;You have selected a port group in the port list on the left.&lt;/p&gt;
 &lt;p&gt;You can transmit packets on any of the ports within the port group.&lt;/p&gt;
-&lt;p&gt;Make sure the port group has a &lt;img src=":/icons/bullet_green.png"/&gt; next to it and then double click the port group to show or hide the ports in the port group.&lt;/p&gt;
+&lt;p&gt;Make sure the port group has a &lt;img src=&quot;:/icons/bullet_green.png&quot;/&gt; next to it and then double click the port group to show or hide the ports in the port group.&lt;/p&gt;
 &lt;p&gt;To generate packets, you need to create and configure packet streams. A stream is a sequence of one or more packets.&lt;/p&gt;
 &lt;p&gt;To create a stream, select the port on which you want to send packets. &lt;/p&gt;
 &lt;hr/&gt;
-&lt;p&gt;Don't see the port that you want (or any ports at all) inside the port group? &lt;a href="https://jump.ostinato.org/noports"&gt;Get Help!&lt;/a&gt;&lt;/p&gt;</source>
+&lt;p&gt;Don&apos;t see the port that you want (or any ports at all) inside the port group? &lt;a href=&quot;https://jump.ostinato.org/noports&quot;&gt;Get Help!&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;左側のポート一覧でポートグループを選択しています。&lt;/p&gt;
 &lt;p&gt;ポートグループ内の任意のポートでパケットを送信できます。&lt;/p&gt;
-&lt;p&gt;ポートグループの横に &lt;img src=":/icons/bullet_green.png"/&gt; が表示されていることを確認し、ポートグループをダブルクリックしてポートの表示/非表示を切り替えてください。&lt;/p&gt;
+&lt;p&gt;ポートグループの横に &lt;img src=&quot;:/icons/bullet_green.png&quot;/&gt; が表示されていることを確認し、ポートグループをダブルクリックしてポートの表示/非表示を切り替えてください。&lt;/p&gt;
 &lt;p&gt;パケットを生成するには、パケットストリームを作成して設定する必要があります。ストリームは1つ以上のパケットの並びです。&lt;/p&gt;
 &lt;p&gt;ストリームを作成するには、パケットを送信するポートを選択してください。&lt;/p&gt;
 &lt;hr/&gt;
-&lt;p&gt;ポートグループ内に目的のポート (またはポート自体) が表示されませんか? &lt;a href="https://jump.ostinato.org/noports"&gt;ヘルプを見る&lt;/a&gt;&lt;/p&gt;</translation>
+&lt;p&gt;ポートグループ内に目的のポート (またはポート自体) が表示されませんか? &lt;a href=&quot;https://jump.ostinato.org/noports&quot;&gt;ヘルプを見る&lt;/a&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Apply Hint</source>
@@ -3030,19 +3042,19 @@ Debug: %2</source>
         <translation>ポート設定...</translation>
     </message>
     <message>
-        <source>&lt;p style="font-size:15pt; font-weight:600;"&gt;Welcome to Riff&lt;/p&gt;
+        <source>&lt;p style=&quot;font-size:15pt; font-weight:600;&quot;&gt;Welcome to Riff&lt;/p&gt;
 &lt;p&gt;Build packets and send them from your network ports in three steps:&lt;/p&gt;
-&lt;table cellspacing="6"&gt;
-&lt;tr&gt;&lt;td&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Pick a port&lt;/b&gt; &amp;mdash; select the port to send from in the list on the left. Ports marked &lt;img src=":/icons/bullet_green.png"/&gt; are up. (Double-click a port group to show or hide its ports.)&lt;/td&gt;&lt;/tr&gt;
+&lt;table cellspacing=&quot;6&quot;&gt;
+&lt;tr&gt;&lt;td&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Pick a port&lt;/b&gt; &amp;mdash; select the port to send from in the list on the left. Ports marked &lt;img src=&quot;:/icons/bullet_green.png&quot;/&gt; are up. (Double-click a port group to show or hide its ports.)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;&lt;b&gt;2&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Create a stream&lt;/b&gt; &amp;mdash; a stream is a packet (or a series of packets). Right-click the stream list and choose &lt;i&gt;New Stream&lt;/i&gt; to set protocols field by field, or &lt;i&gt;New Stream from Hex&lt;/i&gt; to type the bytes directly.&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;&lt;b&gt;3&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Send&lt;/b&gt; &amp;mdash; select the port's column in &lt;i&gt;Port Statistics&lt;/i&gt; below and press the &lt;i&gt;Transmit&lt;/i&gt; start button. Sent and received counters update live.&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;b&gt;3&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Send&lt;/b&gt; &amp;mdash; select the port&apos;s column in &lt;i&gt;Port Statistics&lt;/i&gt; below and press the &lt;i&gt;Transmit&lt;/i&gt; start button. Sent and received counters update live.&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;
 &lt;hr/&gt;
-&lt;p&gt;Don't see the port you want? Make sure Npcap is installed, and try running Riff as Administrator.&lt;/p&gt;</source>
-        <translation>&lt;p style="font-size:15pt; font-weight:600;"&gt;Riff へようこそ&lt;/p&gt;
+&lt;p&gt;Don&apos;t see the port you want? Make sure Npcap is installed, and try running Riff as Administrator.&lt;/p&gt;</source>
+        <translation>&lt;p style=&quot;font-size:15pt; font-weight:600;&quot;&gt;Riff へようこそ&lt;/p&gt;
 &lt;p&gt;3 つのステップでパケットを作成し、ネットワークポートから送信できます。&lt;/p&gt;
-&lt;table cellspacing="6"&gt;
-&lt;tr&gt;&lt;td&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;ポートを選ぶ&lt;/b&gt; &amp;mdash; 左のリストから送信に使うポートを選択します。&lt;img src=":/icons/bullet_green.png"/&gt; の付いたポートが使用可能です。(ポートグループをダブルクリックすると、ポートの表示/非表示を切り替えられます)&lt;/td&gt;&lt;/tr&gt;
+&lt;table cellspacing=&quot;6&quot;&gt;
+&lt;tr&gt;&lt;td&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;ポートを選ぶ&lt;/b&gt; &amp;mdash; 左のリストから送信に使うポートを選択します。&lt;img src=&quot;:/icons/bullet_green.png&quot;/&gt; の付いたポートが使用可能です。(ポートグループをダブルクリックすると、ポートの表示/非表示を切り替えられます)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;&lt;b&gt;2&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;ストリームを作る&lt;/b&gt; &amp;mdash; ストリームとは 1 つ(または一連)のパケットです。ストリーム一覧を右クリックし、&lt;i&gt;新規ストリーム&lt;/i&gt;でプロトコルをフィールドごとに設定するか、&lt;i&gt;16進数から新規ストリーム&lt;/i&gt;でバイト列を直接入力します。&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;&lt;b&gt;3&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;送信する&lt;/b&gt; &amp;mdash; 下の&lt;i&gt;ポート統計&lt;/i&gt;でポートの列を選択し、&lt;i&gt;送信&lt;/i&gt;の開始ボタンを押します。送受信カウンターがリアルタイムで更新されます。&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;
@@ -3050,12 +3062,12 @@ Debug: %2</source>
 &lt;p&gt;目的のポートが表示されない場合は、Npcap がインストールされているか確認し、Riff を管理者として実行してみてください。&lt;/p&gt;</translation>
     </message>
     <message>
-        <source>Configuration has changed - &lt;font color='red'&gt;&lt;b&gt;click Apply&lt;/b&gt;&lt;/font&gt; to activate the changes</source>
-        <translation>設定が変更されました - &lt;font color='red'&gt;&lt;b&gt;[適用]をクリック&lt;/b&gt;&lt;/font&gt;すると反映されます</translation>
+        <source>Configuration has changed - &lt;font color=&apos;red&apos;&gt;&lt;b&gt;click Apply&lt;/b&gt;&lt;/font&gt; to activate the changes</source>
+        <translation>設定が変更されました - &lt;font color=&apos;red&apos;&gt;&lt;b&gt;[適用]をクリック&lt;/b&gt;&lt;/font&gt;すると反映されます</translation>
     </message>
     <message>
-        <source>Configuration activated - click &lt;img src=':/icons/control_play'/&gt; to transmit packets</source>
-        <translation>設定は反映済みです - &lt;img src=':/icons/control_play'/&gt; をクリックするとパケットを送信します</translation>
+        <source>Configuration activated - click &lt;img src=&apos;:/icons/control_play&apos;/&gt; to transmit packets</source>
+        <translation>設定は反映済みです - &lt;img src=&apos;:/icons/control_play&apos;/&gt; をクリックするとパケットを送信します</translation>
     </message>
     <message>
         <source>Configuration activated</source>
@@ -3069,28 +3081,28 @@ Debug: %2</source>
         <translation>設定</translation>
     </message>
     <message>
-        <source>'wireshark' Path</source>
-        <translation>'wireshark' のパス</translation>
+        <source>&apos;wireshark&apos; Path</source>
+        <translation>&apos;wireshark&apos; のパス</translation>
     </message>
     <message>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <source>'tshark' Path</source>
-        <translation>'tshark' のパス</translation>
+        <source>&apos;tshark&apos; Path</source>
+        <translation>&apos;tshark&apos; のパス</translation>
     </message>
     <message>
-        <source>'gzip' Path</source>
-        <translation>'gzip' のパス</translation>
+        <source>&apos;gzip&apos; Path</source>
+        <translation>&apos;gzip&apos; のパス</translation>
     </message>
     <message>
-        <source>'diff' Path</source>
-        <translation>'diff' のパス</translation>
+        <source>&apos;diff&apos; Path</source>
+        <translation>&apos;diff&apos; のパス</translation>
     </message>
     <message>
-        <source>'awk' Path</source>
-        <translation>'awk' のパス</translation>
+        <source>&apos;awk&apos; Path</source>
+        <translation>&apos;awk&apos; のパス</translation>
     </message>
     <message>
         <source>Theme</source>
@@ -3321,7 +3333,7 @@ Debug: %2</source>
         <translation>ハードウェアが対応していない場合、ジャンボフレームは切り詰められるか破棄される可能性があります</translation>
     </message>
     <message>
-        <source>Variable fields won't change since only 1 frame%1 is configured to be transmitted - increase number of packets to %L2 to have variable fields change across the configured range</source>
+        <source>Variable fields won&apos;t change since only 1 frame%1 is configured to be transmitted - increase number of packets to %L2 to have variable fields change across the configured range</source>
         <translation>送信するフレームが 1 つ%1 のみに設定されているため、可変フィールドは変化しません - 可変フィールドを設定範囲全体で変化させるには、パケット数を %L2 に増やしてください</translation>
     </message>
     <message>
@@ -3329,7 +3341,7 @@ Debug: %2</source>
         <translation>送信するフレームが %L1 個%2 のみに設定されているため、可変フィールドは %L1 回分しか変化しません - 可変フィールドを設定範囲全体で変化させるには、パケット数を %L1 から %L3 に増やしてください</translation>
     </message>
     <message>
-        <source>Only %L1 frames at the rate of %L2 frames/sec are configured to be transmitted. Transmission will last for only %L3 second - to transmit for a longer duration, increase the number of packets (bursts) and/or set the 'After this stream' action as 'Goto First'</source>
+        <source>Only %L1 frames at the rate of %L2 frames/sec are configured to be transmitted. Transmission will last for only %L3 second - to transmit for a longer duration, increase the number of packets (bursts) and/or set the &apos;After this stream&apos; action as &apos;Goto First&apos;</source>
         <translation>%L2 フレーム/秒のレートで %L1 フレームのみ送信するように設定されています。送信は %L3 秒しか続きません - より長く送信するには、パケット数 (バースト数) を増やすか、[このストリームの後]の動作を[最初へ移動]に設定してください</translation>
     </message>
     <message>
@@ -3341,7 +3353,7 @@ Debug: %2</source>
         <translation>オフのときは自動計算します</translation>
     </message>
     <message>
-        <source>&lt;port's own MAC&gt;</source>
+        <source>&lt;port&apos;s own MAC&gt;</source>
         <translation>&lt;ポート自身の MAC&gt;</translation>
     </message>
 </context>
@@ -3481,17 +3493,17 @@ Debug: %2</source>
         <translation>ストリームを編集</translation>
     </message>
     <message>
-        <source>QLineEdit:enabled[inputMask = "HH; "],
-QLineEdit:enabled[inputMask = "HH HH; "],
-QLineEdit:enabled[inputMask = "HH HH HH; "],
-QLineEdit:enabled[inputMask = "HH HH HH HH; "],
-QLineEdit:enabled[inputMask = "HH HH HH HH HH HH; "] { background-color: #ccccff  }
+        <source>QLineEdit:enabled[inputMask = &quot;HH; &quot;],
+QLineEdit:enabled[inputMask = &quot;HH HH; &quot;],
+QLineEdit:enabled[inputMask = &quot;HH HH HH; &quot;],
+QLineEdit:enabled[inputMask = &quot;HH HH HH HH; &quot;],
+QLineEdit:enabled[inputMask = &quot;HH HH HH HH HH HH; &quot;] { background-color: #ccccff  }
 </source>
-        <translation>QLineEdit:enabled[inputMask = "HH; "],
-QLineEdit:enabled[inputMask = "HH HH; "],
-QLineEdit:enabled[inputMask = "HH HH HH; "],
-QLineEdit:enabled[inputMask = "HH HH HH HH; "],
-QLineEdit:enabled[inputMask = "HH HH HH HH HH HH; "] { background-color: #ccccff  }
+        <translation>QLineEdit:enabled[inputMask = &quot;HH; &quot;],
+QLineEdit:enabled[inputMask = &quot;HH HH; &quot;],
+QLineEdit:enabled[inputMask = &quot;HH HH HH; &quot;],
+QLineEdit:enabled[inputMask = &quot;HH HH HH HH; &quot;],
+QLineEdit:enabled[inputMask = &quot;HH HH HH HH HH HH; &quot;] { background-color: #ccccff  }
 </translation>
     </message>
     <message>
@@ -3835,7 +3847,7 @@ QLineEdit:enabled[inputMask = "HH HH HH HH HH HH; "] { background-color: #ccccff
         <translation>&lt;unnamed&gt;</translation>
     </message>
     <message>
-        <source>In 'Interleaved Streams' transmit mode, the count for varying fields at transmit time may not be same as configured</source>
+        <source>In &apos;Interleaved Streams&apos; transmit mode, the count for varying fields at transmit time may not be same as configured</source>
         <translation>[ストリームをインターリーブ送信]モードでは、送信時の可変フィールドのカウントが設定と一致しない場合があります</translation>
     </message>
     <message>
@@ -3862,7 +3874,7 @@ QLineEdit:enabled[inputMask = "HH HH HH HH HH HH; "] { background-color: #ccccff
         <translation>ストリーム統計</translation>
     </message>
     <message>
-        <source>Oops! We don't seem to have any stream statistics for the requested port(s)
+        <source>Oops! We don&apos;t seem to have any stream statistics for the requested port(s)
 
 Wait a little bit to see if they appear, otherwise verify your stream stats configuration</source>
         <translation>要求されたポートのストリーム統計がありません
@@ -3981,7 +3993,7 @@ Right-click to create a stream</source>
         <translation>16進数で編集...</translation>
     </message>
     <message>
-        <source>Edit the selected stream's packet bytes directly</source>
+        <source>Edit the selected stream&apos;s packet bytes directly</source>
         <translation>選択したストリームのパケットのバイト列を直接編集します</translation>
     </message>
     <message>
@@ -4003,13 +4015,13 @@ Right-click to create a stream</source>
     <message>
         <source>This stream is defined field by field. Editing it as hex turns it into a fixed sequence of bytes taken from its first packet - protocol settings, variable fields and changing frame lengths are replaced.
 
-Use "Edit Stream" instead if you want to keep them.</source>
+Use &quot;Edit Stream&quot; instead if you want to keep them.</source>
         <translation>このストリームはフィールド単位で定義されています。16進数で編集すると、最初のパケットのバイト列をもとにした固定のバイト列に変換され、プロトコル設定・可変フィールド・可変フレーム長は失われます。
 
 これらを残したい場合は「ストリームの編集」を使ってください。</translation>
     </message>
     <message>
-        <source>Its MAC addresses are set to "Resolve" or "Self", which only the agent can fill in - they will become 00:00:00:00:00:00. Enter the real MAC addresses in the hex editor.</source>
+        <source>Its MAC addresses are set to &quot;Resolve&quot; or &quot;Self&quot;, which only the agent can fill in - they will become 00:00:00:00:00:00. Enter the real MAC addresses in the hex editor.</source>
         <translation>MAC アドレスが「解決」または「自身」になっています。これらはエージェントしか決められないため 00:00:00:00:00:00 になります。16進エディタで実際の MAC アドレスを入力してください。</translation>
     </message>
     <message>
@@ -4206,10 +4218,10 @@ Use "Edit Stream" instead if you want to keep them.</source>
     <message>
         <source>A variable field is a protocol field which you want to vary across packets
 
-To create one, select the protocol on the left and click '+' above</source>
+To create one, select the protocol on the left and click &apos;+&apos; above</source>
         <translation>可変フィールドは、パケットごとに値を変化させたいプロトコルフィールドです
 
-作成するには、左側でプロトコルを選択し、上の '+' をクリックしてください</translation>
+作成するには、左側でプロトコルを選択し、上の &apos;+&apos; をクリックしてください</translation>
     </message>
     <message>
         <source>Field</source>
@@ -4304,6 +4316,292 @@ To create one, select the protocol on the left and click '+' above</source>
     </message>
 </context>
 <context>
+    <name>WirelessDialog</name>
+    <message>
+        <source>Wireless Dongle</source>
+        <translation>無線ドングル</translation>
+    </message>
+    <message>
+        <source>Send and capture raw 802.11 frames through a USB Wi-Fi dongle, without connecting to an access point. The dongle is passed to Riff&apos;s own WSL environment; your other WSL distributions and settings are not changed.</source>
+        <translation>USB無線ドングルを使って、アクセスポイントに接続せずに802.11フレームをそのまま送信・キャプチャーします。ドングルはRiff専用のWSL環境に渡されます。お使いの他のWSLディストリビューションや設定は変更しません。</translation>
+    </message>
+    <message>
+        <source>1. Preparation</source>
+        <translation>1. 準備</translation>
+    </message>
+    <message>
+        <source>Set up</source>
+        <translation>セットアップ</translation>
+    </message>
+    <message>
+        <source>WSL:</source>
+        <translation>WSL:</translation>
+    </message>
+    <message>
+        <source>usbipd-win:</source>
+        <translation>usbipd-win:</translation>
+    </message>
+    <message>
+        <source>Riff wireless environment:</source>
+        <translation>Riff無線環境:</translation>
+    </message>
+    <message>
+        <source>2. Dongle</source>
+        <translation>2. ドングル</translation>
+    </message>
+    <message>
+        <source>Use</source>
+        <translation>使用</translation>
+    </message>
+    <message>
+        <source>Bus ID</source>
+        <translation>バスID</translation>
+    </message>
+    <message>
+        <source>Device</source>
+        <translation>デバイス</translation>
+    </message>
+    <message>
+        <source>Support</source>
+        <translation>対応</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>状態</translation>
+    </message>
+    <message>
+        <source>Check the dongle(s) to use. Devices marked &quot;Supported&quot; have a driver in Riff.</source>
+        <translation>使うドングルにチェックを入れてください。「対応」と表示されたデバイスは、Riffにドライバーが入っています。</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>更新</translation>
+    </message>
+    <message>
+        <source>3. Radio</source>
+        <translation>3. 電波</translation>
+    </message>
+    <message>
+        <source>Japan</source>
+        <translation>日本</translation>
+    </message>
+    <message>
+        <source>United States</source>
+        <translation>アメリカ</translation>
+    </message>
+    <message>
+        <source>United Kingdom</source>
+        <translation>イギリス</translation>
+    </message>
+    <message>
+        <source>Germany</source>
+        <translation>ドイツ</translation>
+    </message>
+    <message>
+        <source>France</source>
+        <translation>フランス</translation>
+    </message>
+    <message>
+        <source>Korea</source>
+        <translation>韓国</translation>
+    </message>
+    <message>
+        <source>Taiwan</source>
+        <translation>台湾</translation>
+    </message>
+    <message>
+        <source>China</source>
+        <translation>中国</translation>
+    </message>
+    <message>
+        <source>Australia</source>
+        <translation>オーストラリア</translation>
+    </message>
+    <message>
+        <source>Canada</source>
+        <translation>カナダ</translation>
+    </message>
+    <message>
+        <source>Transmission follows this country&apos;s radio rules (allowed channels and power).</source>
+        <translation>送信はこの国の電波のルール（使えるチャンネルと出力）に従います。</translation>
+    </message>
+    <message>
+        <source>Country:</source>
+        <translation>国:</translation>
+    </message>
+    <message>
+        <source>Channel:</source>
+        <translation>チャンネル:</translation>
+    </message>
+    <message>
+        <source>Available</source>
+        <translation>利用可能</translation>
+    </message>
+    <message>
+        <source>Not available. Install WSL from an administrator terminal with &lt;code&gt;wsl --install&lt;/code&gt; and restart Windows.</source>
+        <translation>利用できません。管理者のターミナルで &lt;code&gt;wsl --install&lt;/code&gt; を実行してWSLをインストールし、Windowsを再起動してください。</translation>
+    </message>
+    <message>
+        <source>Installed</source>
+        <translation>インストール済み</translation>
+    </message>
+    <message>
+        <source>Not installed. Install it with the Riff installer&apos;s &quot;Wireless dongle&quot; option, or from &lt;a href=&apos;https://github.com/dorssel/usbipd-win/releases&apos;&gt;github.com/dorssel/usbipd-win&lt;/a&gt;.</source>
+        <translation>未インストールです。Riffのインストーラーで「無線ドングル」オプションを選ぶか、&lt;a href=&apos;https://github.com/dorssel/usbipd-win/releases&apos;&gt;github.com/dorssel/usbipd-win&lt;/a&gt; からインストールしてください。</translation>
+    </message>
+    <message>
+        <source>Not set up yet (about 70 MB, takes a minute).</source>
+        <translation>まだセットアップされていません（約70MB、1分ほどかかります）。</translation>
+    </message>
+    <message>
+        <source>Supported (%1)</source>
+        <translation>対応（%1）</translation>
+    </message>
+    <message>
+        <source>Not supported</source>
+        <translation>非対応</translation>
+    </message>
+    <message>
+        <source>Start</source>
+        <translation>開始</translation>
+    </message>
+    <message>
+        <source>Starting...</source>
+        <translation>開始中...</translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation>停止</translation>
+    </message>
+    <message>
+        <source>Stopping...</source>
+        <translation>停止中...</translation>
+    </message>
+    <message>
+        <source>Check the dongle to use in the list.</source>
+        <translation>一覧で使うドングルにチェックを入れてください。</translation>
+    </message>
+    <message>
+        <source>A checked device is not a supported Wi-Fi dongle. While it is used by Riff, Windows cannot use it (for example a keyboard or camera would stop working). Continue?</source>
+        <translation>チェックしたデバイスの中に、対応している無線ドングルではないものがあります。Riffが使っている間はWindowsから使えなくなります（キーボードやカメラなら動かなくなります）。続けますか？</translation>
+    </message>
+    <message>
+        <source>WSL has been updated (kernel %1): the dongle drivers have to be rebuilt for it.</source>
+        <translation>WSLが更新されました（カーネル %1）。ドングルのドライバーを作り直す必要があります。</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;&lt;b&gt;WSL has been updated, so the dongle drivers need to be rebuilt.&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Windows updated the WSL kernel to %1. The dongle drivers included with Riff are built for a specific kernel, so they have to be rebuilt once for the new one.&lt;/p&gt;&lt;p&gt;Rebuilding takes about an hour and needs an Internet connection. Your other WSL distributions are not affected.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;&lt;b&gt;WSLが更新されたため、ドングルのドライバーを作り直す必要があります。&lt;/b&gt;&lt;/p&gt;&lt;p&gt;WindowsによってWSLのカーネルが %1 に更新されました。Riffに入っているドングルのドライバーは特定のカーネル向けに作られているため、新しいカーネル用に一度作り直す必要があります。&lt;/p&gt;&lt;p&gt;作り直しには1時間ほどかかり、インターネット接続が必要です。他のWSLディストリビューションには影響しません。&lt;/p&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>WirelessManager</name>
+    <message>
+        <source>timed out</source>
+        <translation>タイムアウトしました</translation>
+    </message>
+    <message>
+        <source>The wireless environment file was not found: %1</source>
+        <translation>無線環境のファイルが見つかりません: %1</translation>
+    </message>
+    <message>
+        <source>Installing the Riff wireless environment (WSL distribution &quot;%1&quot;) ...</source>
+        <translation>Riff無線環境（WSLディストリビューション「%1」）をインストールしています...</translation>
+    </message>
+    <message>
+        <source>The wireless environment is installed.</source>
+        <translation>無線環境をインストールしました。</translation>
+    </message>
+    <message>
+        <source>Installing the wireless environment failed: %1</source>
+        <translation>無線環境のインストールに失敗しました: %1</translation>
+    </message>
+    <message>
+        <source>The wireless environment was removed.</source>
+        <translation>無線環境を削除しました。</translation>
+    </message>
+    <message>
+        <source>Removing the wireless environment failed: %1</source>
+        <translation>無線環境の削除に失敗しました: %1</translation>
+    </message>
+    <message>
+        <source>usbipd-win is not installed</source>
+        <translation>usbipd-winがインストールされていません</translation>
+    </message>
+    <message>
+        <source>Select a dongle first.</source>
+        <translation>先にドングルを選んでください。</translation>
+    </message>
+    <message>
+        <source>Sharing USB device %1 with WSL - please allow the administrator prompt (only needed once).</source>
+        <translation>USBデバイス %1 をWSLと共有します。管理者の確認画面で許可してください（最初の1回だけです）。</translation>
+    </message>
+    <message>
+        <source>USB device %1 could not be shared (the administrator prompt was declined or failed).</source>
+        <translation>USBデバイス %1 を共有できませんでした（管理者の確認が拒否されたか、失敗しました）。</translation>
+    </message>
+    <message>
+        <source>Connecting USB device %1 to WSL ...</source>
+        <translation>USBデバイス %1 をWSLに接続しています...</translation>
+    </message>
+    <message>
+        <source>Connecting USB device %1 failed: %2</source>
+        <translation>USBデバイス %1 の接続に失敗しました: %2</translation>
+    </message>
+    <message>
+        <source>Loading the dongle drivers and starting the agent ...</source>
+        <translation>ドングルのドライバーを読み込み、エージェントを起動しています...</translation>
+    </message>
+    <message>
+        <source>Drivers loaded (%1).</source>
+        <translation>ドライバーを読み込みました（%1）。</translation>
+    </message>
+    <message>
+        <source>Dongle ready: %1 (driver %2, MAC %3), monitor mode</source>
+        <translation>ドングルの準備ができました: %1（ドライバー %2、MAC %3）、モニターモード</translation>
+    </message>
+    <message>
+        <source>No Wi-Fi interface appeared. The dongle may not be supported, or it needs to be re-plugged.</source>
+        <translation>無線インターフェースが現れませんでした。ドングルが非対応か、挿し直しが必要な可能性があります。</translation>
+    </message>
+    <message>
+        <source>Error: %1</source>
+        <translation>エラー: %1</translation>
+    </message>
+    <message>
+        <source>The wireless agent is running (%1:%2).</source>
+        <translation>無線エージェントが動作中です（%1:%2）。</translation>
+    </message>
+    <message>
+        <source>Riff could not connect to the wireless agent (port %1).</source>
+        <translation>無線エージェントに接続できませんでした（ポート %1）。</translation>
+    </message>
+    <message>
+        <source>The wireless agent stopped (exit code %1).</source>
+        <translation>無線エージェントが停止しました（終了コード %1）。</translation>
+    </message>
+    <message>
+        <source>Channel set to %1.</source>
+        <translation>チャンネルを %1 に設定しました。</translation>
+    </message>
+    <message>
+        <source>Channel %1 was refused by the dongle or the country setting.</source>
+        <translation>チャンネル %1 は、ドングルまたは国の設定によって拒否されました。</translation>
+    </message>
+    <message>
+        <source>Stopping the wireless agent ...</source>
+        <translation>無線エージェントを停止しています...</translation>
+    </message>
+    <message>
+        <source>Stopped.</source>
+        <translation>停止しました。</translation>
+    </message>
+    <message>
+        <source>This WSL kernel (%1) already contains Wi-Fi drivers; using them.</source>
+        <translation>このWSLカーネル（%1）には無線ドライバーが組み込まれているため、それを使います。</translation>
+    </message>
+</context>
+<context>
     <name>dot3</name>
     <message>
         <source>Form</source>
@@ -4366,7 +4664,7 @@ Length (x4)</source>
         <translation>フラグメントオフセット (x8)</translation>
     </message>
     <message>
-        <source>Don't Fragment</source>
+        <source>Don&apos;t Fragment</source>
         <translation>フラグメント禁止</translation>
     </message>
     <message>
@@ -4508,11 +4806,11 @@ Length (x4)</source>
         <translation>送信元</translation>
     </message>
     <message>
-        <source>Self (port's own MAC)</source>
+        <source>Self (port&apos;s own MAC)</source>
         <translation>自身 (ポートの MAC)</translation>
     </message>
     <message>
-        <source>Resolve: the source MAC is taken from the device (Devices tab) that has this stream's source IP and VLANs. The destination MAC is looked up with ARP/ND from that device - or, if there is none, from the port's own IP address, subnet and default gateway. Self: the source MAC is the transmitting port's own MAC address.</source>
+        <source>Resolve: the source MAC is taken from the device (Devices tab) that has this stream&apos;s source IP and VLANs. The destination MAC is looked up with ARP/ND from that device - or, if there is none, from the port&apos;s own IP address, subnet and default gateway. Self: the source MAC is the transmitting port&apos;s own MAC address.</source>
         <translation>解決: 送信元 MAC は、このストリームの送信元 IP と VLAN を持つデバイス (［デバイス］タブ) の MAC を使います。宛先 MAC はそのデバイスから ARP/ND で調べます - 該当するデバイスがない場合は、ポート自身の IP アドレス・サブネット・デフォルトゲートウェイを使います。自身: 送信元 MAC に送信ポート自身の MAC アドレスを使います。</translation>
     </message>
 </context>

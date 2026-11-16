@@ -45,6 +45,7 @@ public:
     // current theme's background
     QString errorColor() const { return dark_ ? "#FFB4AB" : "#B3261E"; }
     QString warningColor() const { return dark_ ? "#F2CC60" : "#8A5300"; }
+    QString successColor() const { return dark_ ? "#7DD99B" : "#1E7B3C"; }
 
     static ThemeManager* instance();
 

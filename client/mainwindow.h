@@ -25,8 +25,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QProcess>
 
 class LogsWindow;
+class PortGroup;
 class PortsWindow;
 class PortStatsWindow;
+class WirelessDialog;
+class WirelessManager;
 
 class QDockWidget;
 class QProcess;
@@ -51,6 +54,10 @@ private:
     QRect defaultGeometry_;
     QByteArray defaultLayout_;
 
+    WirelessManager *wireless_;
+    WirelessDialog *wirelessDialog_;
+    PortGroup *wirelessPortGroup_;
+
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
@@ -64,8 +71,11 @@ public slots:
     void on_actionDonate_triggered();
     void on_actionCheckForUpdates_triggered();
     void on_actionHelpAbout_triggered();
+    void on_actionWirelessDongle_triggered();
 
 private slots:
+    void onWirelessAgentReady(QString host, quint16 port);
+    void onWirelessAgentStopped();
     void stopLocalServerMonitor();
     void onLocalServerFinished(int exitCode, QProcess::ExitStatus exitStatus);
     void onLocalServerError(QProcess::ProcessError error);
