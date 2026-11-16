@@ -25,12 +25,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QCryptographicHash>
 #include <QDir>
 #include <QFile>
+#include <QDateTime>
 #include <QFileInfo>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QRegularExpression>
 #include <QStandardPaths>
 #include <QTcpSocket>
 #include <QTextCodec>
 #include <QTextStream>
+#include <QThread>
 #include <QTimer>
 
 #ifdef Q_OS_WIN32
@@ -42,14 +47,190 @@ const char *WirelessManager::kDistro = "RiffWireless";
 
 WirelessManager::WirelessManager(QObject *parent)
     : QObject(parent), state_(Idle), keepAlive_(0), agent_(0),
-      usbIdsLoaded_(false)
+      usbIdsLoaded_(false), captureLaunchMs_(0)
 {
+    restoreTimer_ = new QTimer(this);
+    restoreTimer_->setInterval(20000);
+    connect(restoreTimer_, &QTimer::timeout,
+            this, &WirelessManager::maybeRestoreDrivers);
 }
 
 WirelessManager::~WirelessManager()
 {
     if (state_ != Idle)
         stop();
+    // Riff is closing: give force-bound dongles back to Windows unless a
+    // Wireshark live capture still uses them
+    if (!forced_.isEmpty() && !isCaptureRunning())
+        restoreDrivers();
+}
+
+// ---- Windows driver handover (usbipd bind --force) ------------------------
+
+#ifdef Q_OS_WIN32
+// Same mutex as the extcap (usbip.AttachLock): dongles are handed between
+// Windows and WSL one at a time
+class HandoverLock
+{
+public:
+    HandoverLock() {
+        h_ = CreateMutexW(NULL, FALSE, L"Local\\RiffWifiUsbHandover");
+        if (h_ && WaitForSingleObject(h_, 180000) == WAIT_TIMEOUT) {
+            CloseHandle(h_);
+            h_ = NULL;
+        }
+    }
+    ~HandoverLock() {
+        if (h_) {
+            ReleaseMutex(h_);
+            CloseHandle(h_);
+        }
+    }
+private:
+    HANDLE h_;
+};
+#else
+class HandoverLock {};
+#endif
+
+QHash<QString, bool> WirelessManager::forcedState(QSet<QString> *attached)
+{
+    QHash<QString, bool> forced;
+    QProcess p;
+    p.start(usbipdPath(), {"state"});
+    if (!p.waitForFinished(20000))
+        return forced;
+    QJsonArray devs = QJsonDocument::fromJson(p.readAllStandardOutput())
+                          .object().value("Devices").toArray();
+    foreach (const QJsonValue &v, devs) {
+        QJsonObject o = v.toObject();
+        QString bus = o.value("BusId").toString();
+        if (bus.isEmpty())
+            continue;
+        forced.insert(bus, o.value("IsForced").toBool());
+        if (attached && !o.value("ClientIPAddress").toString().isEmpty())
+            attached->insert(bus);
+    }
+    return forced;
+}
+
+// Runs "cmd.exe /c <cmdLine>" through one UAC prompt and waits for it
+bool WirelessManager::runElevatedCmd(const QString &cmdLine)
+{
+#ifdef Q_OS_WIN32
+    QString params = QString("/c \"%1\"").arg(cmdLine);
+    SHELLEXECUTEINFOW sei;
+    memset(&sei, 0, sizeof(sei));
+    sei.cbSize = sizeof(sei);
+    sei.fMask = SEE_MASK_NOCLOSEPROCESS;
+    sei.lpVerb = L"runas";
+    sei.lpFile = L"cmd.exe";
+    sei.lpParameters = reinterpret_cast<LPCWSTR>(params.utf16());
+    sei.nShow = SW_HIDE;
+    if (!ShellExecuteExW(&sei) || !sei.hProcess)
+        return false;   // UAC declined
+    WaitForSingleObject(sei.hProcess, 120000);
+    DWORD code = 1;
+    GetExitCodeProcess(sei.hProcess, &code);
+    CloseHandle(sei.hProcess);
+    return code == 0;
+#else
+    Q_UNUSED(cmdLine);
+    return false;
+#endif
+}
+
+bool WirelessManager::forceBind(const QStringList &busIds)
+{
+    QHash<QString, bool> st = forcedState();
+    QStringList need;
+    foreach (const QString &id, busIds) {
+        if (!st.value(id, false))
+            need << id;
+        else
+            forced_.insert(id); // already forced (e.g. by a capture)
+    }
+    if (need.isEmpty()) {
+        restoreTimer_->start();
+        return true;
+    }
+    emit message(tr("Taking USB %1 away from the Windows Wi-Fi driver while "
+                    "WSL uses it - please allow the administrator prompt.")
+                    .arg(need.join(", ")), false);
+    QString exe = QDir::toNativeSeparators(usbipdPath());
+    QStringList cmds;
+    foreach (const QString &id, need)
+        cmds << QString("\"%1\" bind --busid %2 --force").arg(exe, id);
+    // one prompt for all dongles; one at a time, with a pause between
+    HandoverLock lock;
+    bool ok = runElevatedCmd(cmds.join(" && timeout /t 2 /nobreak >nul && "));
+    QHash<QString, bool> after = forcedState();
+    foreach (const QString &id, need)
+        if (after.value(id, false))
+            forced_.insert(id);
+    if (!forced_.isEmpty())
+        restoreTimer_->start();
+    if (!ok)
+        emit message(tr("The dongle(s) could not be taken from the Windows "
+                        "driver (the administrator prompt was declined or "
+                        "failed)."), true);
+    else
+        QThread::msleep(2000);  // the device restarts on the usbipd driver
+    return ok;
+}
+
+void WirelessManager::restoreDrivers()
+{
+    QSet<QString> attached;
+    QHash<QString, bool> st = forcedState(&attached);
+    QStringList ids;
+    foreach (const QString &id, forced_)
+        if (st.value(id, false) && !attached.contains(id))
+            ids << id;
+    if (ids.isEmpty()) {
+        if (attached.isEmpty())
+            forced_.clear();
+        return;
+    }
+    emit message(tr("Giving USB %1 back to the Windows Wi-Fi driver - please "
+                    "allow the administrator prompt.").arg(ids.join(", ")),
+                 false);
+    QString exe = QDir::toNativeSeparators(usbipdPath());
+    QStringList cmds;
+    foreach (const QString &id, ids)
+        cmds << QString("\"%1\" unbind --busid %2").arg(exe, id);
+    HandoverLock lock;
+    if (runElevatedCmd(cmds.join(" && timeout /t 2 /nobreak >nul && "))) {
+        foreach (const QString &id, ids)
+            forced_.remove(id);
+        emit message(tr("The dongle(s) can be used by Windows again."), false);
+    }
+    else {
+        emit message(tr("The dongle(s) stay with WSL (the administrator "
+                        "prompt was declined). To give them back later: "
+                        "usbipd unbind --busid <bus id> as administrator."),
+                     true);
+        forced_.clear();    // don't keep asking
+    }
+    if (forced_.isEmpty())
+        restoreTimer_->stop();
+}
+
+// Give force-bound dongles back once nothing in WSL uses them
+void WirelessManager::maybeRestoreDrivers()
+{
+    if (forced_.isEmpty()) {
+        restoreTimer_->stop();
+        return;
+    }
+    if (state_ != Idle)
+        return;
+    // a capture Riff just launched may not have started tcpdump yet
+    if (QDateTime::currentMSecsSinceEpoch() - captureLaunchMs_ < 90000)
+        return;
+    if (isCaptureRunning())
+        return;
+    restoreDrivers();
 }
 
 // ---- Wireshark live capture (extcap) -------------------------------------
@@ -140,6 +321,26 @@ bool WirelessManager::startLiveCapture(const QList<CaptureTarget> &targets,
     }
     if (!installExtcap(error))
         return false;
+
+    // take the dongles from the Windows driver before WSL gets them (the
+    // extcap would otherwise do it with one prompt per dongle)
+    QStringList ids;
+    foreach (const CaptureTarget &t, targets)
+        ids << t.dev.busId;
+    if (!forceBind(ids)) {
+        if (error)
+            *error = tr("The dongles are needed by WSL for the capture, but "
+                        "they could not be taken from the Windows driver.");
+        return false;
+    }
+    captureLaunchMs_ = QDateTime::currentMSecsSinceEpoch();
+    // the extcap gives these back to Windows after the capture (its
+    // watcher survives Riff); Riff keeps only those it transmits with
+    foreach (const QString &id, ids)
+        if (!attached_.contains(id))
+            forced_.remove(id);
+    if (forced_.isEmpty())
+        restoreTimer_->stop();
 
     // one-shot settings for each interface, read by the extcap when the
     // capture starts (see riffRequest() in wireless/extcap)
@@ -480,24 +681,22 @@ void WirelessManager::start(QStringList busIds, QString country, int channel)
     keepAlive_->waitForStarted(5000);
 
     QString usbipd = usbipdPath();
+    // keep the Windows Wi-Fi driver off the dongles while WSL uses them
+    if (!forceBind(busIds)) {
+        cleanup();
+        return;
+    }
     QList<UsbDevice> devs = listUsbDevices();
+    HandoverLock lock;      // one dongle at a time
+    bool first = true;
     foreach (QString id, busIds) {
         QString state;
         foreach (const UsbDevice &d, devs)
             if (d.busId == id)
                 state = d.state;
-        if (state.startsWith("Not shared", Qt::CaseInsensitive)) {
-            emit message(tr("Sharing USB device %1 with WSL - please allow "
-                            "the administrator prompt (only needed once).")
-                            .arg(id), false);
-            if (!bindElevated(id)) {
-                emit message(tr("USB device %1 could not be shared "
-                                "(the administrator prompt was declined or "
-                                "failed).").arg(id), true);
-                cleanup();
-                return;
-            }
-        }
+        if (!first)
+            QThread::msleep(2000);
+        first = false;
         if (!state.startsWith("Attached", Qt::CaseInsensitive)) {
             QString out;
             emit message(tr("Connecting USB device %1 to WSL ...").arg(id),
@@ -683,4 +882,6 @@ void WirelessManager::cleanup()
         runWsl({"--terminate", kDistro}, 0, 20000);
     agentHost_.clear();
     setState(Idle);
+    if (!capturing)
+        maybeRestoreDrivers();
 }

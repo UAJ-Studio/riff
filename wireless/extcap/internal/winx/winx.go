@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"time"
 	"unsafe"
 )
 
@@ -26,6 +27,9 @@ var (
 	procGetExitCodeProcess       = kernel32.NewProc("GetExitCodeProcess")
 	procShellExecuteExW          = shell32.NewProc("ShellExecuteExW")
 	procIsUserAnAdmin            = shell32.NewProc("IsUserAnAdmin")
+	procCreateMutexW             = kernel32.NewProc("CreateMutexW")
+	procReleaseMutex             = kernel32.NewProc("ReleaseMutex")
+	procOpenProcess              = kernel32.NewProc("OpenProcess")
 )
 
 const createNoWindow = 0x08000000
@@ -176,4 +180,55 @@ func RunElevated(exe string, args string, show bool) (int, error) {
 	var code uint32
 	procGetExitCodeProcess.Call(uintptr(sei.hProcess), uintptr(unsafe.Pointer(&code)))
 	return int(code), nil
+}
+
+// NamedLock waits up to timeout for a named mutex shared by every Riff
+// process in this session (Riff itself and each extcap instance), so that
+// USB dongles are handed between Windows and WSL one at a time. Some Wi-Fi
+// drivers crash Windows when two adapters are torn down concurrently.
+func NamedLock(name string, timeout time.Duration) (func(), error) {
+	n, _ := syscall.UTF16PtrFromString(name)
+	h, _, err := procCreateMutexW.Call(0, 0, uintptr(unsafe.Pointer(n)))
+	if h == 0 {
+		return nil, err
+	}
+	r, _, _ := procWaitForSingleObject.Call(h, uintptr(timeout.Milliseconds()))
+	if r != 0 && r != 0x80 { // WAIT_OBJECT_0 / WAIT_ABANDONED
+		syscall.CloseHandle(syscall.Handle(h))
+		return nil, fmt.Errorf("timed out waiting for %s", name)
+	}
+	return func() {
+		procReleaseMutex.Call(h)
+		syscall.CloseHandle(syscall.Handle(h))
+	}, nil
+}
+
+// WaitProcess blocks until the process with the given id has exited.
+func WaitProcess(pid int) {
+	const synchronize = 0x00100000
+	h, _, _ := procOpenProcess.Call(synchronize, 0, uintptr(pid))
+	if h == 0 {
+		return
+	}
+	procWaitForSingleObject.Call(h, 0xFFFFFFFF)
+	syscall.CloseHandle(syscall.Handle(h))
+}
+
+// StartDetached starts exe hidden and outside our kill-on-close job, so it
+// keeps running after Wireshark terminates us.
+func StartDetached(exe string, args ...string) error {
+	const breakaway = 0x01000000 // CREATE_BREAKAWAY_FROM_JOB
+	start := func(flags uint32) error {
+		c := exec.Command(exe, args...)
+		c.SysProcAttr = &syscall.SysProcAttr{HideWindow: true,
+			CreationFlags: createNoWindow | flags}
+		if err := c.Start(); err != nil {
+			return err
+		}
+		return c.Process.Release()
+	}
+	if err := start(breakaway); err == nil {
+		return nil
+	}
+	return start(0)
 }

@@ -177,3 +177,35 @@ func Detach(d Device) error {
 	_, err := winx.Run(Exe(), "detach", "--busid", d.BusId)
 	return err
 }
+
+// AttachLock is the name of the mutex that serializes handing dongles
+// between Windows and WSL (shared with Riff, see winx.NamedLock).
+const AttachLock = `Local\RiffWifiUsbHandover`
+
+// ForceBind shares the device with WSL in "forced" mode through UAC: the
+// Windows Wi-Fi driver is unloaded once, cleanly, and stays off the device
+// until Unbind. This avoids tearing the Windows driver down while it is
+// running when the device is attached (the Realtek rtwlanu6 driver can
+// crash Windows - BAD_POOL_HEADER - on that path).
+func ForceBind(d Device) error {
+	code, err := winx.RunElevated(Exe(), "bind --busid "+d.BusId+" --force", false)
+	if err != nil {
+		return fmt.Errorf("administrator rights are needed: %v", err)
+	}
+	if code != 0 {
+		return fmt.Errorf("usbipd bind --force failed (exit %d)", code)
+	}
+	return nil
+}
+
+// Unbind gives the device back to its Windows driver (UAC).
+func Unbind(busid string) error {
+	code, err := winx.RunElevated(Exe(), "unbind --busid "+busid, false)
+	if err != nil {
+		return err
+	}
+	if code != 0 {
+		return fmt.Errorf("usbipd unbind failed (exit %d)", code)
+	}
+	return nil
+}

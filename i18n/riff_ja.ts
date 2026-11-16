@@ -5174,11 +5174,11 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     </message>
     <message>
         <source>Sharing USB device %1 with WSL - please allow the administrator prompt (only needed once).</source>
-        <translation>USBデバイス %1 をWSLと共有します。管理者の確認画面で許可してください（最初の1回だけです）。</translation>
+        <translation type="vanished">USBデバイス %1 をWSLと共有します。管理者の確認画面で許可してください（最初の1回だけです）。</translation>
     </message>
     <message>
         <source>USB device %1 could not be shared (the administrator prompt was declined or failed).</source>
-        <translation>USBデバイス %1 を共有できませんでした（管理者の確認が拒否されたか、失敗しました）。</translation>
+        <translation type="vanished">USBデバイス %1 を共有できませんでした（管理者の確認が拒否されたか、失敗しました）。</translation>
     </message>
     <message>
         <source>Connecting USB device %1 to WSL ...</source>
@@ -5282,11 +5282,39 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     </message>
     <message numerus="yes">
         <source>Started Wireshark with %n dongle(s) in one window.</source>
-        <translation><numerusform>%n 本のドングルを1つのウィンドウにまとめてWiresharkを起動しました。</numerusform></translation>
+        <translation>
+            <numerusform>%n 本のドングルを1つのウィンドウにまとめてWiresharkを起動しました。</numerusform>
+        </translation>
     </message>
     <message numerus="yes">
         <source>Started %n Wireshark window(s), one per dongle.</source>
-        <translation><numerusform>ドングルごとに %n 個のWiresharkウィンドウを起動しました。</numerusform></translation>
+        <translation>
+            <numerusform>ドングルごとに %n 個のWiresharkウィンドウを起動しました。</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Taking USB %1 away from the Windows Wi-Fi driver while WSL uses it - please allow the administrator prompt.</source>
+        <translation>WSLで使う間、USB %1 をWindowsのWi-Fiドライバーから切り離します。管理者の確認画面で許可してください。</translation>
+    </message>
+    <message>
+        <source>The dongle(s) could not be taken from the Windows driver (the administrator prompt was declined or failed).</source>
+        <translation>ドングルをWindowsのドライバーから切り離せませんでした（管理者の確認が拒否されたか、失敗しました）。</translation>
+    </message>
+    <message>
+        <source>Giving USB %1 back to the Windows Wi-Fi driver - please allow the administrator prompt.</source>
+        <translation>USB %1 をWindowsのWi-Fiドライバーに戻します。管理者の確認画面で許可してください。</translation>
+    </message>
+    <message>
+        <source>The dongle(s) can be used by Windows again.</source>
+        <translation>ドングルを再びWindowsで使えるようにしました。</translation>
+    </message>
+    <message>
+        <source>The dongle(s) stay with WSL (the administrator prompt was declined). To give them back later: usbipd unbind --busid &lt;bus id&gt; as administrator.</source>
+        <translation>ドングルはWSL用のままです（管理者の確認が拒否されました）。あとで戻すには、管理者のターミナルで usbipd unbind --busid &lt;バスID&gt; を実行してください。</translation>
+    </message>
+    <message>
+        <source>The dongles are needed by WSL for the capture, but they could not be taken from the Windows driver.</source>
+        <translation>キャプチャーのためにドングルをWSLで使う必要がありますが、Windowsのドライバーから切り離せませんでした。</translation>
     </message>
 </context>
 <context>

@@ -65,6 +65,8 @@ func main() {
 		printConfig()
 	case args["capture"] != "":
 		err = capture(args)
+	case args["restore-after"] != "":
+		restoreAfter(args["restore-after"], args["busid"])
 	case args["version"] != "":
 		fmt.Println(common.Product, common.Version)
 	default:
@@ -177,7 +179,10 @@ func capture(args map[string]string) error {
 		country = "JP"
 	}
 	// Riff's "Live Capture" button leaves one-shot settings per dongle
+	// (Riff then also gives the dongle back to Windows when it is done)
+	fromRiff := false
 	if f, w, c, ok := riffRequest(args["extcap-interface"]); ok {
+		fromRiff = true
 		log.Printf("settings from Riff: %d MHz, %d MHz wide, country %q", f, w, c)
 		freq = f
 		if w > 0 {
@@ -187,6 +192,7 @@ func capture(args map[string]string) error {
 			country = c
 		}
 	}
+	log.Printf("started from Riff: %v", fromRiff)
 	ch, err := wifi.FromFreq(freq)
 	if err != nil {
 		return err
@@ -250,6 +256,37 @@ func capture(args map[string]string) error {
 		return fmt.Errorf("cannot open fifo: %v", err)
 	}
 	defer out.Close()
+
+	// Hand dongles between Windows and WSL one at a time, and keep the
+	// Windows Wi-Fi driver off the dongle while WSL uses it (force bind):
+	// the Realtek Windows driver can crash Windows when it is torn down
+	// on attach, especially for two dongles at once.
+	unlock, lerr := winx.NamedLock(usbip.AttachLock, 3*time.Minute)
+	if lerr != nil {
+		log.Printf("handover lock: %v", lerr)
+		unlock = func() {}
+	}
+	unlockOnce := sync.OnceFunc(unlock)
+	defer unlockOnce()
+	forcedHere := false
+	if !dev.IsForced {
+		log.Printf("force-binding USB %s (UAC)", dev.BusId)
+		if err := usbip.ForceBind(*dev); err != nil {
+			return fmt.Errorf("ドングルを Windows のドライバーから切り離せませんでした (管理者の確認が必要です): %v", err)
+		}
+		forcedHere = true
+		time.Sleep(2 * time.Second) // the device restarts on the stub driver
+	}
+	if forcedHere || dev.IsForced {
+		// give the dongle back to its Windows driver once this capture has
+		// ended (unless it is still in use: another capture or Riff's
+		// transmit agent). Also works when Riff was closed meanwhile.
+		if self, err := os.Executable(); err == nil {
+			err = winx.StartDetached(self, "--restore-after", strconv.Itoa(os.Getpid()),
+				"--busid", dev.BusId)
+			log.Printf("restore watcher for %s: %v", dev.BusId, err)
+		}
+	}
 
 	cmdArgs := []string{"-d", common.DistroName, "-u", "root", "--", common.CaptureScript,
 		country, strconv.Itoa(freq), strconv.Itoa(width), strconv.Itoa(center), dev.BusId + "@" + dev.HWID(), optStr}
@@ -319,6 +356,7 @@ func capture(args map[string]string) error {
 		_ = winx.AssignToJob(job, aa.Process)
 	}
 	log.Printf("auto-attach running for %s", dev.BusId)
+	unlockOnce() // attached: the next dongle may be handed over
 
 	// Attach loops and the dongle's current bus id, so a failed start can
 	// hand the dongle back to Windows (the Linux-side release watcher only
@@ -474,4 +512,41 @@ func riffRequest(iface string) (freq, width int, country string, ok bool) {
 		}
 	}
 	return freq, width, country, freq > 0
+}
+
+// restoreAfter waits for the capture process to end, then gives the dongle
+// back to its Windows driver (unless another capture, or Riff, is using it).
+func restoreAfter(pidStr, busid string) {
+	pid, _ := strconv.Atoi(pidStr)
+	if pid <= 0 || busid == "" {
+		return
+	}
+	winx.WaitProcess(pid)
+	time.Sleep(3 * time.Second) // let the Linux side detach the dongle
+	unlock, err := winx.NamedLock(usbip.AttachLock, 3*time.Minute)
+	if err == nil {
+		defer unlock()
+	}
+	list, err := usbip.List()
+	if err != nil {
+		log.Printf("restore %s: %v", busid, err)
+		return
+	}
+	for _, d := range list {
+		if d.BusId != busid {
+			continue
+		}
+		if d.Attached() {
+			log.Printf("restore %s: still attached (in use), keeping it", busid)
+			return
+		}
+		if !d.IsForced {
+			return
+		}
+		log.Printf("restore %s: unbind (UAC)", busid)
+		if err := usbip.Unbind(busid); err != nil {
+			log.Printf("restore %s: %v", busid, err)
+		}
+		return
+	}
 }

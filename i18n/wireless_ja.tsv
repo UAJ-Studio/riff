@@ -100,3 +100,9 @@ Started Wireshark with %n dongle(s) in one window.	%n 本のドングルを1つ�
 Started %n Wireshark window(s), one per dongle.	ドングルごとに %n 個のWiresharkウィンドウを起動しました。
 Check at least one dongle in the capture list.	キャプチャーの一覧でドングルを1つ以上チェックしてください。
 Channel	チャンネル
+Taking USB %1 away from the Windows Wi-Fi driver while WSL uses it - please allow the administrator prompt.	WSLで使う間、USB %1 をWindowsのWi-Fiドライバーから切り離します。管理者の確認画面で許可してください。
+The dongle(s) could not be taken from the Windows driver (the administrator prompt was declined or failed).	ドングルをWindowsのドライバーから切り離せませんでした（管理者の確認が拒否されたか、失敗しました）。
+Giving USB %1 back to the Windows Wi-Fi driver - please allow the administrator prompt.	USB %1 をWindowsのWi-Fiドライバーに戻します。管理者の確認画面で許可してください。
+The dongle(s) can be used by Windows again.	ドングルを再びWindowsで使えるようにしました。
+The dongle(s) stay with WSL (the administrator prompt was declined). To give them back later: usbipd unbind --busid <bus id> as administrator.	ドングルはWSL用のままです（管理者の確認が拒否されました）。あとで戻すには、管理者のターミナルで usbipd unbind --busid <バスID> を実行してください。
+The dongles are needed by WSL for the capture, but they could not be taken from the Windows driver.	キャプチャーのためにドングルをWSLで使う必要がありますが、Windowsのドライバーから切り離せませんでした。

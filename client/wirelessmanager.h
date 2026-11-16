@@ -23,7 +23,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QHash>
 #include <QObject>
 #include <QProcess>
+#include <QSet>
 #include <QStringList>
+
+class QTimer;
 
 /*
  * USB Wi-Fi dongles through WSL (see wireless/README.md):
@@ -114,6 +117,15 @@ private:
     int runWsl(const QStringList &args, QString *out = 0,
             int timeoutMs = 30000);
     bool bindElevated(const QString &busId);
+    // While WSL uses a dongle it is bound in "forced" mode, so the Windows
+    // Wi-Fi driver is unloaded once, cleanly, instead of being torn down
+    // on attach (the Realtek rtwlanu6 driver can crash Windows there).
+    // Riff gives the dongles back to Windows when it is done with them.
+    QHash<QString, bool> forcedState(QSet<QString> *attached = 0);
+    bool forceBind(const QStringList &busIds);
+    void restoreDrivers();
+    void maybeRestoreDrivers();
+    bool runElevatedCmd(const QString &cmdLine);
     void loadUsbIds();
     void setState(State s);
     void handleAgentLine(const QString &line);
@@ -128,6 +140,9 @@ private:
     QString agentHost_;
     QHash<QString, QString> usbIds_; // "0B05:1997" -> driver
     bool usbIdsLoaded_;
+    QSet<QString> forced_;      // dongles Riff force-bound
+    qint64 captureLaunchMs_;
+    QTimer *restoreTimer_;
 };
 
 #endif
