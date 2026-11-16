@@ -45,6 +45,8 @@ public:
         QString name;
         QString state;      // usbipd: "Not shared", "Shared", "Attached"
         QString driver;     // supported driver, empty if not supported
+        bool registered = false; // "Riff only": usbipd forced bind, no
+                                 // Windows driver on it
     };
     enum State { Idle, Starting, Running, Stopping };
 
@@ -99,6 +101,14 @@ public slots:
     void stop();
     void setChannel(int channel);
 
+    // Dongles used with Riff stay "registered" (usbipd bind --force): the
+    // Windows Wi-Fi driver never runs on them, so it is never torn down.
+    // Several vendor drivers crash Windows when two of their adapters stop
+    // (e.g. Realtek rtwlanu6 keeps one buffer in a global for all
+    // adapters and frees it twice). Register one dongle at a time.
+    bool registerDongle(const QString &busId, QString *error = 0);
+    bool unregisterDongle(const QString &busId, QString *error = 0);
+
 signals:
     void message(QString text, bool isError);
     void installFinished(bool ok);
@@ -106,6 +116,7 @@ signals:
     void agentReady(QString host, quint16 port);
     void agentStopped();
     void needRebuild(QString kernel);
+    void registrationChanged();
 
 private slots:
     void onAgentOutput();
@@ -122,9 +133,7 @@ private:
     // on attach (the Realtek rtwlanu6 driver can crash Windows there).
     // Riff gives the dongles back to Windows when it is done with them.
     QHash<QString, bool> forcedState(QSet<QString> *attached = 0);
-    bool forceBind(const QStringList &busIds);
-    void restoreDrivers();
-    void maybeRestoreDrivers();
+    bool ensureRegistered(const QStringList &busIds, QString *error);
     bool runElevatedCmd(const QString &cmdLine);
     void loadUsbIds();
     void setState(State s);
@@ -140,9 +149,6 @@ private:
     QString agentHost_;
     QHash<QString, QString> usbIds_; // "0B05:1997" -> driver
     bool usbIdsLoaded_;
-    QSet<QString> forced_;      // dongles Riff force-bound
-    qint64 captureLaunchMs_;
-    QTimer *restoreTimer_;
 };
 
 #endif

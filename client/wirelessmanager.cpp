@@ -47,22 +47,15 @@ const char *WirelessManager::kDistro = "RiffWireless";
 
 WirelessManager::WirelessManager(QObject *parent)
     : QObject(parent), state_(Idle), keepAlive_(0), agent_(0),
-      usbIdsLoaded_(false), captureLaunchMs_(0)
+      usbIdsLoaded_(false)
 {
-    restoreTimer_ = new QTimer(this);
-    restoreTimer_->setInterval(20000);
-    connect(restoreTimer_, &QTimer::timeout,
-            this, &WirelessManager::maybeRestoreDrivers);
 }
 
 WirelessManager::~WirelessManager()
 {
     if (state_ != Idle)
         stop();
-    // Riff is closing: give force-bound dongles back to Windows unless a
-    // Wireshark live capture still uses them
-    if (!forced_.isEmpty() && !isCaptureRunning())
-        restoreDrivers();
+    // registered dongles stay registered (Riff only) - see registerDongle()
 }
 
 // ---- Windows driver handover (usbipd bind --force) ------------------------
@@ -140,97 +133,120 @@ bool WirelessManager::runElevatedCmd(const QString &cmdLine)
 #endif
 }
 
-bool WirelessManager::forceBind(const QStringList &busIds)
+// Starting with dongles that are not registered yet: register them now, but
+// only the safe case - one unregistered dongle and no other unregistered
+// supported dongle running on its Windows driver.
+bool WirelessManager::ensureRegistered(const QStringList &busIds,
+                                       QString *error)
 {
-    QHash<QString, bool> st = forcedState();
+    QList<UsbDevice> devs = listUsbDevices();
     QStringList need;
-    foreach (const QString &id, busIds) {
-        if (!st.value(id, false))
-            need << id;
-        else
-            forced_.insert(id); // already forced (e.g. by a capture)
-    }
-    if (need.isEmpty()) {
-        restoreTimer_->start();
+    foreach (const QString &id, busIds)
+        foreach (const UsbDevice &d, devs)
+            if (d.busId == id && !d.registered)
+                need << id;
+    if (need.isEmpty())
         return true;
+    if (need.size() > 1) {
+        if (error)
+            *error = tr("USB %1 are not registered for Riff yet. Register "
+                        "them one at a time first (2. Dongle > Register for "
+                        "Riff).").arg(need.join(", "));
+        return false;
     }
-    emit message(tr("Taking USB %1 away from the Windows Wi-Fi driver while "
-                    "WSL uses it - please allow the administrator prompt.")
-                    .arg(need.join(", ")), false);
+    return registerDongle(need.first(), error);
+}
+
+bool WirelessManager::registerDongle(const QString &busId, QString *error)
+{
+    QList<UsbDevice> devs = listUsbDevices();
+    UsbDevice target;
+    QStringList others;
+    foreach (const UsbDevice &d, devs) {
+        if (d.busId == busId)
+            target = d;
+        else if (!d.driver.isEmpty() && !d.registered)
+            others << QString("%1 %2").arg(d.busId, d.name);
+    }
+    if (target.busId.isEmpty()) {
+        if (error)
+            *error = tr("USB %1 is not connected.").arg(busId);
+        return false;
+    }
+    if (target.registered)
+        return true;
+    if (!others.isEmpty()) {
+        // stopping one of two adapters of the same Windows driver is what
+        // crashes some drivers (rtwlanu6: shared buffer freed twice)
+        if (error)
+            *error = tr("Another Wi-Fi dongle is still used by Windows (%1). "
+                        "Some Wi-Fi drivers crash Windows when one of two "
+                        "of their dongles is stopped, so dongles are "
+                        "registered one at a time: unplug the other "
+                        "dongle(s), register this one, then plug the next "
+                        "one in and register it.").arg(others.join(", "));
+        return false;
+    }
+    emit message(tr("Registering USB %1 for Riff: the Windows Wi-Fi driver is "
+                    "taken off it - please allow the administrator prompt.")
+                    .arg(busId), false);
     QString exe = QDir::toNativeSeparators(usbipdPath());
-    QStringList cmds;
-    foreach (const QString &id, need)
-        cmds << QString("\"%1\" bind --busid %2 --force").arg(exe, id);
-    // one prompt for all dongles; one at a time, with a pause between
-    HandoverLock lock;
-    bool ok = runElevatedCmd(cmds.join(" && timeout /t 2 /nobreak >nul && "));
-    QHash<QString, bool> after = forcedState();
-    foreach (const QString &id, need)
-        if (after.value(id, false))
-            forced_.insert(id);
-    if (!forced_.isEmpty())
-        restoreTimer_->start();
-    if (!ok)
-        emit message(tr("The dongle(s) could not be taken from the Windows "
-                        "driver (the administrator prompt was declined or "
-                        "failed)."), true);
-    else
+    bool ok;
+    {
+        HandoverLock lock;
+        ok = runElevatedCmd(QString("\"%1\" bind --busid %2 --force")
+                                .arg(exe, busId));
         QThread::msleep(2000);  // the device restarts on the usbipd driver
-    return ok;
+    }
+    ok = ok && forcedState().value(busId, false);
+    emit registrationChanged();
+    if (!ok) {
+        if (error)
+            *error = tr("USB %1 could not be registered (the administrator "
+                        "prompt was declined or failed).").arg(busId);
+        return false;
+    }
+    emit message(tr("USB %1 is registered for Riff. It stays with Riff until "
+                    "you give it back to Windows.").arg(busId), false);
+    return true;
 }
 
-void WirelessManager::restoreDrivers()
+bool WirelessManager::unregisterDongle(const QString &busId, QString *error)
 {
-    QSet<QString> attached;
-    QHash<QString, bool> st = forcedState(&attached);
-    QStringList ids;
-    foreach (const QString &id, forced_)
-        if (st.value(id, false) && !attached.contains(id))
-            ids << id;
-    if (ids.isEmpty()) {
-        if (attached.isEmpty())
-            forced_.clear();
-        return;
+    if (attached_.contains(busId) && state_ != Idle) {
+        if (error)
+            *error = tr("Stop the transmit agent first.");
+        return false;
     }
-    emit message(tr("Giving USB %1 back to the Windows Wi-Fi driver - please "
-                    "allow the administrator prompt.").arg(ids.join(", ")),
-                 false);
+    if (isCaptureRunning()) {
+        if (error)
+            *error = tr("Stop the Wireshark live capture first.");
+        return false;
+    }
+    emit message(tr("Giving USB %1 back to Windows - please allow the "
+                    "administrator prompt.").arg(busId), false);
     QString exe = QDir::toNativeSeparators(usbipdPath());
-    QStringList cmds;
-    foreach (const QString &id, ids)
-        cmds << QString("\"%1\" unbind --busid %2").arg(exe, id);
-    HandoverLock lock;
-    if (runElevatedCmd(cmds.join(" && timeout /t 2 /nobreak >nul && "))) {
-        foreach (const QString &id, ids)
-            forced_.remove(id);
-        emit message(tr("The dongle(s) can be used by Windows again."), false);
+    bool ok;
+    {
+        HandoverLock lock;
+        // bind first so that unbind also clears a forced flag left without
+        // a share record (seen after a dongle moved to another port)
+        runElevatedCmd(QString("\"%1\" detach --busid %2 >nul 2>&1 & "
+                               "\"%1\" bind --busid %2 >nul 2>&1 & "
+                               "\"%1\" unbind --busid %2").arg(exe, busId));
+        QThread::msleep(2000);
+        ok = !forcedState().value(busId, true);
     }
-    else {
-        emit message(tr("The dongle(s) stay with WSL (the administrator "
-                        "prompt was declined). To give them back later: "
-                        "usbipd unbind --busid <bus id> as administrator."),
-                     true);
-        forced_.clear();    // don't keep asking
+    emit registrationChanged();
+    if (!ok) {
+        if (error)
+            *error = tr("USB %1 could not be given back to Windows (the "
+                        "administrator prompt was declined or failed).")
+                        .arg(busId);
+        return false;
     }
-    if (forced_.isEmpty())
-        restoreTimer_->stop();
-}
-
-// Give force-bound dongles back once nothing in WSL uses them
-void WirelessManager::maybeRestoreDrivers()
-{
-    if (forced_.isEmpty()) {
-        restoreTimer_->stop();
-        return;
-    }
-    if (state_ != Idle)
-        return;
-    // a capture Riff just launched may not have started tcpdump yet
-    if (QDateTime::currentMSecsSinceEpoch() - captureLaunchMs_ < 90000)
-        return;
-    if (isCaptureRunning())
-        return;
-    restoreDrivers();
+    emit message(tr("USB %1 is used by Windows again.").arg(busId), false);
+    return true;
 }
 
 // ---- Wireshark live capture (extcap) -------------------------------------
@@ -322,25 +338,12 @@ bool WirelessManager::startLiveCapture(const QList<CaptureTarget> &targets,
     if (!installExtcap(error))
         return false;
 
-    // take the dongles from the Windows driver before WSL gets them (the
-    // extcap would otherwise do it with one prompt per dongle)
+    // the dongles must be registered for Riff (no Windows driver on them)
     QStringList ids;
     foreach (const CaptureTarget &t, targets)
         ids << t.dev.busId;
-    if (!forceBind(ids)) {
-        if (error)
-            *error = tr("The dongles are needed by WSL for the capture, but "
-                        "they could not be taken from the Windows driver.");
+    if (!ensureRegistered(ids, error))
         return false;
-    }
-    captureLaunchMs_ = QDateTime::currentMSecsSinceEpoch();
-    // the extcap gives these back to Windows after the capture (its
-    // watcher survives Riff); Riff keeps only those it transmits with
-    foreach (const QString &id, ids)
-        if (!attached_.contains(id))
-            forced_.remove(id);
-    if (forced_.isEmpty())
-        restoreTimer_->stop();
 
     // one-shot settings for each interface, read by the extcap when the
     // capture starts (see riffRequest() in wireless/extcap)
@@ -621,6 +624,10 @@ QList<WirelessManager::UsbDevice> WirelessManager::listUsbDevices(
         d.driver = usbIds_.value(d.vidPid.toUpper());
         list.append(d);
     }
+    // registered = usbipd forced bind (not shown by "usbipd list")
+    QHash<QString, bool> forced = forcedState();
+    for (int i = 0; i < list.size(); i++)
+        list[i].registered = forced.value(list.at(i).busId, false);
     return list;
 }
 
@@ -681,8 +688,10 @@ void WirelessManager::start(QStringList busIds, QString country, int channel)
     keepAlive_->waitForStarted(5000);
 
     QString usbipd = usbipdPath();
-    // keep the Windows Wi-Fi driver off the dongles while WSL uses them
-    if (!forceBind(busIds)) {
+    // the dongles must be registered for Riff (no Windows driver on them)
+    QString regError;
+    if (!ensureRegistered(busIds, &regError)) {
+        emit message(regError, true);
         cleanup();
         return;
     }
@@ -882,6 +891,4 @@ void WirelessManager::cleanup()
         runWsl({"--terminate", kDistro}, 0, 20000);
     agentHost_.clear();
     setState(Idle);
-    if (!capturing)
-        maybeRestoreDrivers();
 }

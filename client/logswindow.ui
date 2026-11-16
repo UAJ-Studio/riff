@@ -108,7 +108,7 @@
    <item>
     <widget class="XTableView" name="logs">
      <property name="whatsThis">
-      <string>Ostinato application logs are displayed here</string>
+      <string>Riff application logs are displayed here</string>
      </property>
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectRows</enum>

@@ -48,6 +48,8 @@ private slots:
     void onNeedRebuild(QString kernel);
     void onChannelChanged(int index);
     void onLiveCapture();
+    void onRegister();
+    void onGiveBack();
 
 private:
     void setCheck(QLabel *label, bool ok, const QString &text);
@@ -65,6 +67,8 @@ private:
     QComboBox *channel_;
     QPushButton *startButton_;
     QPushButton *refreshButton_;
+    QPushButton *registerButton_;
+    QPushButton *returnButton_;
     QTreeWidget *capList_;
     QCheckBox *oneWindow_;
     QLabel *captureStatus_;

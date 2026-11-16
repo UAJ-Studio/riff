@@ -117,7 +117,7 @@
      <property name="whatsThis">
       <string>This is the device group list for the selected port
 
-A device group is a set of one or more devices/hosts which will be emulated by Ostinato
+A device group is a set of one or more devices/hosts which will be emulated by Riff
 
 Right-click to create/edit a device group</string>
      </property>

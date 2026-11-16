@@ -99,11 +99,23 @@ WirelessDialog::WirelessDialog(WirelessManager *manager, QWidget *parent)
     devices_->setMinimumHeight(120);
     dv->addWidget(devices_);
     QHBoxLayout *dh = new QHBoxLayout;
-    QLabel *hint = new QLabel(tr("Check the dongle(s) to use. Devices marked "
-                                 "\"Supported\" have a driver in Riff."));
+    QLabel *hint = new QLabel(tr("Check the dongle(s) to use. \"Supported\" "
+            "dongles have a driver in Riff. Register each dongle for Riff "
+            "once, one at a time (only one unregistered dongle plugged in): "
+            "registered dongles stay with Riff and are safe to use together."));
     hint->setWordWrap(true);
+    registerButton_ = new QPushButton(tr("Register for Riff"));
+    registerButton_->setToolTip(tr("Take the selected dongle away from its "
+            "Windows Wi-Fi driver for good (until you give it back). Some "
+            "Wi-Fi drivers crash Windows when one of two of their dongles "
+            "is stopped; registered dongles never run on the Windows driver."));
+    returnButton_ = new QPushButton(tr("Give back to Windows"));
+    returnButton_->setToolTip(tr("Let Windows use the selected dongle as a "
+            "normal Wi-Fi adapter again."));
     refreshButton_ = new QPushButton(tr("Refresh"));
     dh->addWidget(hint, 1);
+    dh->addWidget(registerButton_);
+    dh->addWidget(returnButton_);
     dh->addWidget(refreshButton_);
     dv->addLayout(dh);
     top->addWidget(dg);
@@ -216,6 +228,10 @@ WirelessDialog::WirelessDialog(WirelessManager *manager, QWidget *parent)
             this, &WirelessDialog::onStateChanged);
     connect(manager_, &WirelessManager::needRebuild,
             this, &WirelessDialog::onNeedRebuild);
+    connect(registerButton_, &QPushButton::clicked, this, &WirelessDialog::onRegister);
+    connect(returnButton_, &QPushButton::clicked, this, &WirelessDialog::onGiveBack);
+    connect(devices_, &QTreeWidget::currentItemChanged, this, [this]() { updateButtons(); });
+    connect(manager_, &WirelessManager::registrationChanged, this, &WirelessDialog::refresh);
     connect(manager_, &WirelessManager::installFinished, this, [this]() {
         refresh();
     });
@@ -288,8 +304,10 @@ void WirelessDialog::refresh()
                     (checked.isEmpty() && sup)) ? Qt::Checked : Qt::Unchecked);
             it->setText(1, d.busId);
             it->setText(2, d.name);
-            it->setText(3, sup ? tr("Supported (%1)").arg(d.driver)
-                               : tr("Not supported"));
+            it->setText(3, !sup ? tr("Not supported")
+                    : d.registered ? tr("Riff only (%1)").arg(d.driver)
+                                   : tr("Supported (%1)").arg(d.driver));
+            it->setData(3, Qt::UserRole, d.registered);
             it->setText(4, d.state);
             it->setToolTip(2, d.vidPid);
             if (!sup)
@@ -349,6 +367,12 @@ void WirelessDialog::updateButtons()
         break;
     }
     bool idle = st == WirelessManager::Idle;
+    QTreeWidgetItem *cur = devices_->currentItem();
+    bool curSupported = cur && cur->text(3) != tr("Not supported");
+    bool curRegistered = cur && cur->data(3, Qt::UserRole).toBool();
+    bool envOk = wslOk_ && usbipdOk_;
+    registerButton_->setEnabled(envOk && idle && curSupported && !curRegistered);
+    returnButton_->setEnabled(envOk && idle && curRegistered);
     devices_->setEnabled(idle);
     refreshButton_->setEnabled(idle);
     country_->setEnabled(idle);
@@ -551,4 +575,47 @@ void WirelessDialog::onLiveCapture()
                                     country_->currentData().toString(),
                                     oneWindow_->isChecked(), &err))
         QMessageBox::warning(this, windowTitle(), err);
+}
+
+void WirelessDialog::onRegister()
+{
+    QTreeWidgetItem *cur = devices_->currentItem();
+    if (!cur)
+        return;
+    QString err;
+    if (!manager_->registerDongle(cur->text(1), &err)) {
+        onMessage(err, true);
+        QMessageBox::warning(this, windowTitle(), err);
+    }
+}
+
+void WirelessDialog::onGiveBack()
+{
+    QTreeWidgetItem *cur = devices_->currentItem();
+    if (!cur)
+        return;
+    // another dongle of the same model already on its Windows driver?
+    QStringList same;
+    for (int i = 0; i < devices_->topLevelItemCount(); i++) {
+        QTreeWidgetItem *it = devices_->topLevelItem(i);
+        if (it != cur && it->toolTip(2) == cur->toolTip(2)
+                && !it->data(3, Qt::UserRole).toBool())
+            same << it->text(1);
+    }
+    QString text = tr("Give USB %1 back to Windows? It can then be used as a "
+                      "normal Wi-Fi adapter, and Riff registers it again "
+                      "when you use it next time.").arg(cur->text(1));
+    if (!same.isEmpty())
+        text += "\n\n" + tr("Warning: a dongle of the same model (USB %1) is "
+                "already used by Windows. Some Wi-Fi drivers crash Windows "
+                "when two of their dongles are in use and are stopped (for "
+                "example when Windows shuts down) - with this model use only "
+                "one at a time in Windows.").arg(same.join(", "));
+    if (QMessageBox::question(this, windowTitle(), text) != QMessageBox::Yes)
+        return;
+    QString err;
+    if (!manager_->unregisterDongle(cur->text(1), &err)) {
+        onMessage(err, true);
+        QMessageBox::warning(this, windowTitle(), err);
+    }
 }

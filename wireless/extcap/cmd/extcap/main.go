@@ -268,26 +268,25 @@ func capture(args map[string]string) error {
 	}
 	unlockOnce := sync.OnceFunc(unlock)
 	defer unlockOnce()
-	forcedHere := false
 	if !dev.IsForced {
-		log.Printf("force-binding USB %s (UAC)", dev.BusId)
+		// not registered for Riff yet: register it here only when no other
+		// supported dongle runs on its Windows driver (stopping one of two
+		// adapters is what crashes some drivers, e.g. Realtek rtwlanu6)
+		var others []string
+		for _, a := range adapters {
+			if a.BusId != dev.BusId && !a.IsForced {
+				others = append(others, a.BusId)
+			}
+		}
+		if len(others) > 0 {
+			return fmt.Errorf("USB %s のドングルは Riff にまだ登録されていません。ほかにも Windows で動いているドングルがあるため (USB %s)、安全のため自動では登録しません。Riff の「ツール ＞ 無線ドングル」で 1 本ずつ登録してください", dev.BusId, strings.Join(others, ", "))
+		}
+		log.Printf("registering USB %s for Riff (force bind, UAC)", dev.BusId)
 		if err := usbip.ForceBind(*dev); err != nil {
 			return fmt.Errorf("ドングルを Windows のドライバーから切り離せませんでした (管理者の確認が必要です): %v", err)
 		}
-		forcedHere = true
 		time.Sleep(2 * time.Second) // the device restarts on the stub driver
 	}
-	if forcedHere || dev.IsForced {
-		// give the dongle back to its Windows driver once this capture has
-		// ended (unless it is still in use: another capture or Riff's
-		// transmit agent). Also works when Riff was closed meanwhile.
-		if self, err := os.Executable(); err == nil {
-			err = winx.StartDetached(self, "--restore-after", strconv.Itoa(os.Getpid()),
-				"--busid", dev.BusId)
-			log.Printf("restore watcher for %s: %v", dev.BusId, err)
-		}
-	}
-
 	cmdArgs := []string{"-d", common.DistroName, "-u", "root", "--", common.CaptureScript,
 		country, strconv.Itoa(freq), strconv.Itoa(width), strconv.Itoa(center), dev.BusId + "@" + dev.HWID(), optStr}
 	if f := strings.TrimSpace(args["extcap-capture-filter"]); f != "" {

@@ -33,3 +33,24 @@ known kernels and only needs the network to fetch a pack for a newer one.
 
 Country: the world regdomain forbids initiating radiation on 5 GHz, so
 injected frames would be dropped; the loader sets the configured country.
+
+## Registered dongles (Windows crash avoidance)
+Riff uses a dongle only after it is "registered" (`usbipd bind --force`):
+the Windows Wi-Fi driver is unloaded from it once and never runs on it again
+until the user gives it back to Windows. Registration is done one dongle at
+a time, with no other unregistered supported dongle plugged in.
+
+Why: on a test PC with two ASUS USB-AX56 (RTL8832AU), Windows crashed with
+BAD_POOL_HEADER (0x19, P1 0x22) in rtwlanu6.sys 5001.0.13.105, the Realtek
+Windows driver. A full kernel dump showed the halt path
+(wdiwifi!CMiniportHaltJob::PerformFreeAdapter -> rtwlanu6 -> NdisFreeMemory)
+freeing a large buffer whose address is kept in a *global* variable of the
+driver: with two adapters, both halting (shutdown, or a takeover by usbipd
+after the other one was re-initialised) frees the same buffer twice. This is
+independent of WSL and usbipd; any vendor driver may have similar
+multi-adapter bugs, so Riff keeps its dongles off the Windows driver.
+
+Also: Linux rtw89 normally switches USB 2 connected dongles to USB 3 mode
+(the chip re-enumerates and keeps the setting until power-off). The pack's
+rtw89 has `switch_usb_mode` (default N) so a dongle keeps its identity and
+registration. Crash lab scripts used for the analysis: see the project notes.

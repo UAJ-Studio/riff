@@ -471,6 +471,18 @@ To emulate a device, click on Configuration and create a device group</source>
         <source>Edit Device Group</source>
         <translation>デバイスグループを編集</translation>
     </message>
+    <message>
+        <source>This is the device group list for the selected port
+
+A device group is a set of one or more devices/hosts which will be emulated by Riff
+
+Right-click to create/edit a device group</source>
+        <translation>選択したポートのデバイスグループ一覧です
+
+デバイスグループは、Riff がエミュレートする1台以上のデバイス/ホストの集合です
+
+右クリックでデバイスグループを作成/編集できます</translation>
+    </message>
 </context>
 <context>
     <name>EtherIpConfigForm</name>
@@ -1396,6 +1408,10 @@ This replaces the whole packet.</source>
         <source>Ostinato application logs are displayed here</source>
         <translation>Ostinato アプリケーションのログがここに表示されます</translation>
     </message>
+    <message>
+        <source>Riff application logs are displayed here</source>
+        <translation>Riff アプリケーションのログがここに表示されます</translation>
+    </message>
 </context>
 <context>
     <name>MainWindow</name>
@@ -1560,7 +1576,7 @@ This replaces the whole packet.</source>
     <name>NativeFileFormat</name>
     <message>
         <source>%1 was created using a newer version of Ostinato. New features/protocols will not be available.</source>
-        <translation>%1 は新しいバージョンの Ostinato で作成されました。新しい機能/プロトコルは利用できません。</translation>
+        <translation>%1 は新しいバージョンの Riff/Ostinato で作成されました。新しい機能/プロトコルは利用できません。</translation>
     </message>
     <message>
         <source>Failed parsing %1 contents</source>
@@ -1598,11 +1614,11 @@ Debug: %2</source>
     </message>
     <message>
         <source>%1 is not an Ostinato file</source>
-        <translation>%1 は Ostinato ファイルではありません</translation>
+        <translation>%1 は Riff（Ostinato 互換）形式のファイルではありません</translation>
     </message>
     <message>
         <source>%1 does not look like an Ostinato file</source>
-        <translation>%1 は Ostinato ファイルではないようです</translation>
+        <translation>%1 は Riff（Ostinato 互換）形式のファイルではないようです</translation>
     </message>
     <message>
         <source>Error reading from %1</source>
@@ -4943,7 +4959,7 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     </message>
     <message>
         <source>Check the dongle(s) to use. Devices marked &quot;Supported&quot; have a driver in Riff.</source>
-        <translation>使うドングルにチェックを入れてください。「対応」と表示されたデバイスは、Riffにドライバーが入っています。</translation>
+        <translation type="vanished">使うドングルにチェックを入れてください。「対応」と表示されたデバイスは、Riffにドライバーが入っています。</translation>
     </message>
     <message>
         <source>Refresh</source>
@@ -5133,6 +5149,38 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
         <source>Check at least one dongle in the capture list.</source>
         <translation>キャプチャーの一覧でドングルを1つ以上チェックしてください。</translation>
     </message>
+    <message>
+        <source>Check the dongle(s) to use. &quot;Supported&quot; dongles have a driver in Riff. Register each dongle for Riff once, one at a time (only one unregistered dongle plugged in): registered dongles stay with Riff and are safe to use together.</source>
+        <translation>使うドングルにチェックを入れてください。「対応」のドングルは、Riffにドライバーが入っています。各ドングルは最初に1回だけ、1本ずつ（未登録のドングルを1本だけ挿した状態で）Riff専用に登録してください。登録済みのドングルはRiff専用になり、何本でも安全に同時に使えます。</translation>
+    </message>
+    <message>
+        <source>Register for Riff</source>
+        <translation>Riff専用に登録</translation>
+    </message>
+    <message>
+        <source>Take the selected dongle away from its Windows Wi-Fi driver for good (until you give it back). Some Wi-Fi drivers crash Windows when one of two of their dongles is stopped; registered dongles never run on the Windows driver.</source>
+        <translation>選んだドングルを、Windowsに戻すまでの間、WindowsのWi-Fiドライバーから切り離します。一部のWi-Fiドライバーには、同じドライバーのドングル2本のうち1本を止めるとWindowsが停止する不具合があります。登録したドングルはWindowsのドライバーでは動かないので、この不具合が起きません。</translation>
+    </message>
+    <message>
+        <source>Give back to Windows</source>
+        <translation>Windowsに戻す</translation>
+    </message>
+    <message>
+        <source>Let Windows use the selected dongle as a normal Wi-Fi adapter again.</source>
+        <translation>選んだドングルを、再びWindowsの普通のWi-Fiアダプターとして使えるようにします。</translation>
+    </message>
+    <message>
+        <source>Riff only (%1)</source>
+        <translation>Riff専用（%1）</translation>
+    </message>
+    <message>
+        <source>Give USB %1 back to Windows? It can then be used as a normal Wi-Fi adapter, and Riff registers it again when you use it next time.</source>
+        <translation>USB %1 をWindowsに戻しますか？普通のWi-Fiアダプターとして使えるようになります。次にRiffで使うときに、もう一度登録します。</translation>
+    </message>
+    <message>
+        <source>Warning: a dongle of the same model (USB %1) is already used by Windows. Some Wi-Fi drivers crash Windows when two of their dongles are in use and are stopped (for example when Windows shuts down) - with this model use only one at a time in Windows.</source>
+        <translation>注意: 同じ機種のドングル（USB %1）がすでにWindowsで使われています。一部のWi-Fiドライバーには、同じドングルを2本使っている状態でそれらが止まる（Windowsのシャットダウン時など）とWindowsが停止する不具合があります。この機種は、Windowsでは1本ずつ使ってください。</translation>
+    </message>
 </context>
 <context>
     <name>WirelessManager</name>
@@ -5294,27 +5342,71 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     </message>
     <message>
         <source>Taking USB %1 away from the Windows Wi-Fi driver while WSL uses it - please allow the administrator prompt.</source>
-        <translation>WSLで使う間、USB %1 をWindowsのWi-Fiドライバーから切り離します。管理者の確認画面で許可してください。</translation>
+        <translation type="vanished">WSLで使う間、USB %1 をWindowsのWi-Fiドライバーから切り離します。管理者の確認画面で許可してください。</translation>
     </message>
     <message>
         <source>The dongle(s) could not be taken from the Windows driver (the administrator prompt was declined or failed).</source>
-        <translation>ドングルをWindowsのドライバーから切り離せませんでした（管理者の確認が拒否されたか、失敗しました）。</translation>
+        <translation type="vanished">ドングルをWindowsのドライバーから切り離せませんでした（管理者の確認が拒否されたか、失敗しました）。</translation>
     </message>
     <message>
         <source>Giving USB %1 back to the Windows Wi-Fi driver - please allow the administrator prompt.</source>
-        <translation>USB %1 をWindowsのWi-Fiドライバーに戻します。管理者の確認画面で許可してください。</translation>
+        <translation type="vanished">USB %1 をWindowsのWi-Fiドライバーに戻します。管理者の確認画面で許可してください。</translation>
     </message>
     <message>
         <source>The dongle(s) can be used by Windows again.</source>
-        <translation>ドングルを再びWindowsで使えるようにしました。</translation>
+        <translation type="vanished">ドングルを再びWindowsで使えるようにしました。</translation>
     </message>
     <message>
         <source>The dongle(s) stay with WSL (the administrator prompt was declined). To give them back later: usbipd unbind --busid &lt;bus id&gt; as administrator.</source>
-        <translation>ドングルはWSL用のままです（管理者の確認が拒否されました）。あとで戻すには、管理者のターミナルで usbipd unbind --busid &lt;バスID&gt; を実行してください。</translation>
+        <translation type="vanished">ドングルはWSL用のままです（管理者の確認が拒否されました）。あとで戻すには、管理者のターミナルで usbipd unbind --busid &lt;バスID&gt; を実行してください。</translation>
     </message>
     <message>
         <source>The dongles are needed by WSL for the capture, but they could not be taken from the Windows driver.</source>
-        <translation>キャプチャーのためにドングルをWSLで使う必要がありますが、Windowsのドライバーから切り離せませんでした。</translation>
+        <translation type="vanished">キャプチャーのためにドングルをWSLで使う必要がありますが、Windowsのドライバーから切り離せませんでした。</translation>
+    </message>
+    <message>
+        <source>USB %1 are not registered for Riff yet. Register them one at a time first (2. Dongle &gt; Register for Riff).</source>
+        <translation>USB %1 はまだRiff専用に登録されていません。先に1本ずつ登録してください（「2. ドングル」→「Riff専用に登録」）。</translation>
+    </message>
+    <message>
+        <source>USB %1 is not connected.</source>
+        <translation>USB %1 は接続されていません。</translation>
+    </message>
+    <message>
+        <source>Another Wi-Fi dongle is still used by Windows (%1). Some Wi-Fi drivers crash Windows when one of two of their dongles is stopped, so dongles are registered one at a time: unplug the other dongle(s), register this one, then plug the next one in and register it.</source>
+        <translation>ほかのWi-Fiドングルがまだ Windows で使われています（%1）。一部のWi-Fiドライバーには、同じドライバーのドングル2本のうち1本を止めるとWindowsが停止する不具合があるため、ドングルは1本ずつ登録します。ほかのドングルを抜いてからこのドングルを登録し、そのあと次のドングルを挿して登録してください。</translation>
+    </message>
+    <message>
+        <source>Registering USB %1 for Riff: the Windows Wi-Fi driver is taken off it - please allow the administrator prompt.</source>
+        <translation>USB %1 をRiff専用に登録します（WindowsのWi-Fiドライバーから切り離します）。管理者の確認画面で許可してください。</translation>
+    </message>
+    <message>
+        <source>USB %1 could not be registered (the administrator prompt was declined or failed).</source>
+        <translation>USB %1 を登録できませんでした（管理者の確認が拒否されたか、失敗しました）。</translation>
+    </message>
+    <message>
+        <source>USB %1 is registered for Riff. It stays with Riff until you give it back to Windows.</source>
+        <translation>USB %1 をRiff専用に登録しました。Windowsに戻すまで、Riff専用のままになります。</translation>
+    </message>
+    <message>
+        <source>Stop the transmit agent first.</source>
+        <translation>先に送信用エージェントを停止してください。</translation>
+    </message>
+    <message>
+        <source>Stop the Wireshark live capture first.</source>
+        <translation>先にWiresharkのライブキャプチャを停止してください。</translation>
+    </message>
+    <message>
+        <source>Giving USB %1 back to Windows - please allow the administrator prompt.</source>
+        <translation>USB %1 をWindowsに戻します。管理者の確認画面で許可してください。</translation>
+    </message>
+    <message>
+        <source>USB %1 could not be given back to Windows (the administrator prompt was declined or failed).</source>
+        <translation>USB %1 をWindowsに戻せませんでした（管理者の確認が拒否されたか、失敗しました）。</translation>
+    </message>
+    <message>
+        <source>USB %1 is used by Windows again.</source>
+        <translation>USB %1 は、再びWindowsで使えるようになりました。</translation>
     </message>
 </context>
 <context>
