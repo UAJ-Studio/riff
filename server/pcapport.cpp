@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "devicemanager.h"
 #include "packetbuffer.h"
 
+#include <QFile>
 #include <QtGlobal>
 
 pcap_if_t *PcapPort::deviceList_ = NULL;
@@ -60,6 +61,20 @@ PcapPort::PcapPort(int id, const char *device)
             //! \todo set port IP addr also
         }
     }
+
+#ifdef Q_OS_LINUX
+    // libpcap has no description for most Linux interfaces: use the
+    // interface alias if one is set (Riff's wireless distro names its
+    // dongles this way, e.g. "USB Wi-Fi rtw89_8852au (monitor)")
+    if (data_.description().empty()) {
+        QFile alias(QString("/sys/class/net/%1/ifalias").arg(device));
+        if (alias.open(QIODevice::ReadOnly)) {
+            QByteArray a = alias.readAll().trimmed();
+            if (!a.isEmpty())
+                data_.set_description(a.constData());
+        }
+    }
+#endif
 }
 
 void PcapPort::init()

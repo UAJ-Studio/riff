@@ -35,6 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QPushButton>
+#include <QScrollBar>
 #include <QTreeWidget>
 #include <QVBoxLayout>
 
@@ -336,6 +337,8 @@ void WirelessDialog::onMessage(QString text, bool isError)
                             : palette().color(QPalette::Text).name();
     log_->appendHtml(QString("<span style='color:%1'>%2&nbsp;&nbsp;%3</span>")
                      .arg(color, t, text.toHtmlEscaped()));
+    // always show the latest line
+    log_->verticalScrollBar()->setValue(log_->verticalScrollBar()->maximum());
 }
 
 void WirelessDialog::onStateChanged(int /*state*/)

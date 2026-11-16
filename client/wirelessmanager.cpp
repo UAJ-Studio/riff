@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QRegularExpression>
 #include <QStandardPaths>
 #include <QTcpSocket>
+#include <QTextCodec>
 #include <QTextStream>
 #include <QTimer>
 
@@ -82,8 +83,14 @@ int WirelessManager::run(const QString &program, const QStringList &args,
                         b.size()/2);
         else if (wsl)
             *out = QString::fromUtf8(b);
-        else
-            *out = QString::fromLocal8Bit(b);
+        else {
+            // usbipd (.NET) writes UTF-8 when redirected; older tools use
+            // the console code page - take UTF-8 only if it decodes cleanly
+            QTextCodec::ConverterState st;
+            QString u = QTextCodec::codecForName("UTF-8")->toUnicode(
+                            b.constData(), b.size(), &st);
+            *out = st.invalidChars == 0 ? u : QString::fromLocal8Bit(b);
+        }
         out->remove(QChar('\r'));
     }
     return p.exitCode();

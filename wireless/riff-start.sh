@@ -35,7 +35,10 @@ for w in $W; do
   iw dev "$w" set type monitor || { echo "RIFF_ERROR monitor mode refused on $w"; exit 1; }
   ip link set "$w" up
   iw dev "$w" set channel "$CH" || echo "RIFF_WARN channel $CH refused on $w"
-  echo "RIFF_DONGLE $w $(basename "$(readlink -f /sys/class/net/$w/device/driver)") $(cat /sys/class/net/$w/address)"
+  drv=$(basename "$(readlink -f /sys/class/net/$w/device/driver)")
+  # shown as the port description in Riff
+  printf 'USB Wi-Fi %s (monitor)' "$drv" > /sys/class/net/$w/ifalias 2>/dev/null
+  echo "RIFF_DONGLE $w $drv $(cat /sys/class/net/$w/address)"
 done
 # localhost forwarding from Windows is not reliable in NAT mode: also give
 # Riff the VM's own address to connect to
