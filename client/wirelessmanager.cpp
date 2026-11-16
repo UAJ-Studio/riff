@@ -184,12 +184,12 @@ bool WirelessManager::registerDongle(const QString &busId, QString *error)
             *error = tr("Another Wi-Fi dongle also runs on its Windows driver "
                         "(%1). Some Wi-Fi drivers crash Windows when two of "
                         "their dongles have been in use and are stopped one "
-                        "after the other - and from this state that can "
-                        "happen with any next step (unplugging, registering, "
-                        "shutting down).\n\nSave your work, unplug all but "
-                        "one dongle and restart the PC. Then register the "
-                        "dongles one at a time: register the plugged-in one, "
-                        "and plug the next one in only after that.")
+                        "after the other - by registering, disabling or "
+                        "shutting down. Unplugging them is safe.\n\nDo not "
+                        "restart or shut down the PC now. Unplug all of these "
+                        "dongles, then register them one at a time: plug one "
+                        "in, register it, and plug the next one in only after "
+                        "that.")
                         .arg(others.join(", "));
         return false;
     }

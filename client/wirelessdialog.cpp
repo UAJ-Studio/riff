@@ -327,9 +327,9 @@ void WirelessDialog::refresh()
         if (onWindows.size() > 1)
             onMessage(tr("Warning: %1 dongles (USB %2) run on their Windows "
                          "driver at the same time. With some drivers Windows "
-                         "crashes when they stop (also at shutdown). Save "
-                         "your work, unplug all but one and restart the PC, "
-                         "then register them one at a time.")
+                         "crashes when they stop (also at shutdown). Do not "
+                         "restart now: unplug all of them, then plug them in "
+                         "and register them one at a time.")
                       .arg(onWindows.size()).arg(onWindows.join(", ")), true);
         fillCaptureList(list);
     }
