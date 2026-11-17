@@ -57,10 +57,16 @@ usb_dir() {
     while [ -n "$d" ] && [ "$d" != "/" ] && [ ! -f "$d/idVendor" ]; do d=$(dirname "$d"); done
     echo "$d"
 }
-# phy_free <phy>: true if no capture is running on the phy's netdev.
+# claim_free <phy>: true unless another running capture has claimed the phy
+# (claimed as soon as it is picked, long before tcpdump starts on it).
+claim_free() {
+    c=$(cat "/run/riff-claim-$1" 2>/dev/null)
+    [ -z "$c" ] || [ "$c" = "$$" ] || ! kill -0 "$c" 2>/dev/null
+}
+# phy_free <phy>: true if no capture is running or starting on the phy.
 phy_free() {
     n=$(ls "/sys/class/ieee80211/$1/device/net/" 2>/dev/null | head -n 1)
-    [ -n "$n" ] && ! pgrep -f "^tcpdump -i $n " >/dev/null
+    [ -n "$n" ] && ! pgrep -f "^tcpdump -i $n " >/dev/null && claim_free "$1"
 }
 # local_busid: Linux-side USB bus id (e.g. 1-1) of the device usbipd attached as $DEVID.
 local_busid() {
@@ -83,9 +89,10 @@ while [ $i -lt 160 ]; do
             fi
             PHY=$(basename "$p"); break
         done
-    elif [ -n "$HWID" ] && [ $i -ge 32 ]; then
-        # The dongle re-enumerated under another bus id (USB 3 mode switch):
-        # after 8 s, accept an idle adapter of the same model.
+    elif [ -n "$HWID" ] && [ $i -ge 120 ]; then
+        # The dongle re-enumerated under another bus id (USB 3 mode switch,
+        # off by default): after 30 s, accept an idle adapter of the same
+        # model. Never one another capture has claimed.
         for p in /sys/class/ieee80211/*; do
             [ -e "$p" ] || continue
             ph=$(basename "$p")
@@ -104,6 +111,7 @@ done
 DEV=$(ls "/sys/class/ieee80211/$PHY/device/net/" 2>/dev/null | head -n 1)
 [ -n "$DEV" ] || die "no network interface on $PHY"
 log "using USB $BUSID -> $PHY / $DEV"
+echo $$ > "/run/riff-claim-$PHY"   # ours (exec keeps the pid for tcpdump)
 
 # Only one capture at a time per adapter (other adapters keep running).
 pkill -f "^tcpdump -i $DEV " 2>/dev/null && sleep 0.3

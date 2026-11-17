@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -186,20 +187,27 @@ func RunElevated(exe string, args string, show bool) (int, error) {
 // process in this session (Riff itself and each extcap instance), so that
 // USB dongles are handed between Windows and WSL one at a time. Some Wi-Fi
 // drivers crash Windows when two adapters are torn down concurrently.
+// A Windows mutex belongs to the OS thread that acquired it and only that
+// thread can release it, so the calling goroutine stays on its thread until
+// the returned unlock function runs (call it from the same goroutine).
 func NamedLock(name string, timeout time.Duration) (func(), error) {
+	runtime.LockOSThread()
 	n, _ := syscall.UTF16PtrFromString(name)
 	h, _, err := procCreateMutexW.Call(0, 0, uintptr(unsafe.Pointer(n)))
 	if h == 0 {
+		runtime.UnlockOSThread()
 		return nil, err
 	}
 	r, _, _ := procWaitForSingleObject.Call(h, uintptr(timeout.Milliseconds()))
 	if r != 0 && r != 0x80 { // WAIT_OBJECT_0 / WAIT_ABANDONED
 		syscall.CloseHandle(syscall.Handle(h))
+		runtime.UnlockOSThread()
 		return nil, fmt.Errorf("timed out waiting for %s", name)
 	}
 	return func() {
 		procReleaseMutex.Call(h)
 		syscall.CloseHandle(syscall.Handle(h))
+		runtime.UnlockOSThread()
 	}, nil
 }
 
