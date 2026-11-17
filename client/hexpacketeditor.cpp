@@ -37,6 +37,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QMenu>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QScreen>
+#include <QWindow>
 #include <QShortcut>
 #include <QRegularExpression>
 #include <QSet>
@@ -73,6 +75,28 @@ QByteArray HexPacketEditor::templatePacket(int index)
     return PacketTemplates::build(index);
 }
 
+void HexPacketEditor::attachMenu(QToolButton *button, QMenu *menu)
+{
+    QObject::connect(button, &QToolButton::clicked, menu, [button, menu]() {
+        QPoint pos = button->mapToGlobal(QPoint(0, button->height()));
+        QScreen *screen = QGuiApplication::screenAt(
+                button->mapToGlobal(button->rect().center()));
+        menu->winId();      // creates the native window to move
+        if (screen && menu->windowHandle())
+            menu->windowHandle()->setScreen(screen);
+        // keep the whole menu on that screen
+        if (screen) {
+            QRect avail = screen->availableGeometry();
+            QSize size = menu->sizeHint();
+            if (pos.y() + size.height() > avail.bottom())
+                pos.setY(qMax(avail.top(), avail.bottom() - size.height()));
+            if (pos.x() + size.width() > avail.right())
+                pos.setX(qMax(avail.left(), avail.right() - size.width()));
+        }
+        menu->exec(pos);
+    });
+}
+
 bool HexPacketEditor::parseHexText(const QString &text, QByteArray *out,
                                    QString *error)
 {
@@ -105,7 +129,7 @@ HexPacketEditor::HexPacketEditor(const QByteArray &packet, QWidget *parent)
     tplButton->setText(tr("Start from Template"));
     tplButton->setToolTip(tr("Replace the packet with a ready-made example "
                              "that you can then modify"));
-    tplButton->setPopupMode(QToolButton::InstantPopup);
+    tplButton->setPopupMode(QToolButton::DelayedPopup);
     tplButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
     QMenu *tplMenu = new QMenu(tplButton);
     QStringList names = templateNames();
@@ -127,7 +151,7 @@ HexPacketEditor::HexPacketEditor(const QByteArray &packet, QWidget *parent)
         a->setData(i);
         connect(a, SIGNAL(triggered()), SLOT(onTemplateChosen()));
     }
-    tplButton->setMenu(tplMenu);
+    attachMenu(tplButton, tplMenu);
     tools->addWidget(tplButton);
 
     QPushButton *pasteButton = new QPushButton(tr("Paste Hex..."), this);

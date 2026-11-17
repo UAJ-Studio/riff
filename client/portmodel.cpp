@@ -103,20 +103,52 @@ QVariant PortModel::data(const QModelIndex &index, int role) const
     if (!parent.isValid())
     {
         // Top Level Item - PortGroup
+        PortGroup *pg = pgl->mPortGroups.at(index.row());
         if (role == Qt::DisplayRole)
         {
             DBG0("Exit PortModel data 1\n");
-            return QString("Port Group %1: %2 [%3]:%4 (%5)").
-                arg(pgl->mPortGroups.at(index.row())->id()).
-                arg(pgl->mPortGroups.at(index.row())->userAlias()).
-                arg(pgl->mPortGroups.at(index.row())->serverName()).
-                arg(pgl->mPortGroups.at(index.row())->serverPort()).
-                arg(pgl->mPortGroups.value(index.row())->numPorts()); 
+            if (pg->isPending())
+                return QString("Port Group %1: %2 - %3")
+                    .arg(pg->id()).arg(pg->userAlias(), pg->statusText());
+            QString text = QString("Port Group %1: %2 [%3]:%4 (%5)").
+                arg(pg->id()).
+                arg(pg->userAlias()).
+                arg(pg->serverName()).
+                arg(pg->serverPort()).
+                arg(pg->numPorts());
+            switch (pg->state()) {
+            case QAbstractSocket::HostLookupState:
+            case QAbstractSocket::ConnectingState:
+                return text + " - " + tr("connecting ...");
+            case QAbstractSocket::ConnectedState:
+                if (pg->numPorts() == 0)
+                    return text + " - " + tr("getting the ports ...");
+                return text;
+            default:
+                return text;
+            }
+        }
+        else if (role == Qt::ToolTipRole && pg->isPending())
+        {
+            return pg->statusError()
+                ? tr("The wireless dongles could not be readied. See Tools > "
+                     "Wireless Dongle for details.")
+                : tr("Riff is readying the registered wireless dongles; "
+                     "their ports appear here when it is done.");
+        }
+        else if (role == Qt::ForegroundRole && pg->isPending())
+        {
+            return pg->statusError()
+                ? QBrush(QColor(ThemeManager::instance()->errorColor()))
+                : QVariant();
         }
         else if (role == Qt::DecorationRole)
         {
             DBG0("Exit PortModel data 2\n");
-            switch(pgl->mPortGroups.at(index.row())->state())
+            if (pg->isPending())
+                return QIcon(pg->statusError() ? ":/icons/bullet_red.png"
+                                               : ":/icons/bullet_yellow.png");
+            switch(pg->state())
             {
                 case QAbstractSocket::UnconnectedState:
                     return QIcon(":/icons/bullet_red.png");

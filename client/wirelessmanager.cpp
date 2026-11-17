@@ -817,6 +817,7 @@ void WirelessManager::start(QStringList busIds, QString country, int channel)
     // takes it
     waitPrepared(90000);
     setState(Starting);
+    emit portStatus(tr("starting the wireless agent ..."), 0);
     agentAddr_.clear();
     agentHost_.clear();
     attached_.clear();
@@ -950,6 +951,7 @@ void WirelessManager::connectWhenReachable(int attempt)
     }
     emit message(tr("Riff could not connect to the wireless agent "
                     "(port %1).").arg(kAgentPort), true);
+    emit portStatus(tr("could not connect to the wireless agent"), 1);
 }
 
 void WirelessManager::onAgentFinished(int exitCode, QProcess::ExitStatus)
@@ -1150,6 +1152,7 @@ bool WirelessManager::ensureUsbipdService()
     }
     emit message(tr("The usbipd-win service could not be started. Restart "
                     "Windows, then start Riff again."), true);
+    emit portStatus(tr("the usbipd-win service is not running"), 1);
     return false;
 #else
     return true;
@@ -1173,6 +1176,7 @@ void WirelessManager::prepareRegistered()
     }
     if (!isDistroInstalled())
         return;
+    emit portStatus(tr("readying the dongle(s) ..."), 0);
     ensureCaptureKeepAlive();
     QString usbipd = usbipdPath();
     QString country = appSettings->value("Wireless/Country", "JP").toString();
@@ -1201,8 +1205,16 @@ void WirelessManager::prepareRegistered()
                                  "prepared when a capture starts.")
                                  .arg(busId), !ok);
             emit prepared(busId, ok);
-            if (preps_.isEmpty())
+            if (!ok)
+                prepFailed_ = true;
+            if (preps_.isEmpty()) {
                 autoStartAgent();
+                if (state_ == Idle)     // no agent started after all
+                    emit portStatus(prepFailed_
+                            ? tr("the dongle(s) could not be readied") : "",
+                            prepFailed_ ? 1 : 2);
+                prepFailed_ = false;
+            }
         });
         p.job->start("wsl.exe", {"-d", kDistro, "-u", "root", "--",
                 "/opt/riff/riff-capture", country, QString::number(freq),
@@ -1291,6 +1303,10 @@ void WirelessManager::releaseKeptDongles()
 // Release everything started by start(): agent, USB attachments, keep-alive.
 void WirelessManager::cleanup()
 {
+    if (state_ == Starting)     // failed before the agent was reachable
+        emit portStatus(tr("the wireless agent could not start"), 1);
+    else if (state_ == Stopping)
+        emit portStatus("", 2);
     if (agent_) {
         agent_->disconnect(this);
         if (agent_->state() != QProcess::NotRunning) {

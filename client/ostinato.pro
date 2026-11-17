@@ -39,6 +39,7 @@ HEADERS += \
     wirelessdialog.h \
     wirelessmanager.h \
     childjob.h \
+    templatestream.h \
     logtranslator.h \
     protocolnames.h \
     packetdecoder.h \
@@ -105,6 +106,7 @@ SOURCES += \
     wirelessdialog.cpp \
     wirelessmanager.cpp \
     childjob.cpp \
+    templatestream.cpp \
     logtranslator.cpp \
     protocolnames.cpp \
     packetdecoder.cpp \

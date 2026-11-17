@@ -695,7 +695,30 @@ void MainWindow::ensureWireless()
                 this, &MainWindow::onWirelessAgentReady);
         connect(wireless_, &WirelessManager::agentStopped,
                 this, &MainWindow::onWirelessAgentStopped);
+        connect(wireless_, &WirelessManager::portStatus,
+                this, &MainWindow::onWirelessPortStatus);
     }
+}
+
+// Until the wireless agent is reachable its port group is shown with what
+// Riff is doing (readying the dongles, starting the agent) or what failed
+void MainWindow::onWirelessPortStatus(QString text, int kind)
+{
+    if (kind == 2) {
+        if (wirelessPortGroup_ && wirelessPortGroup_->isPending()) {
+            pgl->removePortGroup(*wirelessPortGroup_);  // deletes it
+            wirelessPortGroup_ = NULL;
+        }
+        return;
+    }
+    if (!wirelessPortGroup_) {
+        wirelessPortGroup_ = new PortGroup("127.0.0.1", 7879);
+        wirelessPortGroup_->setUserAlias(tr("USB Wi-Fi dongles"));
+        wirelessPortGroup_->setPending(text, kind == 1);
+        pgl->addPortGroup(*wirelessPortGroup_);
+    }
+    else if (wirelessPortGroup_->isPending())
+        wirelessPortGroup_->setPending(text, kind == 1);
 }
 
 void MainWindow::on_actionWirelessDongle_triggered()
@@ -714,9 +737,13 @@ void MainWindow::on_actionWirelessDongle_triggered()
 // ports are the dongle's monitor-mode interface(s)
 void MainWindow::onWirelessAgentReady(QString host, quint16 port)
 {
-    if (wirelessPortGroup_)
+    if (wirelessPortGroup_) {
+        if (wirelessPortGroup_->isPending())
+            wirelessPortGroup_->connectToHost(host, port);
         return;
+    }
     wirelessPortGroup_ = new PortGroup(host, port);
+    wirelessPortGroup_->setUserAlias(tr("USB Wi-Fi dongles"));
     pgl->addPortGroup(*wirelessPortGroup_);
 }
 

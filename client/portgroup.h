@@ -54,6 +54,9 @@ private:
     static quint32 mPortGroupAllocId;
     quint32        mPortGroupId;
     QString        mUserAlias;            // user defined
+    bool           pending_ = false;
+    QString        statusText_;
+    bool           statusError_ = false;
 
     bool            reconnect;
     int             reconnectAfter;     // time in milliseconds
@@ -81,12 +84,17 @@ public:
         quint16 port = DEFAULT_SERVER_PORT); 
     ~PortGroup();
 
-    void connectToHost() { 
+    void connectToHost() {
+        if (pending_)
+            return;     // the server is not there yet (setPending)
         reconnect = true;
         compat = kUnknown;
-        rpcChannel->establish(); 
+        rpcChannel->establish();
     }
     void connectToHost(QString serverName, quint16 port) {
+        pending_ = false;
+        statusText_.clear();
+        statusError_ = false;
         reconnect = true;
         compat = kUnknown;
         rpcChannel->establish(serverName, port);
@@ -99,8 +107,21 @@ public:
     int numReservedPorts() const;
     quint32 id() const { return mPortGroupId; } 
 
-    const QString& userAlias() const { return mUserAlias; } 
+    const QString& userAlias() const { return mUserAlias; }
     void setUserAlias(QString alias) { mUserAlias = alias; };
+
+    // A port group whose server is still being started (the wireless agent
+    // while Riff readies the dongles): shown with a status text, no
+    // connection attempts until connectToHost(serverName, port)
+    void setPending(const QString &status, bool error) {
+        pending_ = true;
+        statusText_ = status;
+        statusError_ = error;
+        emit portGroupDataChanged(mPortGroupId);
+    }
+    bool isPending() const { return pending_; }
+    const QString& statusText() const { return statusText_; }
+    bool statusError() const { return statusError_; }
 
     const QString serverName() const
         { return rpcChannel->serverName(); }

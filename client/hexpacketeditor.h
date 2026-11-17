@@ -28,6 +28,8 @@ class QCheckBox;
 class QComboBox;
 class QHexEdit;
 class QLabel;
+class QMenu;
+class QToolButton;
 class QTreeWidget;
 class QTreeWidgetItem;
 
@@ -52,6 +54,10 @@ public:
     static QByteArray templatePacket(int index);
     static QStringList templateNames();
     static QString templateGroup(int index);
+    // Makes button open menu just below itself. QToolButton::setMenu() can
+    // open a long menu on another monitor when the monitors use different
+    // scaling (Qt 5): the menu is placed on the button's own screen here.
+    static void attachMenu(QToolButton *button, QMenu *menu);
 
     // Parse hex text in common formats (plain, spaced, 0x.., hex dumps
     // with offsets). Returns false with *error set if text isn't hex.

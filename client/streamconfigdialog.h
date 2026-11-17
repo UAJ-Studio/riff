@@ -110,7 +110,11 @@ private:
     void loadProtocolWidgets();
     void storeProtocolWidgets();
 
+private:
+    QString lastTemplateName_;
+
 private slots:
+    void onTemplateChosen();
     void on_cmbPktLenMode_currentIndexChanged(QString mode);
     void update_NumPacketsAndNumBursts();
 

@@ -69,7 +69,9 @@ void setMac(QLineEdit *e, quint64 mac)
 
 quint64 mac(const QLineEdit *e)
 {
-    QString hex = e->text().remove(':').remove('-').remove(' ');
+    // displayText(): with the blank character "0" of the input mask, text()
+    // drops every 0 digit (02:00:00:00:02:00 would read as 0x22)
+    QString hex = e->displayText().remove(QLatin1Char(':'));
     return hex.toULongLong(nullptr, 16) & 0xFFFFFFFFFFFFULL;
 }
 

@@ -144,6 +144,9 @@ signals:
     void needRebuild(QString kernel);
     void registrationChanged();
     void prepared(QString busId, bool ok);
+    // state of the wireless port group before its agent is reachable:
+    // kind 0 = in progress, 1 = failed, 2 = nothing to show (clear)
+    void portStatus(QString text, int kind);
 
 private slots:
     void onAgentOutput();
@@ -182,6 +185,7 @@ private:
     QStringList attached_;
     QStringList ownAttached_;   // attached by start() itself: released on stop
     bool autoSuppressed_ = false; // the user stopped the agent: no auto start
+    bool prepFailed_ = false;
     void autoStartAgent();
     QString agentAddr_;     // VM address reported by riff-start.sh
     QString agentHost_;

@@ -2051,6 +2051,10 @@ This replaces the whole packet.</source>
         <source>%1: %2, %3 MHz wide</source>
         <translation>%1: %2、帯域幅 %3 MHz</translation>
     </message>
+    <message>
+        <source>USB Wi-Fi dongles</source>
+        <translation>USB Wi-Fi ドングル</translation>
+    </message>
 </context>
 <context>
     <name>NativeFileFormat</name>
@@ -3744,6 +3748,25 @@ Debug: %2</source>
     </message>
 </context>
 <context>
+    <name>PortModel</name>
+    <message>
+        <source>connecting ...</source>
+        <translation>接続中...</translation>
+    </message>
+    <message>
+        <source>getting the ports ...</source>
+        <translation>ポートを取得中...</translation>
+    </message>
+    <message>
+        <source>The wireless dongles could not be readied. See Tools &gt; Wireless Dongle for details.</source>
+        <translation>無線ドングルを準備できませんでした。詳しくは「ツール ＞ 無線ドングル」を確認してください。</translation>
+    </message>
+    <message>
+        <source>Riff is readying the registered wireless dongles; their ports appear here when it is done.</source>
+        <translation>登録済みの無線ドングルを準備しています。準備ができると、ここにポートが表示されます。</translation>
+    </message>
+</context>
+<context>
     <name>PortStatsFilterDialog</name>
     <message>
         <source>Select Ports</source>
@@ -4942,6 +4965,22 @@ QLineEdit:enabled[inputMask = &quot;HH HH HH HH HH HH; &quot;] { background-colo
         <source>Preflight Check</source>
         <translation>送信前チェック</translation>
     </message>
+    <message>
+        <source>Start from Template</source>
+        <translation>テンプレートから開始</translation>
+    </message>
+    <message>
+        <source>Replace the protocols of this stream with a ready-made example that you can then modify field by field</source>
+        <translation>このストリームのプロトコルを、用意された例に置き換えます。そのあとフィールドごとに変更できます</translation>
+    </message>
+    <message>
+        <source>Replace the protocols of this stream with the &quot;%1&quot; template?</source>
+        <translation>このストリームのプロトコルを「%1」テンプレートに置き換えますか？</translation>
+    </message>
+    <message>
+        <source>The template could not be loaded.</source>
+        <translation>テンプレートを読み込めませんでした。</translation>
+    </message>
 </context>
 <context>
     <name>StreamStatsWindow</name>
@@ -5891,6 +5930,30 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     <message>
         <source>The usbipd-win service could not be started. Restart Windows, then start Riff again.</source>
         <translation>usbipd-win のサービスを起動できませんでした。Windows を再起動してから、もう一度 Riff を起動してください。</translation>
+    </message>
+    <message>
+        <source>starting the wireless agent ...</source>
+        <translation>送信エージェントを起動中...</translation>
+    </message>
+    <message>
+        <source>could not connect to the wireless agent</source>
+        <translation>送信エージェントに接続できません</translation>
+    </message>
+    <message>
+        <source>the usbipd-win service is not running</source>
+        <translation>usbipd-win のサービスが停止しています</translation>
+    </message>
+    <message>
+        <source>readying the dongle(s) ...</source>
+        <translation>ドングルを準備中...</translation>
+    </message>
+    <message>
+        <source>the dongle(s) could not be readied</source>
+        <translation>ドングルを準備できませんでした</translation>
+    </message>
+    <message>
+        <source>the wireless agent could not start</source>
+        <translation>送信エージェントを起動できませんでした</translation>
     </message>
 </context>
 <context>

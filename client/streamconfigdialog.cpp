@@ -20,6 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QHostAddress>
 
 #include "streamconfigdialog.h"
+#include "hexpacketeditor.h"
+#include "templatestream.h"
 #include "protocolnames.h"
 #include "stream.h"
 #include "abstractprotocol.h"
@@ -35,6 +37,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include <QButtonGroup>
 #include <QMessageBox>
+#include <QApplication>
+#include <QMenu>
+#include <QToolButton>
 
 extern ProtocolManager *OstProtocolManager;
 extern ProtocolWidgetFactory *OstProtocolWidgetFactory;
@@ -333,9 +338,75 @@ void StreamConfigDialog::setupUiExtra()
         this, SLOT(update_NumPacketsAndNumBursts()));
     connect(rbModeFixed, SIGNAL(toggled(bool)), 
         this, SLOT(update_NumPacketsAndNumBursts()));
-    connect(rbModeContinuous, SIGNAL(toggled(bool)), 
+    connect(rbModeContinuous, SIGNAL(toggled(bool)),
         this, SLOT(update_NumPacketsAndNumBursts()));
 
+    // Ready-made packets (the hex editor's templates) as protocols that
+    // can then be edited field by field
+    QToolButton *tplButton = new QToolButton(this);
+    tplButton->setText(tr("Start from Template"));
+    tplButton->setToolTip(tr("Replace the protocols of this stream with a "
+                             "ready-made example that you can then modify "
+                             "field by field"));
+    tplButton->setPopupMode(QToolButton::DelayedPopup);
+    tplButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    QMenu *tplMenu = new QMenu(tplButton);
+    QStringList names = HexPacketEditor::templateNames();
+    QString group;
+    for (int i = 0; i < names.size(); i++) {
+        if (HexPacketEditor::templateGroup(i) != group) {
+            // Fusion doesn't draw QMenu::addSection() titles
+            group = HexPacketEditor::templateGroup(i);
+            if (i)
+                tplMenu->addSeparator();
+            QAction *heading = tplMenu->addAction(group);
+            QFont bold = heading->font();
+            bold.setBold(true);
+            heading->setFont(bold);
+            heading->setEnabled(false);
+        }
+        QAction *a = tplMenu->addAction(names.at(i));
+        a->setData(i);
+        connect(a, SIGNAL(triggered()), SLOT(onTemplateChosen()));
+    }
+    HexPacketEditor::attachMenu(tplButton, tplMenu);
+    twTopLevel->setCornerWidget(tplButton, Qt::TopRightCorner);
+}
+
+void StreamConfigDialog::onTemplateChosen()
+{
+    QAction *a = qobject_cast<QAction*>(sender());
+    if (!a)
+        return;
+    int index = a->data().toInt();
+    if (QMessageBox::question(this, tr("Start from Template"),
+            tr("Replace the protocols of this stream with the \"%1\" "
+               "template?").arg(a->text()),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes)
+            != QMessageBox::Yes)
+        return;
+
+    StoreCurrentStream();
+    OstProto::Stream s;
+    mpStream->protoDataCopyInto(s);
+    QString error;
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    bool ok = TemplateStream::apply(index, &s, &error);
+    QApplication::restoreOverrideCursor();
+    if (!ok) {
+        QMessageBox::warning(this, tr("Start from Template"),
+                tr("The template could not be loaded.") + "\n" + error);
+        return;
+    }
+    if (mpStream->name().isEmpty() || mpStream->name() == lastTemplateName_)
+        s.mutable_core()->set_name(a->text().toStdString());
+    lastTemplateName_ = a->text();
+
+    delete _iter;
+    mpStream->protoDataCopyFrom(s);
+    _iter = mpStream->createProtocolListIterator();
+    LoadCurrentStream();
+    on_twTopLevel_currentChanged(twTopLevel->currentIndex());
 }
 
 StreamConfigDialog::~StreamConfigDialog()
