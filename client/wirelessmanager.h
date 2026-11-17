@@ -154,12 +154,14 @@ private:
             QString *out = 0, int timeoutMs = 30000);
     int runWsl(const QStringList &args, QString *out = 0,
             int timeoutMs = 30000);
+    void detachDongle(const QString &busId);
     bool bindElevated(const QString &busId);
     // While WSL uses a dongle it is bound in "forced" mode, so the Windows
     // Wi-Fi driver is unloaded once, cleanly, instead of being torn down
     // on attach (the Realtek rtwlanu6 driver can crash Windows there).
     // Riff gives the dongles back to Windows when it is done with them.
-    QHash<QString, bool> forcedState(QSet<QString> *attached = 0);
+    QHash<QString, bool> forcedState(QSet<QString> *attached = 0,
+                                     QSet<QString> *phantoms = 0);
     bool ensureRegistered(const QStringList &busIds, QString *error);
     bool runElevatedCmd(const QString &cmdLine);
     void loadUsbIds();

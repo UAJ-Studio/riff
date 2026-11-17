@@ -339,21 +339,31 @@ func capture(args map[string]string) error {
 		time.Sleep(1500 * time.Millisecond) // let the distro (and WSL VM) boot
 	}
 	aa, aerr := usbip.StartAutoAttach(*dev, log.Printf)
+	if aerr != nil && dev.Attached() && strings.Contains(aerr.Error(), "more than one") {
+		// usbipd lists the stub of this attached dongle twice under its bus
+		// id and refuses it (see usbip.List): it is in WSL already, go on
+		// without the re-attach loop
+		log.Printf("auto-attach refused (duplicate bus id %s), already attached", dev.BusId)
+		aa, aerr = nil, nil
+	}
 	if aerr != nil {
 		_ = cmd.Process.Kill()
 		return fmt.Errorf("ドングルを WSL に接続できませんでした: %v", aerr)
 	}
-	if job != 0 {
-		_ = winx.AssignToJob(job, aa.Process)
+	var attachers []*os.Process
+	if aa != nil {
+		if job != 0 {
+			_ = winx.AssignToJob(job, aa.Process)
+		}
+		attachers = append(attachers, aa.Process)
+		log.Printf("auto-attach running for %s", dev.BusId)
 	}
-	log.Printf("auto-attach running for %s", dev.BusId)
 	unlockOnce() // attached: the next dongle may be handed over
 
 	// Attach loops and the dongle's current bus id, so a failed start can
 	// hand the dongle back to Windows (the Linux-side release watcher only
 	// exists once tuning succeeded).
 	var amu sync.Mutex
-	attachers := []*os.Process{aa.Process}
 	curBus := dev.BusId
 	stopAttach := func() {
 		amu.Lock()

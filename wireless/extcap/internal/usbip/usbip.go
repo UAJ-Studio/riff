@@ -72,9 +72,22 @@ func List() ([]Device, error) {
 	if err := json.Unmarshal(out, &st); err != nil {
 		return nil, fmt.Errorf("cannot parse usbipd state: %v", err)
 	}
+	// A shared device runs on a usbipd stub device. With two dongles of the
+	// same serial number Windows can give that stub the instance id another
+	// registered dongle had, and usbipd lists the stub as an extra device on
+	// the same bus id. It is not a real dongle: skip it.
+	stubs := map[string]bool{}
+	for _, d := range st.Devices {
+		if d.StubInstanceId != nil && *d.StubInstanceId != "" {
+			stubs[d.BusId+"|"+strings.ToUpper(*d.StubInstanceId)] = true
+		}
+	}
 	var res []Device
 	for _, d := range st.Devices {
 		if d.BusId == "" { // persisted but not plugged in
+			continue
+		}
+		if stubs[d.BusId+"|"+strings.ToUpper(d.InstanceId)] && !d.Attached() {
 			continue
 		}
 		if m := vidpid.FindStringSubmatch(d.InstanceId); m != nil {
@@ -173,8 +186,13 @@ func StartAutoAttach(d Device, logf func(string, ...any)) (*exec.Cmd, error) {
 }
 
 // Detach returns a device to Windows.
+// usbipd (5.3) fails with "more than one matching element" when a stub is
+// listed under the same bus id (see List): then detach by vendor/product id.
 func Detach(d Device) error {
-	_, err := winx.Run(Exe(), "detach", "--busid", d.BusId)
+	out, err := winx.Run(Exe(), "detach", "--busid", d.BusId)
+	if err != nil && strings.Contains(out, "more than one") && d.VID != "" {
+		_, err = winx.Run(Exe(), "detach", "--hardware-id", d.HWID())
+	}
 	return err
 }
 

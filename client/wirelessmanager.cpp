@@ -91,7 +91,8 @@ private:
 class HandoverLock {};
 #endif
 
-QHash<QString, bool> WirelessManager::forcedState(QSet<QString> *attached)
+QHash<QString, bool> WirelessManager::forcedState(QSet<QString> *attached,
+                                                  QSet<QString> *phantoms)
 {
     QHash<QString, bool> forced;
     QProcess p;
@@ -100,11 +101,28 @@ QHash<QString, bool> WirelessManager::forcedState(QSet<QString> *attached)
         return forced;
     QJsonArray devs = QJsonDocument::fromJson(p.readAllStandardOutput())
                           .object().value("Devices").toArray();
+    // A shared device runs on a usbipd stub device. When two dongles have
+    // the same serial number, Windows can give that stub the instance ID
+    // another (registered) dongle had - usbipd then lists the stub as an
+    // extra device on the same bus id. It is not a real dongle: skip it.
+    QSet<QString> stubs;    // "<bus>|<stub instance id>"
+    foreach (const QJsonValue &v, devs) {
+        QJsonObject o = v.toObject();
+        QString stub = o.value("StubInstanceId").toString();
+        if (!stub.isEmpty())
+            stubs.insert(o.value("BusId").toString() + "|" + stub.toUpper());
+    }
     foreach (const QJsonValue &v, devs) {
         QJsonObject o = v.toObject();
         QString bus = o.value("BusId").toString();
         if (bus.isEmpty())
             continue;
+        if (stubs.contains(bus + "|" + o.value("InstanceId").toString().toUpper())
+                && o.value("ClientIPAddress").toString().isEmpty()) {
+            if (phantoms)
+                phantoms->insert(bus + "|" + o.value("Description").toString());
+            continue;
+        }
         forced.insert(bus, o.value("IsForced").toBool());
         if (attached && !o.value("ClientIPAddress").toString().isEmpty())
             attached->insert(bus);
@@ -510,6 +528,36 @@ int WirelessManager::run(const QString &program, const QStringList &args,
     return p.exitCode();
 }
 
+// usbipd detach --busid. usbipd (5.3) fails with "Sequence contains more
+// than one matching element" when two devices share the bus id (the stub of
+// an attached dongle listed under an old registration, see forcedState()):
+// then detach every device of that vendor/product id.
+void WirelessManager::detachDongle(const QString &busId)
+{
+    QString usbipd = usbipdPath(), out;
+    if (run(usbipd, {"detach", "--busid", busId}, &out, 20000) == 0
+            || !out.contains("more than one"))
+        return;
+    QProcess p;
+    p.start(usbipd, {"state"});
+    if (!p.waitForFinished(20000))
+        return;
+    QRegularExpression re("VID_([0-9A-Fa-f]{4})&PID_([0-9A-Fa-f]{4})");
+    foreach (const QJsonValue &v, QJsonDocument::fromJson(
+                 p.readAllStandardOutput()).object().value("Devices").toArray()) {
+        QJsonObject o = v.toObject();
+        if (o.value("BusId").toString() != busId)
+            continue;
+        QRegularExpressionMatch m = re.match(o.value("InstanceId").toString());
+        if (m.hasMatch()) {
+            run(usbipd, {"detach", "--hardware-id",
+                         (m.captured(1) + ":" + m.captured(2)).toLower()},
+                0, 20000);
+            return;
+        }
+    }
+}
+
 int WirelessManager::runWsl(const QStringList &args, QString *out,
                             int timeoutMs)
 {
@@ -690,7 +738,11 @@ QList<WirelessManager::UsbDevice> WirelessManager::listUsbDevices(
         list.append(d);
     }
     // registered = usbipd forced bind (not shown by "usbipd list")
-    QHash<QString, bool> forced = forcedState();
+    QSet<QString> phantoms;
+    QHash<QString, bool> forced = forcedState(0, &phantoms);
+    for (int i = list.size() - 1; i >= 0; i--)
+        if (phantoms.contains(list.at(i).busId + "|" + list.at(i).name))
+            list.removeAt(i);
     for (int i = 0; i < list.size(); i++)
         list[i].registered = forced.value(list.at(i).busId, false);
     // ports registered for Riff: remember them (also registrations made
@@ -1181,7 +1233,7 @@ void WirelessManager::releaseKeptDongles()
     }
     if ((!kept.isEmpty() || captureKeepAlive_) && !isCaptureRunning()) {
         foreach (const QString &id, kept)
-            run(usbipd, {"detach", "--busid", id}, 0, 20000);
+            detachDongle(id);
         // also ends a keep-alive left behind by a killed Riff
         runWsl({"--terminate", kDistro}, 0, 20000);
     }
@@ -1212,7 +1264,7 @@ void WirelessManager::cleanup()
     if (!capturing) {
         // only what start() attached: dongles Riff prepared stay in WSL
         foreach (QString id, ownAttached_)
-            run(usbipd, {"detach", "--busid", id}, 0, 20000);
+            detachDongle(id);
     }
     else {
         emit message(tr("A Wireshark live capture is running: the dongle "
