@@ -37,6 +37,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QScrollBar>
+#include <QTimer>
 #include <QTreeWidget>
 #include <QVBoxLayout>
 
@@ -50,7 +51,7 @@ static const char *kWirelessCapturePrefix = "Wireless/Capture/";
 WirelessDialog::WirelessDialog(WirelessManager *manager, QWidget *parent)
     : QDialog(parent), manager_(manager),
       wslOk_(false), usbipdOk_(false), distroOk_(false), distroUpdate_(false),
-      wiresharkOk_(false), driverWarned_(false)
+      wiresharkOk_(false), driverWarned_(false), reRegisterTried_(false)
 {
     setWindowTitle(tr("Wireless Dongle"));
     resize(760, 780);
@@ -230,6 +231,7 @@ WirelessDialog::WirelessDialog(WirelessManager *manager, QWidget *parent)
     connect(returnButton_, &QPushButton::clicked, this, &WirelessDialog::onGiveBack);
     connect(devices_, &QTreeWidget::currentItemChanged, this, [this]() { updateButtons(); });
     connect(manager_, &WirelessManager::registrationChanged, this, &WirelessDialog::refresh);
+    connect(manager_, &WirelessManager::prepared, this, &WirelessDialog::refresh);
     connect(manager_, &WirelessManager::installFinished, this, [this]() {
         refresh();
     });
@@ -304,8 +306,11 @@ void WirelessDialog::refresh()
             it->setText(2, d.name);
             it->setText(3, !sup ? tr("Not supported")
                     : d.registered ? tr("Riff only (%1)").arg(d.driver)
+                    : d.remembered ? tr("Riff only - register again (%1)")
+                                         .arg(d.driver)
                                    : tr("Supported (%1)").arg(d.driver));
             it->setData(3, Qt::UserRole, d.registered);
+            it->setData(3, Qt::UserRole + 1, d.remembered);
             it->setText(4, d.state);
             it->setToolTip(2, d.vidPid);
             if (!sup)
@@ -327,6 +332,25 @@ void WirelessDialog::refresh()
     }
     else {
         fillCaptureList(QList<WirelessManager::UsbDevice>());
+    }
+    // registered dongles: re-register those that swapped device IDs (once
+    // per dialog), then ready them for capture in the background
+    if (usbipdOk_ && distroOk_ && !distroUpdate_) {
+        bool again = false;
+        for (int i = 0; i < devices_->topLevelItemCount(); i++)
+            if (devices_->topLevelItem(i)->data(3, Qt::UserRole + 1).toBool())
+                again = true;
+        if (again && !reRegisterTried_) {
+            reRegisterTried_ = true;
+            QTimer::singleShot(0, this, [this]() {
+                QString err;
+                if (!manager_->reRegisterRemembered(&err))
+                    onMessage(err, true);
+            });
+        }
+        else if (!again) {
+            QTimer::singleShot(0, manager_, &WirelessManager::prepareRegistered);
+        }
     }
     // Wireshark + the Riff Wi-Fi extcap (installed/updated automatically)
     wiresharkOk_ = !manager_->wiresharkPath().isEmpty();

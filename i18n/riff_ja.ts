@@ -5141,6 +5141,10 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
         <source>Take the selected dongle away from its Windows Wi-Fi driver for good (until you give it back).</source>
         <translation>選択したドングルをWindowsのWi-Fiドライバーから切り離します（Windowsに戻すまで）。</translation>
     </message>
+    <message>
+        <source>Riff only - register again (%1)</source>
+        <translation>Riff専用・再登録が必要（%1）</translation>
+    </message>
 </context>
 <context>
     <name>WirelessManager</name>
@@ -5327,6 +5331,26 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     <message>
         <source>The Realtek Wi-Fi driver on this PC (rtwlanu6 %1) is outdated. With two of its dongles plugged in, Windows can crash (blue screen) when they stop - unplugging, disabling, registering for Riff or shutting down. Install version 5001.0.15.110 or later from the maker of your dongle (for the ASUS USB-AX56: ASUS support site, USB-AX56 &gt; Driver &amp; Tools).</source>
         <translation>このPCのRealtek Wi-Fiドライバー（rtwlanu6 %1）は古いバージョンです。このドライバーのドングルを2本挿していると、停止するとき（抜く、無効化、Riffへの登録、シャットダウン）にWindowsが停止（ブルースクリーン）することがあります。お使いのドングルのメーカーから、バージョン 5001.0.15.110 以降のドライバーをインストールしてください（ASUS USB-AX56 の場合: ASUSのサポートサイト ＞ USB-AX56 ＞ ドライバーとツール）。</translation>
+    </message>
+    <message>
+        <source>USB %1 was registered for Riff, but Windows gave it another device ID (two dongles with the same serial number swap IDs). Registering it again - this is needed only once per ID.</source>
+        <translation>USB %1 はRiff専用に登録済みですが、Windowsが別のデバイスIDを割り当てました（シリアル番号が同じドングルが2本あると、IDが入れ替わることがあります）。もう一度登録します。IDごとに1回だけ必要です。</translation>
+    </message>
+    <message>
+        <source>USB %1 is ready: a live capture starts in a few seconds.</source>
+        <translation>USB %1 の準備ができました。ライブキャプチャは数秒で始まります。</translation>
+    </message>
+    <message>
+        <source>USB %1 could not be prepared ahead; it is prepared when a capture starts.</source>
+        <translation>USB %1 を前もって準備できませんでした。キャプチャを始めるときに準備します。</translation>
+    </message>
+    <message>
+        <source>Preparing USB %1 for capture in the background ...</source>
+        <translation>USB %1 をキャプチャ用にバックグラウンドで準備しています...</translation>
+    </message>
+    <message>
+        <source>Waiting for the dongle(s) being prepared ...</source>
+        <translation>準備中のドングルを待っています...</translation>
     </message>
 </context>
 <context>

@@ -118,6 +118,15 @@ MainWindow::MainWindow(QWidget *parent)
     else
         localServer_ = NULL;
 
+#ifdef Q_OS_WIN32
+    // dongles registered for Riff: ready them for capture in the background
+    // (does nothing without usbipd or registered dongles)
+    QTimer::singleShot(4000, this, [this]() {
+        ensureWireless();
+        wireless_->prepareRegistered();
+    });
+#endif
+
     pgl = new PortGroupList;
     appLogs = new LogsModel(this);
     clipboardHelper = new ClipboardHelper(this);
@@ -670,7 +679,7 @@ _exit:
 }
 
 
-void MainWindow::on_actionWirelessDongle_triggered()
+void MainWindow::ensureWireless()
 {
     if (!wireless_) {
         wireless_ = new WirelessManager(this);
@@ -679,6 +688,11 @@ void MainWindow::on_actionWirelessDongle_triggered()
         connect(wireless_, &WirelessManager::agentStopped,
                 this, &MainWindow::onWirelessAgentStopped);
     }
+}
+
+void MainWindow::on_actionWirelessDongle_triggered()
+{
+    ensureWireless();
     if (!wirelessDialog_)
         wirelessDialog_ = new WirelessDialog(wireless_, this);
     wirelessDialog_->show();

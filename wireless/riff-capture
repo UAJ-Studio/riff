@@ -11,6 +11,7 @@
 #   opts     comma list ("-" = none):
 #              release  hand the adapter back to Windows when the capture ends
 #              fcsfail  also deliver frames with bad FCS / PLCP errors (flagged in radiotap)
+#              prepare  only ready the adapter (attach wait, monitor mode, channel), no capture
 # All diagnostics go to stderr; stdout carries only pcap data. Several
 # instances (one per adapter) can run at the same time.
 
@@ -113,6 +114,11 @@ DEV=$(ls "/sys/class/ieee80211/$PHY/device/net/" 2>/dev/null | head -n 1)
 log "using USB $BUSID -> $PHY / $DEV"
 echo $$ > "/run/riff-claim-$PHY"   # ours (exec keeps the pid for tcpdump)
 
+# prepare: Riff readies a registered dongle ahead of the first capture; never
+# touch an adapter a capture is using.
+if has_opt prepare && pgrep -f "^tcpdump -i $DEV " >/dev/null; then
+    log "capture running on $DEV: nothing to prepare"; exit 0
+fi
 # Only one capture at a time per adapter (other adapters keep running).
 pkill -f "^tcpdump -i $DEV " 2>/dev/null && sleep 0.3
 
@@ -147,6 +153,10 @@ else
         || die "could not tune to $FREQ MHz / ${WIDTH} MHz (center $CENTER). The adapter may not support this width, or the channel is not allowed in country $COUNTRY."
 fi
 log "tuned: $(iw dev "$DEV" info 2>/dev/null | grep -i channel | sed 's/^[[:space:]]*//')"
+if has_opt prepare; then
+    log "prepared: $DEV ready for capture"
+    exit 0
+fi
 
 # Hand the adapter back to Windows when this capture ends. Wireshark kills
 # the Windows side on Stop, which kills this session; so the watcher runs in

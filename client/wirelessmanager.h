@@ -47,6 +47,9 @@ public:
         QString driver;     // supported driver, empty if not supported
         bool registered = false; // "Riff only": usbipd forced bind, no
                                  // Windows driver on it
+        bool remembered = false; // registered for Riff at this port before,
+                                 // not now: two dongles with the same serial
+                                 // swapped their Windows device IDs
     };
     enum State { Idle, Starting, Running, Stopping };
 
@@ -95,6 +98,17 @@ public:
                           QString *error = 0);
     bool isCaptureRunning();
 
+    // Registered dongles that lost their registration because two dongles
+    // with the same serial number swapped Windows device IDs: register them
+    // again (one administrator prompt). True if there was nothing to do.
+    bool reRegisterRemembered(QString *error = 0);
+    // Readies registered dongles for capture in the background (attach to
+    // WSL, driver, monitor mode, channel), so the first capture starts in
+    // seconds. They stay in WSL until Riff exits.
+    void prepareRegistered();
+    bool isPreparing() const { return !preps_.isEmpty(); }
+    void waitPrepared(int timeoutMs);
+
     State state() const { return state_; }
     QString agentHost() const { return agentHost_; }
 
@@ -122,6 +136,7 @@ signals:
     void agentStopped();
     void needRebuild(QString kernel);
     void registrationChanged();
+    void prepared(QString busId, bool ok);
 
 private slots:
     void onAgentOutput();
@@ -159,6 +174,13 @@ private:
     QString agentHost_;
     QHash<QString, QString> usbIds_; // "0B05:1997" -> driver
     bool usbIdsLoaded_;
+    // dongle ports (vid:pid@busid) registered for Riff, see reRegisterRemembered()
+    static QString portKey(const UsbDevice &d);
+    QStringList rememberedPorts() const;
+    void setRemembered(const QStringList &ports, bool add);
+    struct Prep { QProcess *attach; QProcess *job; };
+    QHash<QString, Prep> preps_;
+    void finishPrep(const QString &busId);
 };
 
 #endif

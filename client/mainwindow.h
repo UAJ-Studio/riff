@@ -56,6 +56,7 @@ private:
 
     WirelessManager *wireless_;
     WirelessDialog *wirelessDialog_;
+    void ensureWireless();
     PortGroup *wirelessPortGroup_;
 
 public:

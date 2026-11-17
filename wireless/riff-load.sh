@@ -7,6 +7,11 @@
 # live capture). Messages go to stdout; exit 3 = no pack for this kernel
 # (WSL was updated: the drivers have to be rebuilt).
 CC=${1:-JP}
+# One loader at a time: captures and Riff's background preparation start
+# together, and a second loader would delete the pack the first is loading
+# from. The lock stays held through the exec below.
+exec 9>/run/riff-load.lock
+flock 9 2>/dev/null || true
 R=$(uname -r)
 PK=/opt/riff/packs/riff-wifi-$R.tar.zst
 P=/run/riff-pack

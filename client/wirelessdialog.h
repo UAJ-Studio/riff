@@ -76,6 +76,7 @@ private:
     QPlainTextEdit *log_;
     bool wslOk_, usbipdOk_, distroOk_, distroUpdate_, wiresharkOk_;
     bool driverWarned_;
+    bool reRegisterTried_;
 };
 
 #endif

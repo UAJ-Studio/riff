@@ -31,12 +31,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QFile>
 #include <QFont>
 #include <QLibraryInfo>
+#include <QLocalServer>
+#include <QLocalSocket>
 #include <QLocale>
 #include <QTranslator>
 #include <QSettings>
 #include <QtGlobal>
 
 #include <google/protobuf/stubs/common.h>
+
+#ifdef Q_OS_WIN32
+#include <windows.h>
+#endif
 
 extern const char* version;
 extern const char* revision;
@@ -57,6 +63,27 @@ int main(int argc, char* argv[])
 
     app.setApplicationName("Riff");
     app.setOrganizationName("Riff");
+
+    // One Riff per user: a second start brings the running one to the front
+    // (two instances would fight over the Wi-Fi dongles and the agent)
+    QString instanceName = QString("Riff-instance-%1")
+            .arg(QString::fromLocal8Bit(qgetenv("USERNAME")));
+    {
+        QLocalSocket probe;
+        probe.connectToServer(instanceName);
+        if (probe.waitForConnected(500)) {
+#ifdef Q_OS_WIN32
+            AllowSetForegroundWindow(ASFW_ANY);
+#endif
+            probe.write("show");
+            probe.waitForBytesWritten(1000);
+            probe.disconnectFromServer();
+            return 0;
+        }
+    }
+    QLocalServer::removeServer(instanceName);
+    QLocalServer instanceServer;
+    instanceServer.listen(instanceName);
     app.setProperty("version", version);
     app.setProperty("revision", revision);
 
@@ -128,6 +155,14 @@ int main(int argc, char* argv[])
 
     mainWindow = new MainWindow;
     mainWindow->show();
+    QObject::connect(&instanceServer, &QLocalServer::newConnection, [&]() {
+        while (QLocalSocket *s = instanceServer.nextPendingConnection())
+            s->deleteLater();
+        if (mainWindow->isMinimized())
+            mainWindow->showNormal();
+        mainWindow->raise();
+        mainWindow->activateWindow();
+    });
     exitCode =  app.exec();
 
     delete mainWindow;

@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QDir>
 #include <QFile>
 #include <QDateTime>
+#include <QElapsedTimer>
 #include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -204,6 +205,11 @@ bool WirelessManager::registerDongles(const QStringList &busIds,
                         "prompt was declined or failed).").arg(ids);
         return false;
     }
+    QStringList ports;
+    foreach (const UsbDevice &d, devs)
+        if (need.contains(d.busId))
+            ports << portKey(d);
+    setRemembered(ports, true);
     emit message(tr("USB %1 is registered for Riff. It stays with Riff until "
                     "you give it back to Windows.").arg(ids), false);
     return true;
@@ -222,6 +228,14 @@ bool WirelessManager::unregisterDongle(const QString &busId, QString *error)
             *error = tr("Stop the Wireshark live capture first.");
         return false;
     }
+    if (preps_.contains(busId)) {
+        preps_.value(busId).job->kill();
+        finishPrep(busId);
+    }
+    QString port;
+    foreach (const UsbDevice &d, listUsbDevices())
+        if (d.busId == busId)
+            port = portKey(d);
     emit message(tr("Giving USB %1 back to Windows - please allow the "
                     "administrator prompt.").arg(busId), false);
     QString exe = QDir::toNativeSeparators(usbipdPath());
@@ -236,6 +250,9 @@ bool WirelessManager::unregisterDongle(const QString &busId, QString *error)
         QThread::msleep(2000);
         ok = !forcedState().value(busId, true);
     }
+    // forget the port first: the refresh below must not register it again
+    if (ok && !port.isEmpty())
+        setRemembered(QStringList() << port, false);
     emit registrationChanged();
     if (!ok) {
         if (error)
@@ -422,6 +439,7 @@ bool WirelessManager::startLiveCapture(const QList<CaptureTarget> &targets,
         foreach (const QString &i, ifaces)
             launches << QStringList({"-i", i, "-k"});
     }
+    waitPrepared(90000);
     ensureCaptureKeepAlive();
     foreach (const QStringList &args, launches) {
         if (!QProcess::startDetached(ws, args)) {
@@ -675,6 +693,18 @@ QList<WirelessManager::UsbDevice> WirelessManager::listUsbDevices(
     QHash<QString, bool> forced = forcedState();
     for (int i = 0; i < list.size(); i++)
         list[i].registered = forced.value(list.at(i).busId, false);
+    // ports registered for Riff: remember them (also registrations made
+    // before Riff kept this list), and flag dongles there that lost it
+    QStringList known = rememberedPorts(), seen;
+    for (int i = 0; i < list.size(); i++) {
+        if (list.at(i).driver.isEmpty())
+            continue;
+        if (list.at(i).registered)
+            seen << portKey(list.at(i));
+        else if (known.contains(portKey(list.at(i))))
+            list[i].remembered = true;
+    }
+    setRemembered(seen, true);
     return list;
 }
 
@@ -722,6 +752,9 @@ void WirelessManager::start(QStringList busIds, QString country, int channel)
         emit message(tr("Select a dongle first."), true);
         return;
     }
+    // a dongle being prepared for capture must be ready before the agent
+    // takes it
+    waitPrepared(90000);
     setState(Starting);
     agentAddr_.clear();
     agentHost_.clear();
@@ -902,6 +935,131 @@ void WirelessManager::stop()
     emit message(tr("Stopped."), false);
 }
 
+// ---- registered ports / preparing dongles ahead of the first capture -------
+
+static const char *kRegisteredPortsKey = "Wireless/RegisteredPorts";
+
+QString WirelessManager::portKey(const UsbDevice &d)
+{
+    return d.vidPid + "@" + d.busId;
+}
+
+QStringList WirelessManager::rememberedPorts() const
+{
+    return appSettings->value(kRegisteredPortsKey).toStringList();
+}
+
+void WirelessManager::setRemembered(const QStringList &ports, bool add)
+{
+    QStringList cur = rememberedPorts();
+    bool changed = false;
+    foreach (const QString &p, ports) {
+        if (add && !cur.contains(p)) {
+            cur << p;
+            changed = true;
+        }
+        else if (!add && cur.removeAll(p))
+            changed = true;
+    }
+    if (changed)
+        appSettings->setValue(kRegisteredPortsKey, cur);
+}
+
+bool WirelessManager::reRegisterRemembered(QString *error)
+{
+    QStringList need;
+    foreach (const UsbDevice &d, listUsbDevices())
+        if (d.remembered)
+            need << d.busId;
+    if (need.isEmpty())
+        return true;
+    emit message(tr("USB %1 was registered for Riff, but Windows gave it "
+                    "another device ID (two dongles with the same serial "
+                    "number swap IDs). Registering it again - this is needed "
+                    "only once per ID.").arg(need.join(", ")), false);
+    return registerDongles(need, error);
+}
+
+void WirelessManager::prepareRegistered()
+{
+    if (state_ != Idle)
+        return;     // the transmit agent owns the dongles
+    QList<UsbDevice> todo;
+    foreach (const UsbDevice &d, listUsbDevices())
+        if (!d.driver.isEmpty() && d.registered && !preps_.contains(d.busId)
+                && !d.state.startsWith("Attached", Qt::CaseInsensitive))
+            todo << d;
+    if (todo.isEmpty() || !isDistroInstalled())
+        return;
+    ensureCaptureKeepAlive();
+    QString usbipd = usbipdPath();
+    QString country = appSettings->value("Wireless/Country", "JP").toString();
+    foreach (const UsbDevice &d, todo) {
+        // the channel the capture list has for this dongle (20 MHz here;
+        // a wider capture re-tunes when it starts)
+        QStringList s = appSettings->value("Wireless/Capture/"
+                + captureInterface(d), "0,5180,20").toString().split(',');
+        int freq = s.size() > 1 && s.at(1).toInt() > 0 ? s.at(1).toInt() : 5180;
+        Prep p;
+        // the dongle may drop off the bus once while its firmware uploads:
+        // keep re-attaching until it is ready
+        p.attach = new QProcess(this);
+        p.attach->start(usbipd, {"attach", "--wsl", "--busid", d.busId,
+                                 "--auto-attach"});
+        p.job = new QProcess(this);
+        QString busId = d.busId;
+        connect(p.job, QOverload<int, QProcess::ExitStatus>::of(
+                    &QProcess::finished), this,
+                [this, busId](int code, QProcess::ExitStatus st) {
+            bool ok = st == QProcess::NormalExit && code == 0;
+            finishPrep(busId);
+            emit message(ok ? tr("USB %1 is ready: a live capture starts in "
+                                 "a few seconds.").arg(busId)
+                            : tr("USB %1 could not be prepared ahead; it is "
+                                 "prepared when a capture starts.")
+                                 .arg(busId), !ok);
+            emit prepared(busId, ok);
+        });
+        p.job->start("wsl.exe", {"-d", kDistro, "-u", "root", "--",
+                "/opt/riff/riff-capture", country, QString::number(freq),
+                "20", QString::number(freq), d.busId + "@" + d.vidPid,
+                "prepare"});
+        preps_.insert(busId, p);
+        // never hang around for good
+        QTimer::singleShot(120000, this, [this, busId]() {
+            if (preps_.contains(busId))
+                preps_.value(busId).job->kill();
+        });
+        emit message(tr("Preparing USB %1 for capture in the background ...")
+                        .arg(busId), false);
+    }
+}
+
+void WirelessManager::finishPrep(const QString &busId)
+{
+    if (!preps_.contains(busId))
+        return;
+    Prep p = preps_.take(busId);
+    // the dongle stays attached; only the re-attach loop stops
+    p.attach->kill();
+    p.attach->waitForFinished(3000);
+    p.attach->deleteLater();
+    p.job->deleteLater();
+}
+
+void WirelessManager::waitPrepared(int timeoutMs)
+{
+    if (preps_.isEmpty())
+        return;
+    emit message(tr("Waiting for the dongle(s) being prepared ..."), false);
+    QElapsedTimer t;
+    t.start();
+    while (!preps_.isEmpty() && t.elapsed() < timeoutMs) {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+        QThread::msleep(50);
+    }
+}
+
 void WirelessManager::ensureCaptureKeepAlive()
 {
     if (captureKeepAlive_ && captureKeepAlive_->state() != QProcess::NotRunning)
@@ -917,6 +1075,10 @@ void WirelessManager::ensureCaptureKeepAlive()
 // driver (they stay registered) - unless a capture is still running.
 void WirelessManager::releaseKeptDongles()
 {
+    foreach (const QString &id, preps_.keys()) {
+        preps_.value(id).job->kill();
+        finishPrep(id);
+    }
     if (!captureKeepAlive_)
         return;
     if (!isCaptureRunning()) {

@@ -78,6 +78,15 @@ Fast restart: captures started from Riff leave their dongle attached to WSL
 (no "release"), and Riff keeps the distro alive while it runs, so the next
 capture on the same channel starts in ~2-4 s instead of ~40 s (attach,
 firmware upload, calibration over USB/IP). Riff detaches them on exit.
+Riff also readies registered dongles ahead (on start, on registration and
+when the dialog opens): riff-capture with the "prepare" option attaches,
+loads the driver, sets monitor mode and the channel, so even the first
+capture starts in seconds. riff-load.sh takes a lock (flock): two loaders at
+once deleted each other's pack and left a mismatched cfg80211 loaded.
+
+Registered ports: Riff remembers "vid:pid@busid" of registered dongles and
+registers a dongle there again when it lost its registration through the
+ID swap below (one UAC prompt per new ID).
 
 Also: Linux rtw89 normally switches USB 2 connected dongles to USB 3 mode
 (the chip re-enumerates and keeps the setting until power-off). The pack's
