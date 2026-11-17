@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "streamconfigdialog.h"
 #include "hexpacketeditor.h"
 #include "templatestream.h"
+#include "hexdump.pb.h"
 #include "protocolnames.h"
 #include "stream.h"
 #include "abstractprotocol.h"
@@ -351,6 +352,16 @@ void StreamConfigDialog::setupUiExtra()
     tplButton->setPopupMode(QToolButton::DelayedPopup);
     tplButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
     QMenu *tplMenu = new QMenu(tplButton);
+    // a stream that is only a hex dump (made in the hex editor before):
+    // split its bytes into protocols
+    QAction *split = tplMenu->addAction(tr("Split the Hex Dump into "
+                                           "Protocols"));
+    split->setData(-1);
+    connect(split, SIGNAL(triggered()), SLOT(onTemplateChosen()));
+    connect(tplMenu, &QMenu::aboutToShow, this, [this, split]() {
+        split->setEnabled(!currentHexDump().isNull());
+    });
+    tplMenu->addSeparator();
     QStringList names = HexPacketEditor::templateNames();
     QString group;
     for (int i = 0; i < names.size(); i++) {
@@ -379,6 +390,32 @@ void StreamConfigDialog::onTemplateChosen()
     if (!a)
         return;
     int index = a->data().toInt();
+    if (index < 0) {
+        StoreCurrentStream();
+        QByteArray bytes = currentHexDump();
+        if (bytes.isNull())
+            return;
+        OstProto::Stream s;
+        mpStream->protoDataCopyInto(s);
+        bool wifi = PacketDecoder::guessLinkType(bytes)
+                        == PacketDecoder::LinkRadiotap;
+        QString error;
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+        bool ok = TemplateStream::fromBytes(bytes, wifi, &s, &error);
+        QApplication::restoreOverrideCursor();
+        if (!ok) {
+            QMessageBox::warning(this, a->text(),
+                    tr("The bytes could not be split into protocols.")
+                    + (error.isEmpty() ? QString() : "\n" + error));
+            return;
+        }
+        delete _iter;
+        mpStream->protoDataCopyFrom(s);
+        _iter = mpStream->createProtocolListIterator();
+        LoadCurrentStream();
+        on_twTopLevel_currentChanged(twTopLevel->currentIndex());
+        return;
+    }
     if (QMessageBox::question(this, tr("Start from Template"),
             tr("Replace the protocols of this stream with the \"%1\" "
                "template?").arg(a->text()),
@@ -407,6 +444,21 @@ void StreamConfigDialog::onTemplateChosen()
     _iter = mpStream->createProtocolListIterator();
     LoadCurrentStream();
     on_twTopLevel_currentChanged(twTopLevel->currentIndex());
+}
+
+// The bytes of the current stream if it is only one hex dump, else null
+QByteArray StreamConfigDialog::currentHexDump()
+{
+    OstProto::Stream s;
+    mpStream->protoDataCopyInto(s);
+    if (s.protocol_size() != 1 || s.protocol(0).protocol_id().id()
+            != OstProto::Protocol::kHexDumpFieldNumber)
+        return QByteArray();
+    const std::string &c = s.protocol(0).GetExtension(OstProto::hexDump)
+                               .content();
+    if (c.empty())
+        return QByteArray();
+    return QByteArray(c.data(), int(c.size()));
 }
 
 StreamConfigDialog::~StreamConfigDialog()

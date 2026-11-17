@@ -88,6 +88,8 @@ private slots:
 
 private:
     bool isWifiPort(const QModelIndex &index);
+    int savedPortGroupId_ = -1;  // selection kept across model resets
+    int savedPortId_ = -1;
     QAction *actionWifiChannel_;
     PortGroupList *plm;
     QString lastNewPortGroup;

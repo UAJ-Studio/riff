@@ -159,3 +159,9 @@ the usbipd-win service is not running	usbipd-win のサービスが停止して�
 readying the dongle(s) ...	ドングルを準備中...
 the dongle(s) could not be readied	ドングルを準備できませんでした
 the wireless agent could not start	送信エージェントを起動できませんでした
+Split the Hex Dump into Protocols	16進ダンプをプロトコルに分解
+The bytes could not be split into protocols.	バイト列をプロトコルに分解できませんでした。
+This stream changes from packet to packet (variable fields, random or counting addresses, or a changing frame length). The hex editor shows its first packet only: after editing, every packet is that packet, split into protocols again - set up the changing values again in "Edit Stream" if you need them.	このストリームはパケットごとに内容が変わります（可変フィールド、ランダムや連番のアドレス、変化するフレーム長など）。16進エディタで扱えるのは最初の1パケットだけなので、編集後はすべてのパケットがそのパケットになります（プロトコルへの分解はされます）。変化させる設定が必要なら、「ストリームを編集」で設定し直してください。
+The protocols would not give the same bytes.	プロトコルにすると同じバイト列になりません。
+Streams	ストリーム
+The port list changed while the dialog was open, so the change could not be applied. Select the port and try again.	画面を開いている間にポート一覧が更新されたため、変更を反映できませんでした。ポートを選び直してから、もう一度操作してください。

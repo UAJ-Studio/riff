@@ -104,7 +104,25 @@ PortsWindow::PortsWindow(PortGroupList *pgl, QWidget *parent)
         this, SLOT(when_portModel_dataChanged(const QModelIndex&, 
             const QModelIndex&)));
 
-    connect(plm->getPortModel(), SIGNAL(modelReset()), 
+    // A port group getting its ports resets the whole model (e.g. the
+    // wireless dongles appearing a while after Riff started): remember the
+    // selected port group/port and select it again afterwards - else the
+    // stream list loses its port, also under an open stream dialog
+    connect(plm->getPortModel(), &QAbstractItemModel::modelAboutToBeReset,
+            this, [this]() {
+        QModelIndex cur = tvPortList->currentIndex();
+        if (proxyPortModel)
+            cur = proxyPortModel->mapToSource(cur);
+        savedPortGroupId_ = savedPortId_ = -1;
+        if (plm->isPort(cur)) {
+            savedPortGroupId_ = int(plm->port(cur).portGroupId());
+            savedPortId_ = int(plm->port(cur).id());
+        }
+        else if (plm->isPortGroup(cur)) {
+            savedPortGroupId_ = int(plm->portGroup(cur).id());
+        }
+    });
+    connect(plm->getPortModel(), SIGNAL(modelReset()),
         SLOT(when_portModel_reset()));
 
     connect(actionPort_Configuration, SIGNAL(triggered()),
@@ -378,6 +396,37 @@ void PortsWindow::when_portModel_dataChanged(const QModelIndex& topLeft,
 void PortsWindow::when_portModel_reset()
 {
     when_portView_currentChanged(QModelIndex(), tvPortList->currentIndex());
+
+    // select the port group/port that was selected before the reset
+    int pgId = savedPortGroupId_, portId = savedPortId_;
+    savedPortGroupId_ = savedPortId_ = -1;
+    if (pgId < 0)
+        return;
+    QAbstractItemModel *model = plm->getPortModel();
+    for (int r = 0; r < model->rowCount(); r++) {
+        QModelIndex pg = model->index(r, 0);
+        if (!plm->isPortGroup(pg) || int(plm->portGroup(pg).id()) != pgId)
+            continue;
+        QModelIndex target = pg;
+        if (portId >= 0) {
+            target = QModelIndex();
+            for (int c = 0; c < model->rowCount(pg); c++) {
+                QModelIndex p = model->index(c, 0, pg);
+                if (plm->isPort(p) && int(plm->port(p).id()) == portId) {
+                    target = p;
+                    break;
+                }
+            }
+        }
+        if (!target.isValid())
+            return;
+        if (proxyPortModel)
+            target = proxyPortModel->mapFromSource(target);
+        if (target.parent().isValid())
+            tvPortList->expand(target.parent());
+        tvPortList->setCurrentIndex(target);
+        return;
+    }
 }
 
 void PortsWindow::updateApplyHint(int /*portGroupId*/, int /*portId*/,

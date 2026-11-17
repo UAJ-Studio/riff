@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 */
 
 #include "childjob.h"
+#include "templatestream.h"
 #include "mainwindow.h"
 #include "../common/ostprotolib.h"
 #include "../common/protocolmanager.h"
@@ -64,6 +65,19 @@ int main(int argc, char* argv[])
 
     app.setApplicationName("Riff");
     app.setOrganizationName("Riff");
+
+    // Developer check: riff.exe --selftest-decode <report file>
+    // splits every template packet into protocols and checks the bytes
+    int selfTest = app.arguments().indexOf("--selftest-decode");
+    if (selfTest > 0) {
+        OstProtocolManager = new ProtocolManager();
+        OstProtocolWidgetFactory = new ProtocolWidgetFactory();
+        OstProtoLib::setExternalApplicationPaths(kTsharkPathDefaultValue,
+                kGzipPathDefaultValue, kDiffPathDefaultValue,
+                kAwkPathDefaultValue);
+        return TemplateStream::selfTest(app.arguments().value(selfTest + 1))
+                ? 0 : 1;
+    }
 
     // One Riff per user: a second start brings the running one to the front
     // (two instances would fight over the Wi-Fi dongles and the agent)

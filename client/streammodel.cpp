@@ -306,6 +306,8 @@ bool StreamModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
  */
 bool StreamModel::insert(int row, QList<Stream*> &streams)
 {
+    if (!mCurrentPort)
+        return false;   // the port went away (port list rebuilt)
     int count = streams.size();
     qDebug("insert row = %d", row);
     qDebug("insert count = %d", count);
@@ -324,6 +326,8 @@ bool StreamModel::insert(int row, QList<Stream*> &streams)
 
 bool StreamModel::insertRows(int row, int count, const QModelIndex &/*parent*/) 
 {
+    if (!mCurrentPort)
+        return false;
     qDebug("insertRows() row = %d", row);
     qDebug("insertRows() count = %d", count);
     beginInsertRows(QModelIndex(), row, row+count-1);
@@ -336,6 +340,8 @@ bool StreamModel::insertRows(int row, int count, const QModelIndex &/*parent*/)
 
 bool StreamModel::removeRows(int row, int count, const QModelIndex &/*parent*/) 
 {
+    if (!mCurrentPort)
+        return false;
     qDebug("removeRows() row = %d", row);
     qDebug("removeRows() count = %d", count);
     beginRemoveRows(QModelIndex(), row, row+count-1);

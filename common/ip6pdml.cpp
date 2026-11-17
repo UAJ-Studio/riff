@@ -25,7 +25,8 @@ PdmlIp6Protocol::PdmlIp6Protocol()
 {
     ostProtoId_ = OstProto::Protocol::kIp6FieldNumber;
 
-    fieldMap_.insert("ipv6.version", OstProto::Ip6::kVersionFieldNumber);
+    // ipv6.version handled as an unknown field: newer tshark puts the whole
+    // byte (0x60) in "value", the version is in "show"
     // Tshark 1.x uses .class while 2.x uses .tclass - we'll use either
     fieldMap_.insert("ipv6.class", OstProto::Ip6::kTrafficClassFieldNumber);
     fieldMap_.insert("ipv6.tclass", OstProto::Ip6::kTrafficClassFieldNumber);
@@ -48,7 +49,18 @@ void PdmlIp6Protocol::unknownFieldHandler(QString name, int /*pos*/,
 {
     bool isOk;
 
-    if (name == "ipv6.src")
+    if (name == "ipv6.version")
+    {
+        OstProto::Ip6 *ip6 = pbProto->MutableExtension(OstProto::ip6);
+        uint v = attributes.value("show").toString().toUInt(&isOk);
+        if (!isOk) {
+            v = attributes.value("value").toString().toUInt(&isOk, kBaseHex);
+            if (v > 0xF)
+                v >>= 4;
+        }
+        ip6->set_version(v);
+    }
+    else if (name == "ipv6.src")
     {
         OstProto::Ip6 *ip6 = pbProto->MutableExtension(OstProto::ip6);
         QString addrHexStr = attributes.value("value").toString();

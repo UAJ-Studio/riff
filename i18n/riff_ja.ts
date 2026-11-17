@@ -4981,6 +4981,14 @@ QLineEdit:enabled[inputMask = &quot;HH HH HH HH HH HH; &quot;] { background-colo
         <source>The template could not be loaded.</source>
         <translation>テンプレートを読み込めませんでした。</translation>
     </message>
+    <message>
+        <source>Split the Hex Dump into Protocols</source>
+        <translation>16進ダンプをプロトコルに分解</translation>
+    </message>
+    <message>
+        <source>The bytes could not be split into protocols.</source>
+        <translation>バイト列をプロトコルに分解できませんでした。</translation>
+    </message>
 </context>
 <context>
     <name>StreamStatsWindow</name>
@@ -5131,7 +5139,7 @@ Right-click to create a stream</source>
         <source>This stream is defined field by field. Editing it as hex turns it into a fixed sequence of bytes taken from its first packet - protocol settings, variable fields and changing frame lengths are replaced.
 
 Use &quot;Edit Stream&quot; instead if you want to keep them.</source>
-        <translation>このストリームはフィールド単位で定義されています。16進数で編集すると、最初のパケットのバイト列をもとにした固定のバイト列に変換され、プロトコル設定・可変フィールド・可変フレーム長は失われます。
+        <translation type="vanished">このストリームはフィールド単位で定義されています。16進数で編集すると、最初のパケットのバイト列をもとにした固定のバイト列に変換され、プロトコル設定・可変フィールド・可変フレーム長は失われます。
 
 これらを残したい場合は「ストリームの編集」を使ってください。</translation>
     </message>
@@ -5142,6 +5150,25 @@ Use &quot;Edit Stream&quot; instead if you want to keep them.</source>
     <message>
         <source>Continue?</source>
         <translation>続行しますか?</translation>
+    </message>
+    <message>
+        <source>This stream changes from packet to packet (variable fields, random or counting addresses, or a changing frame length). The hex editor shows its first packet only: after editing, every packet is that packet, split into protocols again - set up the changing values again in &quot;Edit Stream&quot; if you need them.</source>
+        <translation>このストリームはパケットごとに内容が変わります（可変フィールド、ランダムや連番のアドレス、変化するフレーム長など）。16進エディタで扱えるのは最初の1パケットだけなので、編集後はすべてのパケットがそのパケットになります（プロトコルへの分解はされます）。変化させる設定が必要なら、「ストリームを編集」で設定し直してください。</translation>
+    </message>
+    <message>
+        <source>Streams</source>
+        <translation>ストリーム</translation>
+    </message>
+    <message>
+        <source>The port list changed while the dialog was open, so the change could not be applied. Select the port and try again.</source>
+        <translation>画面を開いている間にポート一覧が更新されたため、変更を反映できませんでした。ポートを選び直してから、もう一度操作してください。</translation>
+    </message>
+</context>
+<context>
+    <name>TemplateStream</name>
+    <message>
+        <source>The protocols would not give the same bytes.</source>
+        <translation>プロトコルにすると同じバイト列になりません。</translation>
     </message>
 </context>
 <context>

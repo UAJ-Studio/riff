@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "ui_streamswidget.h"
 #include <QWidget>
 
+class Port;
 class PortGroupList;
 class QAbstractItemDelegate;
 class Stream;
@@ -62,6 +63,7 @@ private slots:
 
 private:
     static void setHexContent(Stream *stream, const QByteArray &bytes);
+    bool portStillCurrent(const Port *port);
 
     QAction *actionNewHexStream_{nullptr};
     QAction *actionEditAsHex_{nullptr};

@@ -12,6 +12,7 @@ the Free Software Foundation, either version 3 of the License, or
 #include "templatestream.h"
 
 #include "packettemplates.h"
+#include "stream.h"
 
 #include "../common/dot11.pb.h"
 #include "../common/hexdump.pb.h"
@@ -25,7 +26,15 @@ the Free Software Foundation, either version 3 of the License, or
 #include <QCoreApplication>
 #include <QDataStream>
 #include <QDir>
+#include <QFile>
 #include <QTemporaryFile>
+
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/message.h>
+
+#include <algorithm>
+#include <vector>
+#include <iterator>
 
 namespace {
 
@@ -190,7 +199,363 @@ bool decode(const QByteArray &pkt, OstProto::Stream *s, QString *error)
     return s->protocol_size() > 0;
 }
 
+// ---- 802.11 bytes -> protocols ------------------------------------------
+
+quint32 le(const QByteArray &b, int pos, int n)
+{
+    quint32 v = 0;
+    for (int i = n - 1; i >= 0; i--)
+        v = (v << 8) | uchar(b.at(pos + i));
+    return v;
+}
+
+quint64 macAt(const QByteArray &b, int pos)
+{
+    quint64 v = 0;
+    for (int i = 0; i < 6; i++)
+        v = (v << 8) | uchar(b.at(pos + i));
+    return v;
+}
+
+void hexDumpOf(OstProto::Stream *s, const QByteArray &bytes)
+{
+    if (bytes.isEmpty())
+        return;
+    OstProto::HexDump *h = add(s, OstProto::Protocol::kHexDumpFieldNumber)
+            ->MutableExtension(OstProto::hexDump);
+    h->set_content(bytes.constData(), size_t(bytes.size()));
+    h->set_pad_until_end(false);
+}
+
+// radiotap TX header: only the fields the Radiotap TX protocol knows
+bool parseRadiotap(const QByteArray &b, int *len, OstProto::Stream *s)
+{
+    if (b.size() < 8 || b.at(0) != 0)
+        return false;
+    *len = int(le(b, 2, 2));
+    quint32 present = le(b, 4, 4);
+    const quint32 known = (1u << 2) | (1u << 15) | (1u << 17) | (1u << 19);
+    if (*len < 8 || *len > b.size() || (present & ~known))
+        return false;
+    OstProto::Dot11Radiotap *r = add(s, OstProto::Protocol::kDot11RadiotapFieldNumber)
+            ->MutableExtension(OstProto::dot11_radiotap);
+    int pos = 8;
+    r->set_use_rate(present & (1u << 2));
+    if (r->use_rate())
+        r->set_rate(uchar(b.at(pos++)));
+    r->set_use_tx_flags(present & (1u << 15));
+    if (r->use_tx_flags()) {
+        pos += pos % 2;
+        r->set_tx_flags(le(b, pos, 2));
+        pos += 2;
+    }
+    r->set_use_retries(present & (1u << 17));
+    if (r->use_retries())
+        r->set_retries(uchar(b.at(pos++)));
+    r->set_use_mcs(present & (1u << 19));
+    if (r->use_mcs()) {
+        uchar flags = uchar(b.at(pos + 1));
+        r->set_mcs_bw(flags & 0x03);
+        r->set_mcs_sgi(flags & 0x04);
+        r->set_mcs_index(uchar(b.at(pos + 2)));
+        pos += 3;
+    }
+    return pos <= *len;
+}
+
+QString ratesText(const QByteArray &rates)
+{
+    QStringList l;
+    for (char c : rates)
+        l << QString::number((uchar(c) & 0x7F) / 2.0)
+                + ((uchar(c) & 0x80) ? "*" : "");
+    return l.join(',');
+}
+
+// information elements up to the end of the frame
+void parseIes(const QByteArray &b, int pos, OstProto::Stream *s)
+{
+    while (pos + 2 <= b.size()) {
+        int id = uchar(b.at(pos)), n = uchar(b.at(pos + 1));
+        if (pos + 2 + n > b.size())
+            break;
+        QByteArray info = b.mid(pos + 2, n);
+        pos += 2 + n;
+        if (id == 0 && QString::fromUtf8(info).toUtf8() == info) {
+            ie(s, OstProto::Dot11Ie::kSsid)->set_ssid(info.toStdString());
+        }
+        else if (id == 1 && n >= 1 && n <= 8) {
+            // the Rates element writes an Extended Supported Rates element
+            // itself for more than 8 rates
+            if (n == 8 && pos + 2 <= b.size() && uchar(b.at(pos)) == 50
+                    && pos + 2 + uchar(b.at(pos + 1)) <= b.size()) {
+                info += b.mid(pos + 2, uchar(b.at(pos + 1)));
+                pos += 2 + uchar(b.at(pos + 1));
+            }
+            ie(s, OstProto::Dot11Ie::kRates)
+                ->set_rates(ratesText(info).toStdString());
+        }
+        else if (id == 3 && n == 1) {
+            ie(s, OstProto::Dot11Ie::kDsParam)->set_channel(uchar(info.at(0)));
+        }
+        else {
+            OstProto::Dot11Ie *e = ie(s, OstProto::Dot11Ie::kGeneric);
+            e->set_element_id(id);
+            e->set_data(info.constData(), size_t(info.size()));
+        }
+    }
+    hexDumpOf(s, b.mid(pos));       // trailing bytes that are no element
+}
+
+bool decodeEthernet(const QByteArray &pkt, OstProto::Stream *s,
+                    QString *error);
+
+bool decodeWifi(const QByteArray &b, OstProto::Stream *s)
+{
+    int pos = 0;
+    if (!parseRadiotap(b, &pos, s) || pos + 10 > b.size())
+        return false;
+    const int fc0 = uchar(b.at(pos)), flags = uchar(b.at(pos + 1));
+    const int type = (fc0 >> 2) & 3, subtype = fc0 >> 4;
+    if (type == 3)
+        return false;
+    OstProto::Dot11 *h = add(s, OstProto::Protocol::kDot11FieldNumber)
+            ->MutableExtension(OstProto::dot11);
+    h->set_is_auto_type(false);
+    h->set_version(fc0 & 3);
+    h->set_type(type);
+    h->set_subtype(subtype);
+    h->set_flags(flags);
+    h->set_duration(le(b, pos + 2, 2));
+    h->set_addr1(macAt(b, pos + 4));
+    h->set_seq_increment(false);    // exactly the bytes that were edited
+    if (type == 1) {                // control
+        bool shortCtrl = subtype == 12 || subtype == 13;
+        if (!shortCtrl) {
+            if (pos + 16 > b.size())
+                return false;
+            h->set_addr2(macAt(b, pos + 10));
+        }
+        hexDumpOf(s, b.mid(pos + (shortCtrl ? 10 : 16)));
+        return true;
+    }
+    if (pos + 24 > b.size())
+        return false;
+    h->set_addr2(macAt(b, pos + 10));
+    h->set_addr3(macAt(b, pos + 16));
+    quint32 sc = le(b, pos + 22, 2);
+    h->set_frag_num(sc & 0xF);
+    h->set_seq_num(sc >> 4);
+    pos += 24;
+    if (type == 2 && (flags & 3) == 3) {
+        if (pos + 6 > b.size())
+            return false;
+        h->set_addr4(macAt(b, pos));
+        pos += 6;
+    }
+    if (type == 2 && (subtype & 8)) {
+        if (pos + 2 > b.size())
+            return false;
+        h->set_qos_control(le(b, pos, 2));
+        pos += 2;
+    }
+    if (flags & 0x40) {             // protected: the body is encrypted
+        hexDumpOf(s, b.mid(pos));
+        return true;
+    }
+
+    if (type == 0) {                // management body + elements
+        static const int kinds[] = {0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 12, 13};
+        if (std::find(std::begin(kinds), std::end(kinds), subtype)
+                == std::end(kinds)) {
+            hexDumpOf(s, b.mid(pos));
+            return true;
+        }
+        OstProto::Dot11Mgmt *m = add(s, OstProto::Protocol::kDot11MgmtFieldNumber)
+                ->MutableExtension(OstProto::dot11_mgmt);
+        m->set_kind(OstProto::Dot11Mgmt::Kind(subtype));
+        auto need = [&](int n) { return pos + n <= b.size(); };
+        switch (subtype) {
+        case 0: case 2:             // (re)association request
+            if (!need(subtype == 2 ? 10 : 4))
+                return false;
+            m->set_capability(le(b, pos, 2));
+            m->set_listen_interval(le(b, pos + 2, 2));
+            pos += 4;
+            if (subtype == 2) {
+                m->set_current_ap(macAt(b, pos));
+                pos += 6;
+            }
+            break;
+        case 1: case 3:             // (re)association response
+            if (!need(6))
+                return false;
+            m->set_capability(le(b, pos, 2));
+            m->set_status(le(b, pos + 2, 2));
+            m->set_aid(le(b, pos + 4, 2));
+            pos += 6;
+            break;
+        case 5: case 8:             // probe response, beacon
+            if (!need(12))
+                return false;
+            m->set_timestamp(quint64(le(b, pos, 4))
+                             | (quint64(le(b, pos + 4, 4)) << 32));
+            m->set_beacon_interval(le(b, pos + 8, 2));
+            m->set_capability(le(b, pos + 10, 2));
+            pos += 12;
+            break;
+        case 10: case 12:           // disassociation, deauthentication
+            if (!need(2))
+                return false;
+            m->set_reason(le(b, pos, 2));
+            pos += 2;
+            break;
+        case 11:                    // authentication
+            if (!need(6))
+                return false;
+            m->set_auth_alg(le(b, pos, 2));
+            m->set_auth_seq(le(b, pos + 2, 2));
+            m->set_status(le(b, pos + 4, 2));
+            pos += 6;
+            break;
+        case 13:                    // action: category + details, no IEs
+            if (!need(1))
+                return false;
+            m->set_action_category(uchar(b.at(pos)));
+            m->set_action_data(b.constData() + pos + 1,
+                               size_t(b.size() - pos - 1));
+            return true;
+        default:
+            break;
+        }
+        parseIes(b, pos, s);
+        return true;
+    }
+
+    // data: LLC/SNAP + whatever follows, decoded like an Ethernet payload
+    QByteArray body = b.mid(pos);
+    if (body.size() >= 8 && body.startsWith(QByteArray::fromHex("aaaa03000000"))) {
+        quint32 etype = le(body, 7, 1) | (le(body, 6, 1) << 8);
+        add(s, OstProto::Protocol::kLlcFieldNumber);
+        OstProto::Snap *snap = add(s, OstProto::Protocol::kSnapFieldNumber)
+                ->MutableExtension(OstProto::snap);
+        snap->set_is_override_type(true);
+        snap->set_type(etype);
+        QByteArray eth = QByteArray::fromHex("020000000001020000000002")
+                + body.mid(6, 2) + body.mid(8);
+        OstProto::Stream inner;
+        if (body.size() > 8 && decodeEthernet(eth, &inner, nullptr)) {
+            // drop the made-up Ethernet header (MAC + Ethernet II)
+            int i = 0;
+            while (i < inner.protocol_size()
+                    && (inner.protocol(i).protocol_id().id()
+                            == OstProto::Protocol::kMacFieldNumber
+                        || inner.protocol(i).protocol_id().id()
+                            == OstProto::Protocol::kEth2FieldNumber))
+                i++;
+            for (; i < inner.protocol_size(); i++)
+                s->add_protocol()->CopyFrom(inner.protocol(i));
+        }
+        else {
+            hexDumpOf(s, body.mid(8));
+        }
+        return true;
+    }
+    hexDumpOf(s, body);
+    return true;
+}
+
+// rebuilds the packet from the protocols: true if it is the same bytes
+bool sameBytes(const OstProto::Stream &s, const QByteArray &pkt, bool wifi)
+{
+    Stream tmp;
+    tmp.protoDataCopyFrom(s);
+    QByteArray buf(qMax(pkt.size(), 60) + 64, 0);
+    int n = tmp.frameValue(reinterpret_cast<uchar*>(buf.data()),
+                           buf.size(), 0);
+    if (n < pkt.size())
+        return false;
+    if (buf.left(pkt.size()) != pkt)
+        return false;
+    // Ethernet: anything beyond the original bytes is only zero padding
+    if (!wifi)
+        for (int i = pkt.size(); i < n; i++)
+            if (buf.at(i))
+                return false;
+    return wifi ? n == pkt.size() : true;
+}
+
+void setFixedLength(OstProto::Stream *s, int bytes, bool wifi)
+{
+    // the bytes + 4 byte FCS (added by the NIC / driver)
+    s->mutable_core()->set_len_mode(OstProto::StreamCore::e_fl_fixed);
+    s->mutable_core()->set_frame_len(
+            quint32((wifi ? bytes : qMax(bytes, 60)) + 4));
+}
+
+bool decodeEthernet(const QByteArray &pkt, OstProto::Stream *s,
+                    QString *error)
+{
+    return decode(pkt, s, error);
+}
+
+// A PCAP/PDML import fixes lengths, checksums and next-protocol numbers
+// ("is_override_*"). Let every such value be calculated again where that
+// gives the same bytes - so a checksum follows a later edit of an address.
+void relaxOverrides(OstProto::Stream *s, const QByteArray &pkt, bool wifi)
+{
+    using google::protobuf::FieldDescriptor;
+    using google::protobuf::Message;
+    for (int i = 0; i < s->protocol_size(); i++) {
+        OstProto::Protocol *proto = s->mutable_protocol(i);
+        const google::protobuf::Reflection *pr = proto->GetReflection();
+        std::vector<const FieldDescriptor*> fields;
+        pr->ListFields(*proto, &fields);
+        for (const FieldDescriptor *fd : fields) {
+            if (!fd->is_extension()
+                    || fd->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE
+                    || fd->is_repeated())
+                continue;
+            Message *m = pr->MutableMessage(proto, fd);
+            const google::protobuf::Reflection *mr = m->GetReflection();
+            const google::protobuf::Descriptor *d = m->GetDescriptor();
+            for (int f = 0; f < d->field_count(); f++) {
+                const FieldDescriptor *bf = d->field(f);
+                if (bf->cpp_type() != FieldDescriptor::CPPTYPE_BOOL
+                        || bf->is_repeated()
+                        || bf->name().rfind("is_override_", 0) != 0
+                        || !mr->GetBool(*m, bf))
+                    continue;
+                mr->SetBool(m, bf, false);
+                if (!sameBytes(*s, pkt, wifi))
+                    mr->SetBool(m, bf, true);
+            }
+        }
+    }
+}
+
 } // namespace
+
+bool TemplateStream::fromBytes(const QByteArray &pkt, bool wifi,
+                               OstProto::Stream *stream, QString *error)
+{
+    OstProto::Stream s;
+    s.CopyFrom(*stream);
+    s.clear_protocol();
+    setFixedLength(&s, pkt.size(), wifi);
+    bool ok = wifi ? decodeWifi(pkt, &s) : decode(pkt, &s, error);
+    if (!ok || s.protocol_size() == 0)
+        return false;
+    if (!sameBytes(s, pkt, wifi)) {
+        if (error)
+            *error = QCoreApplication::translate("TemplateStream",
+                    "The protocols would not give the same bytes.");
+        return false;
+    }
+    relaxOverrides(&s, pkt, wifi);
+    stream->CopyFrom(s);
+    return true;
+}
 
 bool TemplateStream::apply(int index, OstProto::Stream *stream,
                            QString *error)
@@ -204,7 +569,7 @@ bool TemplateStream::apply(int index, OstProto::Stream *stream,
         ok = wifi(index, stream);
     }
     else {
-        ok = decode(pkt, stream, error);
+        ok = fromBytes(pkt, false, stream, error);
         if (!ok) {
             // no tshark (Wireshark): keep the bytes as one hex dump
             stream->clear_protocol();
@@ -220,4 +585,73 @@ bool TemplateStream::apply(int index, OstProto::Stream *stream,
     stream->mutable_core()->set_frame_len(
             quint32((wifiPkt ? pkt.size() : qMax(pkt.size(), 60)) + 4));
     return ok;
+}
+
+bool TemplateStream::selfTest(const QString &reportFile)
+{
+    QFile f(reportFile);
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Text))
+        return false;
+    bool all = true;
+    for (int i = 0; i < PacketTemplates::count(); i++) {
+        QByteArray pkt = PacketTemplates::build(i);
+        bool wifi = PacketTemplates::isWifi(i);
+        OstProto::Stream s;
+        QString error;
+        bool ok = fromBytes(pkt, wifi, &s, &error);
+        all = all && ok;
+        QStringList protos;
+        int overrides = 0;
+        for (int p = 0; p < s.protocol_size(); p++) {
+            protos << QString::number(s.protocol(p).protocol_id().id());
+            std::string dbg = s.protocol(p).DebugString();
+            for (size_t pos = dbg.find("is_override_"); pos != std::string::npos;
+                    pos = dbg.find("is_override_", pos + 1))
+                if (dbg.compare(dbg.find(':', pos) + 2, 4, "true") == 0)
+                    overrides++;
+        }
+        f.write(QString("%1 %2 [%3] %4 protos=%5 fixed=%6 %7\n")
+                .arg(ok ? "OK  " : "FAIL").arg(i)
+                .arg(PacketTemplates::group(i)).arg(PacketTemplates::name(i))
+                .arg(protos.join(',')).arg(overrides).arg(error).toUtf8());
+    }
+    // extra 802.11 frames beyond the templates
+    const QByteArray rt = QByteArray::fromHex("00000c0004800000" "0c000000");
+    const QByteArray ap = QByteArray::fromHex("020000000100");
+    const QByteArray sta = QByteArray::fromHex("020000000200");
+    const QByteArray bc = QByteArray::fromHex("ffffffffffff");
+    struct { const char *name; QByteArray pkt; } extra[] = {
+        {"Beacon, 12 rates + HT caps", rt + QByteArray::fromHex("80000000") + bc
+            + ap + ap + QByteArray::fromHex("1000")
+            + QByteArray::fromHex("0000000000000000" "6400" "0104")
+            + QByteArray::fromHex("0004") + QByteArray("Test")
+            + QByteArray::fromHex("010882848b960c121824" "3204303648 6c")
+            + QByteArray::fromHex("2d1a" "ef0117ffff0000000000000000000000"
+                                  "000000000000000000000000")},
+        {"QoS Data, 4 addresses", rt + QByteArray::fromHex("88030000") + ap
+            + sta + ap + QByteArray::fromHex("2000") + sta
+            + QByteArray::fromHex("0500") + QByteArray::fromHex("aaaa030000000800")
+            + QByteArray::fromHex("4500001c0001000040110000c0a8000ac0a80014"
+                                  "c000138800080000")},
+        {"Authentication", rt + QByteArray::fromHex("b0003a01") + ap + sta + ap
+            + QByteArray::fromHex("3000" "000001000000")},
+        {"Action", rt + QByteArray::fromHex("d0000000") + ap + sta + ap
+            + QByteArray::fromHex("4000" "7f0050f2" "0102")},
+        {"Protected data", rt + QByteArray::fromHex("08410000") + ap + sta + ap
+            + QByteArray::fromHex("5000" "0102030405060708090a0b0c0d0e")},
+        {"Block Ack Request", rt + QByteArray::fromHex("84000000") + ap + sta
+            + QByteArray::fromHex("04001000")},
+    };
+    for (const auto &e : extra) {
+        OstProto::Stream s;
+        QString error;
+        bool ok = fromBytes(e.pkt, true, &s, &error);
+        all = all && ok;
+        QStringList protos;
+        for (int p = 0; p < s.protocol_size(); p++)
+            protos << QString::number(s.protocol(p).protocol_id().id());
+        f.write(QString("%1 extra %2 protos=%3 %4\n").arg(ok ? "OK  " : "FAIL")
+                .arg(e.name).arg(protos.join(',')).arg(error).toUtf8());
+    }
+    return all;
 }

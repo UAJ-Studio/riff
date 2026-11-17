@@ -75,7 +75,13 @@ void PdmlIp4Protocol::unknownFieldHandler(QString name, int /*pos*/,
 
         int shift = attributes.value("size").toString().toUInt(&isOk) == 2 ?
                         13 : 5;
-        ip4->set_flags(attributes.value("value").toString().toUInt(&isOk, kBaseHex) >> shift);
+        // newer tshark: "value" is the flags already shifted (2 = DF), the
+        // raw byte(s) are in "unmaskedvalue"
+        if (!attributes.value("unmaskedvalue").isEmpty())
+            ip4->set_flags(attributes.value("unmaskedvalue").toString()
+                           .toUInt(&isOk, kBaseHex) >> shift);
+        else
+            ip4->set_flags(attributes.value("value").toString().toUInt(&isOk, kBaseHex) >> shift);
     }
 }
 

@@ -26,11 +26,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "streamconfigdialog.h"
 #include "streamfileformat.h"
 #include "streamlistdelegate.h"
+#include "templatestream.h"
 
 #include "stream.h"
 #include "hexdump.pb.h"
 #include "mac.pb.h"
 
+#include <QApplication>
 #include <QInputDialog>
 #include <QItemSelectionModel>
 #include <QMessageBox>
@@ -263,8 +265,26 @@ void StreamsWidget::on_actionNew_Stream_triggered()
 
     StreamConfigDialog scd(streams, curPort, this);
     scd.setWindowTitle(tr("Add Stream"));
-    if (scd.exec() == QDialog::Accepted)
-        streamModel->insert(row, streams);
+    if (scd.exec() == QDialog::Accepted) {
+        if (portStillCurrent(&curPort))
+            streamModel->insert(row, streams);
+        else
+            qDeleteAll(streams);
+    }
+}
+
+// The port list can be rebuilt while a stream dialog is open (e.g. when the
+// wireless dongles' ports appear): add only to the port the dialog was for
+bool StreamsWidget::portStillCurrent(const Port *port)
+{
+    if (plm->isPort(currentPortIndex_) && &plm->port(currentPortIndex_) == port
+            && plm->getStreamModel()->rowCount() >= 0)
+        return true;
+    QMessageBox::warning(this, tr("Streams"),
+            tr("The port list changed while the dialog was open, so the "
+               "change could not be applied. Select the port and try "
+               "again."));
+    return false;
 }
 
 void StreamsWidget::on_actionEdit_Stream_triggered()
@@ -554,6 +574,21 @@ void StreamsWidget::setHexContent(Stream *stream, const QByteArray &bytes)
     OstProto::Stream s;
     stream->protoDataCopyInto(s);
 
+    // Field by field again where possible, so that the stream can still be
+    // edited with "Edit Stream" (only if the protocols give exactly these
+    // bytes - otherwise one hex dump)
+    {
+        bool wifi = PacketDecoder::guessLinkType(bytes)
+                        == PacketDecoder::LinkRadiotap;
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+        bool decoded = TemplateStream::fromBytes(bytes, wifi, &s);
+        QApplication::restoreOverrideCursor();
+        if (decoded) {
+            stream->protoDataCopyFrom(s);
+            return;
+        }
+    }
+
     s.clear_protocol();
     OstProto::Protocol *proto = s.add_protocol();
     proto->mutable_protocol_id()->set_id(
@@ -586,10 +621,14 @@ void StreamsWidget::newHexStream()
     if (selectionModel->selection().size() == 1)
         row = selectionModel->selection().at(0).top();
 
+    const Port *port = &plm->port(currentPortIndex_);
     HexPacketEditor editor(HexPacketEditor::templatePacket(0), this);
     editor.setWindowTitle(tr("New Stream from Hex"));
     if (editor.exec() != QDialog::Accepted)
         return;
+    if (!portStillCurrent(port))
+        return;
+    row = qMin(row, streamModel->rowCount());
 
     Stream *stream = new Stream;
     setHexContent(stream, editor.packet());
@@ -635,21 +674,32 @@ void StreamsWidget::editStreamAsHex()
                     || m.src_mac_mode() == OstProto::Mac::e_mm_self)
                 autoMac = true;
         }
-        QString msg = tr("This stream is defined field by field. Editing it "
-                   "as hex turns it into a fixed sequence of bytes taken from "
-                   "its first packet - protocol settings, variable fields "
-                   "and changing frame lengths are replaced.\n\n"
-                   "Use \"Edit Stream\" instead if you want to keep them.");
-        if (autoMac)
-            msg += "\n\n" + tr("Its MAC addresses are set to \"Resolve\" or "
-                   "\"Self\", which only the agent can fill in - they will "
-                   "become 00:00:00:00:00:00. Enter the real MAC addresses "
-                   "in the hex editor.");
-        msg += "\n\n" + tr("Continue?");
-        if (QMessageBox::question(this, tr("Edit as Hex"), msg,
-                QMessageBox::Yes | QMessageBox::No, QMessageBox::No)
-                != QMessageBox::Yes)
-            return;
+        // After the hex edit the bytes are split into protocols again, so
+        // only what bytes of one packet cannot carry is lost: settings that
+        // change from packet to packet and a changing frame length
+        bool varies = stream->isFrameVariable()
+                || stream->lenMode() != Stream::e_fl_fixed;
+        if (varies || autoMac) {
+            QString msg;
+            if (varies)
+                msg = tr("This stream changes from packet to packet (variable "
+                       "fields, random or counting addresses, or a changing "
+                       "frame length). The hex editor shows its first packet "
+                       "only: after editing, every packet is that packet, "
+                       "split into protocols again - set up the changing "
+                       "values again in \"Edit Stream\" if you need them.");
+            if (autoMac)
+                msg += QString(msg.isEmpty() ? "" : "\n\n")
+                    + tr("Its MAC addresses are set to \"Resolve\" or "
+                       "\"Self\", which only the agent can fill in - they will "
+                       "become 00:00:00:00:00:00. Enter the real MAC addresses "
+                       "in the hex editor.");
+            msg += "\n\n" + tr("Continue?");
+            if (QMessageBox::question(this, tr("Edit as Hex"), msg,
+                    QMessageBox::Yes | QMessageBox::No, QMessageBox::No)
+                    != QMessageBox::Yes)
+                return;
+        }
 
         QByteArray buf(HexPacketEditor::kMaxLength, 0);
         int n = stream->frameValue(reinterpret_cast<uchar*>(buf.data()),
@@ -660,6 +710,10 @@ void StreamsWidget::editStreamAsHex()
     HexPacketEditor editor(bytes, this);
     editor.setWindowTitle(tr("Edit Stream as Hex"));
     if (editor.exec() != QDialog::Accepted)
+        return;
+    if (!portStillCurrent(&curPort)
+            || rows.at(0).row() >= curPort.numStreams()
+            || curPort.mutableStreamByIndex(rows.at(0).row(), false) != stream)
         return;
 
     setHexContent(stream, editor.packet());

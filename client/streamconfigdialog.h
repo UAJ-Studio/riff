@@ -112,6 +112,7 @@ private:
 
 private:
     QString lastTemplateName_;
+    QByteArray currentHexDump();
 
 private slots:
     void onTemplateChosen();

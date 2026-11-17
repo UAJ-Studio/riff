@@ -27,6 +27,18 @@ namespace OstProto {
 namespace TemplateStream {
     // replaces the protocols and the frame length of *stream
     bool apply(int index, OstProto::Stream *stream, QString *error);
+
+    // One packet's bytes (e.g. from the hex editor) as protocols: Ethernet
+    // through tshark, radiotap + 802.11 with the 802.11 protocols, a hex
+    // dump for parts no protocol covers. Replaces the protocols and the
+    // frame length of *stream only if the protocols give exactly these
+    // bytes again; returns false (stream untouched) otherwise.
+    bool fromBytes(const QByteArray &pkt, bool wifi,
+                   OstProto::Stream *stream, QString *error = 0);
+
+    // developer check (riff.exe --selftest-decode <file>): every template
+    // through fromBytes(), report written to the file; true if all split
+    bool selfTest(const QString &reportFile);
 }
 
 #endif
