@@ -21,6 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "settings.h"
 
+#include <QApplication>
+#include <QWidget>
 #include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QDir>
@@ -116,6 +118,10 @@ bool WirelessManager::runElevatedCmd(const QString &cmdLine)
     memset(&sei, 0, sizeof(sei));
     sei.cbSize = sizeof(sei);
     sei.fMask = SEE_MASK_NOCLOSEPROCESS;
+    // owner window: the UAC prompt comes to the front instead of only
+    // flashing in the taskbar when Riff is not the foreground app
+    if (QWidget *w = QApplication::activeWindow())
+        sei.hwnd = reinterpret_cast<HWND>(w->winId());
     sei.lpVerb = L"runas";
     sei.lpFile = L"cmd.exe";
     sei.lpParameters = reinterpret_cast<LPCWSTR>(params.utf16());
