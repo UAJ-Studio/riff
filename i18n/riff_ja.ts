@@ -4430,7 +4430,7 @@ Debug: %2</source>
     </message>
     <message>
         <source>802.11 Supported Rates: invalid rate list &quot;%1&quot;</source>
-        <translation>802.11 Supported Rates: レートの指定が不正です "%1"</translation>
+        <translation>802.11 Supported Rates: レートの指定が不正です &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
@@ -5875,6 +5875,22 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     <message>
         <source>The dongle (%1) refused %2 MHz / %3 MHz: the dongle or the country setting does not allow it.</source>
         <translation>ドングル（%1）が %2 MHz / %3 MHz を受け付けませんでした。ドングルか国の設定で使えないチャンネルです。</translation>
+    </message>
+    <message>
+        <source>The usbipd-win service is not running.</source>
+        <translation>usbipd-win のサービスが停止しています。</translation>
+    </message>
+    <message>
+        <source>The usbipd-win service is not running (it may have crashed). Starting it again - please allow the administrator prompt.</source>
+        <translation>usbipd-win のサービスが停止しています（異常終了した可能性があります）。起動し直します。管理者の確認画面で許可してください。</translation>
+    </message>
+    <message>
+        <source>The usbipd-win service is running again.</source>
+        <translation>usbipd-win のサービスを起動し直しました。</translation>
+    </message>
+    <message>
+        <source>The usbipd-win service could not be started. Restart Windows, then start Riff again.</source>
+        <translation>usbipd-win のサービスを起動できませんでした。Windows を再起動してから、もう一度 Riff を起動してください。</translation>
     </message>
 </context>
 <context>

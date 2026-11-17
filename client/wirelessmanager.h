@@ -155,6 +155,7 @@ private:
     int runWsl(const QStringList &args, QString *out = 0,
             int timeoutMs = 30000);
     void detachDongle(const QString &busId);
+    bool ensureUsbipdService();
     bool bindElevated(const QString &busId);
     // While WSL uses a dongle it is bound in "forced" mode, so the Windows
     // Wi-Fi driver is unloaded once, cleanly, instead of being torn down

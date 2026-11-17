@@ -38,6 +38,7 @@ HEADERS += \
     hexpacketeditor.h \
     wirelessdialog.h \
     wirelessmanager.h \
+    childjob.h \
     logtranslator.h \
     protocolnames.h \
     packetdecoder.h \
@@ -103,6 +104,7 @@ SOURCES += \
     hexpacketeditor.cpp \
     wirelessdialog.cpp \
     wirelessmanager.cpp \
+    childjob.cpp \
     logtranslator.cpp \
     protocolnames.cpp \
     packetdecoder.cpp \

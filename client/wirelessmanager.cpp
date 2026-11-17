@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "wirelessmanager.h"
 
+#include "childjob.h"
 #include "settings.h"
 
 #include <QApplication>
@@ -411,6 +412,11 @@ bool WirelessManager::startLiveCapture(const QList<CaptureTarget> &targets,
                         "its location in Edit > Preferences.");
         return false;
     }
+    if (!ensureUsbipdService()) {
+        if (error)
+            *error = tr("The usbipd-win service is not running.");
+        return false;
+    }
     if (targets.isEmpty()) {
         if (error)
             *error = tr("Check at least one dongle to capture from.");
@@ -460,7 +466,7 @@ bool WirelessManager::startLiveCapture(const QList<CaptureTarget> &targets,
     waitPrepared(90000);
     ensureCaptureKeepAlive();
     foreach (const QStringList &args, launches) {
-        if (!QProcess::startDetached(ws, args)) {
+        if (!startOutsideJob(ws, args)) {
             if (error)
                 *error = tr("Could not start Wireshark.");
             return false;
@@ -805,6 +811,8 @@ void WirelessManager::start(QStringList busIds, QString country, int channel)
         emit message(tr("Select a dongle first."), true);
         return;
     }
+    if (!ensureUsbipdService())
+        return;
     // a dongle being prepared for capture must be ready before the agent
     // takes it
     waitPrepared(90000);
@@ -1115,10 +1123,45 @@ bool WirelessManager::reRegisterRemembered(QString *error)
     return registerDongles(need, error);
 }
 
+// The usbipd-win service does the actual USB hand-over. It can crash (seen
+// with usbipd 5.3: "'overlapped' has already been freed") and is then not
+// restarted by Windows: start it again through one administrator prompt.
+bool WirelessManager::ensureUsbipdService()
+{
+#ifdef Q_OS_WIN32
+    if (usbipdPath().isEmpty())
+        return false;
+    QString out;
+    run("sc.exe", {"query", "usbipd"}, &out, 10000);
+    if (out.contains("RUNNING") || !out.contains("STOPPED"))
+        return true;
+    emit message(tr("The usbipd-win service is not running (it may have "
+                    "crashed). Starting it again - please allow the "
+                    "administrator prompt."), true);
+    runElevatedCmd("sc start usbipd");
+    for (int i = 0; i < 20; i++) {
+        run("sc.exe", {"query", "usbipd"}, &out, 10000);
+        if (out.contains("RUNNING")) {
+            emit message(tr("The usbipd-win service is running again."),
+                         false);
+            return true;
+        }
+        QThread::msleep(500);
+    }
+    emit message(tr("The usbipd-win service could not be started. Restart "
+                    "Windows, then start Riff again."), true);
+    return false;
+#else
+    return true;
+#endif
+}
+
 void WirelessManager::prepareRegistered()
 {
     if (state_ != Idle)
         return;     // the transmit agent owns the dongles
+    if (!ensureUsbipdService())
+        return;
     QList<UsbDevice> todo;
     foreach (const UsbDevice &d, listUsbDevices())
         if (!d.driver.isEmpty() && d.registered && !preps_.contains(d.busId)

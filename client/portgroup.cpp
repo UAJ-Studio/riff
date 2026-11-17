@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "portgroup.h"
 
+#include "childjob.h"
 #include "jumpurl.h"
 #include "log.h"
 #include "settings.h"
@@ -1788,7 +1789,7 @@ void PortGroup::processViewCaptureAck(PbRpcController *controller)
         goto _exit;
     }
 
-    if (!QProcess::startDetached(viewer, QStringList() << capFile->fileName())) {
+    if (!startOutsideJob(viewer, QStringList() << capFile->fileName())) {
         qDebug("Failed starting Wireshark");
         logError(QString("Failed to start %1").arg(viewer));
     }
