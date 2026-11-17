@@ -74,6 +74,11 @@ usbipd registration follows the instance ID: moved to another port, that
 dongle is a new, unregistered device. Keep registered dongles on the same
 port.
 
+Fast restart: captures started from Riff leave their dongle attached to WSL
+(no "release"), and Riff keeps the distro alive while it runs, so the next
+capture on the same channel starts in ~2-4 s instead of ~40 s (attach,
+firmware upload, calibration over USB/IP). Riff detaches them on exit.
+
 Also: Linux rtw89 normally switches USB 2 connected dongles to USB 3 mode
 (the chip re-enumerates and keeps the setting until power-off). The pack's
 rtw89 has `switch_usb_mode` (default N) so a dongle keeps its identity and

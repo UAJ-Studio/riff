@@ -48,7 +48,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 const char *WirelessManager::kDistro = "RiffWireless";
 
 WirelessManager::WirelessManager(QObject *parent)
-    : QObject(parent), state_(Idle), keepAlive_(0), agent_(0),
+    : QObject(parent), state_(Idle), keepAlive_(0), captureKeepAlive_(0), agent_(0),
       usbIdsLoaded_(false)
 {
 }
@@ -57,7 +57,9 @@ WirelessManager::~WirelessManager()
 {
     if (state_ != Idle)
         stop();
-    // registered dongles stay registered (Riff only) - see registerDongle()
+    // registered dongles stay registered (Riff only) - see registerDongle();
+    // dongles kept in WSL after live captures go back to the usbipd driver
+    releaseKeptDongles();
 }
 
 // ---- Windows driver handover (usbipd bind --force) ------------------------
@@ -420,6 +422,7 @@ bool WirelessManager::startLiveCapture(const QList<CaptureTarget> &targets,
         foreach (const QString &i, ifaces)
             launches << QStringList({"-i", i, "-k"});
     }
+    ensureCaptureKeepAlive();
     foreach (const QStringList &args, launches) {
         if (!QProcess::startDetached(ws, args)) {
             if (error)
@@ -899,6 +902,38 @@ void WirelessManager::stop()
     emit message(tr("Stopped."), false);
 }
 
+void WirelessManager::ensureCaptureKeepAlive()
+{
+    if (captureKeepAlive_ && captureKeepAlive_->state() != QProcess::NotRunning)
+        return;
+    delete captureKeepAlive_;
+    captureKeepAlive_ = new QProcess(this);
+    captureKeepAlive_->start("wsl.exe", {"-d", kDistro, "-u", "root", "--",
+                                         "sleep", "2147483647"});
+    captureKeepAlive_->waitForStarted(5000);
+}
+
+// On exit: hand dongles kept in WSL after live captures back to the usbipd
+// driver (they stay registered) - unless a capture is still running.
+void WirelessManager::releaseKeptDongles()
+{
+    if (!captureKeepAlive_)
+        return;
+    if (!isCaptureRunning()) {
+        QSet<QString> attached;
+        QHash<QString, bool> forced = forcedState(&attached);
+        QString usbipd = usbipdPath();
+        foreach (const QString &id, attached)
+            if (forced.value(id, false))
+                run(usbipd, {"detach", "--busid", id}, 0, 20000);
+        runWsl({"--terminate", kDistro}, 0, 20000);
+    }
+    captureKeepAlive_->kill();
+    captureKeepAlive_->waitForFinished(3000);
+    delete captureKeepAlive_;
+    captureKeepAlive_ = 0;
+}
+
 // Release everything started by start(): agent, USB attachments, keep-alive.
 void WirelessManager::cleanup()
 {
@@ -930,8 +965,9 @@ void WirelessManager::cleanup()
         keepAlive_->deleteLater();
         keepAlive_ = 0;
     }
-    // stops only Riff's own distribution
-    if (!capturing)
+    // stops only Riff's own distribution (not while it holds dongles kept
+    // from live captures)
+    if (!capturing && !captureKeepAlive_)
         runWsl({"--terminate", kDistro}, 0, 20000);
     agentHost_.clear();
     setState(Idle);

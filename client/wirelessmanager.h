@@ -145,9 +145,14 @@ private:
     void handleAgentLine(const QString &line);
     void connectWhenReachable(int attempt);
     void cleanup();
+    // Captures started from Riff leave their dongles in WSL (fast restart);
+    // this keeps the distro (and so the attachments) alive until Riff exits.
+    void ensureCaptureKeepAlive();
+    void releaseKeptDongles();
 
     State state_;
     QProcess *keepAlive_;
+    QProcess *captureKeepAlive_;
     QProcess *agent_;
     QStringList attached_;
     QString agentAddr_;     // VM address reported by riff-start.sh

@@ -240,7 +240,10 @@ func capture(args map[string]string) error {
 	}
 	log.Printf("adapter %s %s (%s) attached=%v", dev.BusId, dev.HWID(), dev.Name, dev.Attached())
 	var opts []string
-	if args["keep"] == "" {
+	// Started from Riff: the dongle stays in WSL after the capture, so the
+	// next start skips attach, firmware upload and calibration (Riff hands
+	// it back when it exits).
+	if args["keep"] == "" && !fromRiff {
 		opts = append(opts, "release")
 	}
 	if args["fcserrors"] != "" {
