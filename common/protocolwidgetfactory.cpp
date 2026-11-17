@@ -31,6 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "snapconfig.h"
 #include "dot2snapconfig.h"
 #include "stpconfig.h"
+#include "dot11config.h"
 // L3 Protocol Widgets
 #include "arpconfig.h"
 #include "ip4config.h"
@@ -101,6 +102,20 @@ ProtocolWidgetFactory::ProtocolWidgetFactory()
     OstProtocolWidgetFactory->registerProtocolConfigWidget(
             OstProto::Protocol::kStpFieldNumber,
             (void*) StpConfigForm::createInstance);
+
+    // IEEE 802.11 (Riff)
+    OstProtocolWidgetFactory->registerProtocolConfigWidget(
+            OstProto::Protocol::kDot11RadiotapFieldNumber,
+            (void*) Dot11RadiotapConfigForm::createInstance);
+    OstProtocolWidgetFactory->registerProtocolConfigWidget(
+            OstProto::Protocol::kDot11FieldNumber,
+            (void*) Dot11ConfigForm::createInstance);
+    OstProtocolWidgetFactory->registerProtocolConfigWidget(
+            OstProto::Protocol::kDot11MgmtFieldNumber,
+            (void*) Dot11MgmtConfigForm::createInstance);
+    OstProtocolWidgetFactory->registerProtocolConfigWidget(
+            OstProto::Protocol::kDot11IeFieldNumber,
+            (void*) Dot11IeConfigForm::createInstance);
 
     // Layer 3 Protocols
     OstProtocolWidgetFactory->registerProtocolConfigWidget(

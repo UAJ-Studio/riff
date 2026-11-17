@@ -473,6 +473,482 @@ Right-click to create/edit a device group</source>
     </message>
 </context>
 <context>
+    <name>Dot11ConfigForm</name>
+    <message>
+        <source>Frame control</source>
+        <translation>フレーム制御</translation>
+    </message>
+    <message>
+        <source>Auto type/subtype</source>
+        <translation>タイプ/サブタイプを自動設定</translation>
+    </message>
+    <message>
+        <source>Followed by 802.11 Mgmt: management frame of that body&apos;s kind. Followed by LLC or SNAP: data frame. Otherwise the type and subtype below.</source>
+        <translation>次が 802.11 Mgmt なら、その本体の種類の管理フレーム。次が LLC か SNAP ならデータフレーム。それ以外は下のタイプとサブタイプを使います。</translation>
+    </message>
+    <message>
+        <source>0 - Management</source>
+        <translation>0 - 管理</translation>
+    </message>
+    <message>
+        <source>1 - Control</source>
+        <translation>1 - 制御</translation>
+    </message>
+    <message>
+        <source>2 - Data</source>
+        <translation>2 - データ</translation>
+    </message>
+    <message>
+        <source>3 - Extension</source>
+        <translation>3 - 拡張</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation>タイプ</translation>
+    </message>
+    <message>
+        <source>Subtype</source>
+        <translation>サブタイプ</translation>
+    </message>
+    <message>
+        <source>Version</source>
+        <translation>バージョン</translation>
+    </message>
+    <message>
+        <source>To DS</source>
+        <translation>To DS</translation>
+    </message>
+    <message>
+        <source>From DS</source>
+        <translation>From DS</translation>
+    </message>
+    <message>
+        <source>More fragments</source>
+        <translation>後続フラグメントあり</translation>
+    </message>
+    <message>
+        <source>Retry</source>
+        <translation>再送</translation>
+    </message>
+    <message>
+        <source>Power management</source>
+        <translation>省電力</translation>
+    </message>
+    <message>
+        <source>More data</source>
+        <translation>後続データあり</translation>
+    </message>
+    <message>
+        <source>Protected</source>
+        <translation>保護</translation>
+    </message>
+    <message>
+        <source>+HTC / Order</source>
+        <translation>+HTC / Order</translation>
+    </message>
+    <message>
+        <source>Only sets the bit: the body is not encrypted</source>
+        <translation>ビットを立てるだけで、本体は暗号化されません</translation>
+    </message>
+    <message>
+        <source>Flags</source>
+        <translation>フラグ</translation>
+    </message>
+    <message>
+        <source>Addresses</source>
+        <translation>アドレス</translation>
+    </message>
+    <message>
+        <source>Address 1 (receiver / destination)</source>
+        <translation>アドレス 1 (受信者 / 宛先)</translation>
+    </message>
+    <message>
+        <source>Address 2 (transmitter / source)</source>
+        <translation>アドレス 2 (送信者 / 送信元)</translation>
+    </message>
+    <message>
+        <source>Address 3 (BSSID)</source>
+        <translation>アドレス 3 (BSSID)</translation>
+    </message>
+    <message>
+        <source>Address 4 (To DS + From DS only)</source>
+        <translation>アドレス 4 (To DS + From DS のときのみ)</translation>
+    </message>
+    <message>
+        <source>Mode</source>
+        <translation>モード</translation>
+    </message>
+    <message>
+        <source>Count</source>
+        <translation>カウント</translation>
+    </message>
+    <message>
+        <source>Step</source>
+        <translation>ステップ</translation>
+    </message>
+    <message>
+        <source>Fixed</source>
+        <translation>固定</translation>
+    </message>
+    <message>
+        <source>Increment</source>
+        <translation>インクリメント</translation>
+    </message>
+    <message>
+        <source>Decrement</source>
+        <translation>デクリメント</translation>
+    </message>
+    <message>
+        <source>Random</source>
+        <translation>ランダム</translation>
+    </message>
+    <message>
+        <source>Random: a different locally administered unicast address per packet (repeats after Count packets)</source>
+        <translation>ランダム: パケットごとに異なるローカル管理のユニキャストアドレス (カウント数のパケットで一巡します)</translation>
+    </message>
+    <message>
+        <source>Other fields</source>
+        <translation>その他のフィールド</translation>
+    </message>
+    <message>
+        <source>Increment per packet</source>
+        <translation>パケットごとにインクリメント</translation>
+    </message>
+    <message>
+        <source>Sequence number + 1 for every packet (wraps after 4095)</source>
+        <translation>パケットごとにシーケンス番号を +1 します (4095 の次は 0)</translation>
+    </message>
+    <message>
+        <source>QoS data frames only. Bits 0-3: TID</source>
+        <translation>QoS データフレームのみ。ビット 0-3: TID</translation>
+    </message>
+    <message>
+        <source>Duration / ID</source>
+        <translation>Duration / ID</translation>
+    </message>
+    <message>
+        <source>Sequence number</source>
+        <translation>シーケンス番号</translation>
+    </message>
+    <message>
+        <source>Fragment number</source>
+        <translation>フラグメント番号</translation>
+    </message>
+    <message>
+        <source>QoS control</source>
+        <translation>QoS 制御</translation>
+    </message>
+    <message>
+        <source>Header length follows the frame type: control frames have no Address 3 / sequence control (CTS and ACK only Address 1), Address 4 is added for data frames with To DS and From DS, QoS control for QoS data subtypes.</source>
+        <translation>ヘッダー長はフレームタイプに従います: 制御フレームにはアドレス 3 / シーケンス制御がなく (CTS と ACK はアドレス 1 のみ)、To DS と From DS の両方が立ったデータフレームにはアドレス 4、QoS データのサブタイプには QoS 制御が付きます。</translation>
+    </message>
+    <message>
+        <source>Reserved</source>
+        <translation>予約</translation>
+    </message>
+</context>
+<context>
+    <name>Dot11IeConfigForm</name>
+    <message>
+        <source>Information element</source>
+        <translation>情報要素</translation>
+    </message>
+    <message>
+        <source>SSID (0)</source>
+        <translation>SSID (0)</translation>
+    </message>
+    <message>
+        <source>Supported Rates (1)</source>
+        <translation>Supported Rates (1)</translation>
+    </message>
+    <message>
+        <source>DS Parameter Set - channel (3)</source>
+        <translation>DS Parameter Set - チャネル (3)</translation>
+    </message>
+    <message>
+        <source>Other element (ID + hex data)</source>
+        <translation>その他の要素 (ID + 16進データ)</translation>
+    </message>
+    <message>
+        <source>Element</source>
+        <translation>要素</translation>
+    </message>
+    <message>
+        <source>Empty: wildcard SSID (Probe Request) / hidden network (Beacon)</source>
+        <translation>空欄: ワイルドカード SSID (Probe Request) / ステルスネットワーク (Beacon)</translation>
+    </message>
+    <message>
+        <source>SSID</source>
+        <translation>SSID</translation>
+    </message>
+    <message>
+        <source>Append a number 1 ... N per packet</source>
+        <translation>パケットごとに番号 1 ... N を付加</translation>
+    </message>
+    <message>
+        <source>N = </source>
+        <translation>N =</translation>
+    </message>
+    <message>
+        <source>Rates (Mb/s)</source>
+        <translation>レート (Mb/s)</translation>
+    </message>
+    <message>
+        <source>Comma separated, * marks a basic rate, e.g. &lt;tt&gt;1*,2*,5.5*,11*,6,9,12,18&lt;/tt&gt; (2.4 GHz) or &lt;tt&gt;6*,9,12*,18,24*,36,48,54&lt;/tt&gt; (5 GHz). Rates beyond the eighth go into an Extended Supported Rates element.</source>
+        <translation>カンマ区切り、* はベーシックレート。例: &lt;tt&gt;1*,2*,5.5*,11*,6,9,12,18&lt;/tt&gt; (2.4 GHz)、&lt;tt&gt;6*,9,12*,18,24*,36,48,54&lt;/tt&gt; (5 GHz)。9 個目以降のレートは Extended Supported Rates 要素に入ります。</translation>
+    </message>
+    <message>
+        <source>Channel</source>
+        <translation>チャネル</translation>
+    </message>
+    <message>
+        <source>(choose to fill in)</source>
+        <translation>(選ぶと入力されます)</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>テンプレート</translation>
+    </message>
+    <message>
+        <source>Element ID</source>
+        <translation>要素 ID</translation>
+    </message>
+    <message>
+        <source>hex bytes, e.g. 00 50 f2 02</source>
+        <translation>16進バイト列 (例: 00 50 f2 02)</translation>
+    </message>
+    <message>
+        <source>Data</source>
+        <translation>データ</translation>
+    </message>
+    <message>
+        <source>Length</source>
+        <translation>長さ</translation>
+    </message>
+    <message>
+        <source>Override</source>
+        <translation>上書き</translation>
+    </message>
+    <message>
+        <source>Unchecked: calculated automatically. Checked: send this (possibly wrong) length for robustness tests</source>
+        <translation>オフ: 自動計算します。オン: この長さ (誤った値も可) をそのまま送ります (耐性テスト用)</translation>
+    </message>
+    <message>
+        <source>One element per protocol: add &lt;i&gt;802.11 IE&lt;/i&gt; several times in &lt;b&gt;Protocol Selection &amp;gt; Advanced&lt;/b&gt;, in the order they should appear (SSID, Supported Rates, DS Parameter Set ...).</source>
+        <translation>1 つのプロトコルで 1 要素です。&lt;b&gt;プロトコル選択 &amp;gt; 詳細&lt;/b&gt;で &lt;i&gt;802.11 IE&lt;/i&gt; を並べたい順に複数回追加してください (SSID、Supported Rates、DS Parameter Set ...)。</translation>
+    </message>
+</context>
+<context>
+    <name>Dot11MgmtConfigForm</name>
+    <message>
+        <source>Management frame body</source>
+        <translation>管理フレーム本体</translation>
+    </message>
+    <message>
+        <source>The number is the subtype; with Auto type/subtype the 802.11 header uses it</source>
+        <translation>数字はサブタイプです。タイプ/サブタイプ自動設定のとき 802.11 ヘッダーがこれを使います</translation>
+    </message>
+    <message>
+        <source>Frame</source>
+        <translation>フレーム</translation>
+    </message>
+    <message>
+        <source>Microseconds (decimal, or hex with 0x)</source>
+        <translation>マイクロ秒 (10進、または 0x 付きの16進)</translation>
+    </message>
+    <message>
+        <source>Timestamp</source>
+        <translation>タイムスタンプ</translation>
+    </message>
+    <message>
+        <source> TU</source>
+        <translation> TU</translation>
+    </message>
+    <message>
+        <source>1 TU = 1.024 ms</source>
+        <translation>1 TU = 1.024 ms</translation>
+    </message>
+    <message>
+        <source>Beacon interval</source>
+        <translation>ビーコン間隔</translation>
+    </message>
+    <message>
+        <source>0x0001 ESS, 0x0002 IBSS, 0x0010 Privacy, 0x0020 Short preamble, 0x0400 Short slot time</source>
+        <translation>0x0001 ESS、0x0002 IBSS、0x0010 Privacy、0x0020 ショートプリアンブル、0x0400 ショートスロットタイム</translation>
+    </message>
+    <message>
+        <source>Capability information</source>
+        <translation>Capability 情報</translation>
+    </message>
+    <message>
+        <source>Listen interval</source>
+        <translation>Listen 間隔</translation>
+    </message>
+    <message>
+        <source>Current AP address</source>
+        <translation>現在の AP アドレス</translation>
+    </message>
+    <message>
+        <source>0 = success</source>
+        <translation>0 = 成功</translation>
+    </message>
+    <message>
+        <source>Status code</source>
+        <translation>ステータスコード</translation>
+    </message>
+    <message>
+        <source>Association ID with the two top bits set (0xC001 = AID 1)</source>
+        <translation>上位 2 ビットを立てたアソシエーション ID (0xC001 = AID 1)</translation>
+    </message>
+    <message>
+        <source>Association ID</source>
+        <translation>アソシエーション ID</translation>
+    </message>
+    <message>
+        <source>0 - Open System</source>
+        <translation>0 - オープンシステム</translation>
+    </message>
+    <message>
+        <source>1 - Shared Key</source>
+        <translation>1 - 共有キー</translation>
+    </message>
+    <message>
+        <source>2 - Fast BSS Transition</source>
+        <translation>2 - 高速 BSS 遷移</translation>
+    </message>
+    <message>
+        <source>3 - SAE</source>
+        <translation>3 - SAE</translation>
+    </message>
+    <message>
+        <source>Authentication algorithm</source>
+        <translation>認証アルゴリズム</translation>
+    </message>
+    <message>
+        <source>Authentication sequence</source>
+        <translation>認証シーケンス</translation>
+    </message>
+    <message>
+        <source>1 - Unspecified</source>
+        <translation>1 - 不特定</translation>
+    </message>
+    <message>
+        <source>2 - Previous authentication no longer valid</source>
+        <translation>2 - 以前の認証が無効</translation>
+    </message>
+    <message>
+        <source>3 - Leaving (deauthenticated)</source>
+        <translation>3 - 離脱 (認証解除)</translation>
+    </message>
+    <message>
+        <source>4 - Inactivity</source>
+        <translation>4 - 無通信</translation>
+    </message>
+    <message>
+        <source>6 - Class 2 frame from non-authenticated STA</source>
+        <translation>6 - 未認証 STA からのクラス 2 フレーム</translation>
+    </message>
+    <message>
+        <source>7 - Class 3 frame from non-associated STA</source>
+        <translation>7 - 未アソシエーション STA からのクラス 3 フレーム</translation>
+    </message>
+    <message>
+        <source>8 - Leaving (disassociated)</source>
+        <translation>8 - 離脱 (アソシエーション解除)</translation>
+    </message>
+    <message>
+        <source>Reason code</source>
+        <translation>理由コード</translation>
+    </message>
+    <message>
+        <source>e.g. 0 Spectrum management, 3 Block Ack, 4 Public, 127 Vendor specific</source>
+        <translation>例: 0 スペクトラム管理、3 Block Ack、4 Public、127 ベンダー固有</translation>
+    </message>
+    <message>
+        <source>Action category</source>
+        <translation>Action カテゴリー</translation>
+    </message>
+    <message>
+        <source>hex bytes, e.g. 00 50 f2 01</source>
+        <translation>16進バイト列 (例: 00 50 f2 01)</translation>
+    </message>
+    <message>
+        <source>Action details</source>
+        <translation>Action 詳細</translation>
+    </message>
+    <message>
+        <source>Add information elements (&lt;i&gt;802.11 IE&lt;/i&gt;: SSID, rates, channel ...) after this body in &lt;b&gt;Protocol Selection &amp;gt; Advanced&lt;/b&gt;. A Probe Request has no fixed fields, only elements.</source>
+        <translation>情報要素 (&lt;i&gt;802.11 IE&lt;/i&gt;: SSID、レート、チャネルなど) は&lt;b&gt;プロトコル選択 &amp;gt; 詳細&lt;/b&gt;でこの本体の後ろに追加してください。Probe Request には固定フィールドがなく、要素だけです。</translation>
+    </message>
+</context>
+<context>
+    <name>Dot11RadiotapConfigForm</name>
+    <message>
+        <source>Radiotap header (transmit settings)</source>
+        <translation>Radiotap ヘッダー (送信設定)</translation>
+    </message>
+    <message>
+        <source>Rate</source>
+        <translation>レート</translation>
+    </message>
+    <message>
+        <source>Legacy rate. 1, 2, 5.5 and 11 Mb/s (CCK) are only valid on 2.4 GHz</source>
+        <translation>レガシーレート。1、2、5.5、11 Mb/s (CCK) は 2.4 GHz でのみ有効です</translation>
+    </message>
+    <message>
+        <source>TX flags</source>
+        <translation>TX フラグ</translation>
+    </message>
+    <message>
+        <source>No ACK expected</source>
+        <translation>ACK を待たない</translation>
+    </message>
+    <message>
+        <source>Send unicast frames once, without waiting for an ACK or retrying</source>
+        <translation>ユニキャストフレームを ACK 待ちや再送なしで 1 回だけ送ります</translation>
+    </message>
+    <message>
+        <source>Keep my sequence number</source>
+        <translation>指定したシーケンス番号を維持</translation>
+    </message>
+    <message>
+        <source>Ask the driver not to overwrite the 802.11 sequence number</source>
+        <translation>802.11 のシーケンス番号を上書きしないようドライバーに指示します</translation>
+    </message>
+    <message>
+        <source>Data retries</source>
+        <translation>データ再送回数</translation>
+    </message>
+    <message>
+        <source>MCS (HT)</source>
+        <translation>MCS (HT)</translation>
+    </message>
+    <message>
+        <source>MCS </source>
+        <translation>MCS</translation>
+    </message>
+    <message>
+        <source>20 MHz</source>
+        <translation>20 MHz</translation>
+    </message>
+    <message>
+        <source>40 MHz</source>
+        <translation>40 MHz</translation>
+    </message>
+    <message>
+        <source>Short GI</source>
+        <translation>ショート GI</translation>
+    </message>
+    <message>
+        <source>Send with an HT (802.11n) rate instead of the legacy rate</source>
+        <translation>レガシーレートの代わりに HT (802.11n) レートで送信します</translation>
+    </message>
+    <message>
+        <source>The radiotap header tells the wireless dongle how to send the frame; it is not sent over the air. Put it first, then &lt;i&gt;802.11&lt;/i&gt; and the frame body (&lt;i&gt;802.11 Mgmt&lt;/i&gt; + &lt;i&gt;802.11 IE&lt;/i&gt;, or &lt;i&gt;LLC&lt;/i&gt; + &lt;i&gt;SNAP&lt;/i&gt; + IPv4 ...). Frames starting with Radiotap TX are sent exactly as built: the frame length setting is not used, except to size a &lt;i&gt;Payload&lt;/i&gt;.</source>
+        <translation>Radiotap ヘッダーは無線ドングルに送信方法を伝えるもので、電波には乗りません。先頭に置き、続けて &lt;i&gt;802.11&lt;/i&gt; とフレーム本体 (&lt;i&gt;802.11 Mgmt&lt;/i&gt; + &lt;i&gt;802.11 IE&lt;/i&gt;、または &lt;i&gt;LLC&lt;/i&gt; + &lt;i&gt;SNAP&lt;/i&gt; + IPv4 ...) を追加してください。Radiotap TX で始まるフレームは組み立てたとおりに送信され、フレーム長の設定は &lt;i&gt;Payload&lt;/i&gt; のサイズ決め以外には使われません。</translation>
+    </message>
+</context>
+<context>
     <name>EtherIpConfigForm</name>
     <message>
         <source>EtherIP header</source>
@@ -3951,6 +4427,10 @@ Debug: %2</source>
     <message>
         <source>&lt;port&apos;s own MAC&gt;</source>
         <translation>&lt;ポート自身の MAC&gt;</translation>
+    </message>
+    <message>
+        <source>802.11 Supported Rates: invalid rate list &quot;%1&quot;</source>
+        <translation>802.11 Supported Rates: レートの指定が不正です "%1"</translation>
     </message>
 </context>
 <context>

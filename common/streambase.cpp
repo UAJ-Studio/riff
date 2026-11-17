@@ -539,6 +539,15 @@ int StreamBase::frameProtocolLength(int frameIndex) const
     return len;
 }
 
+bool StreamBase::isRadiotapFrame() const
+{
+    ProtocolListIterator *iter = createProtocolListIterator();
+    bool radiotap = iter->hasNext() && iter->next()->protocolNumber()
+                        == OstProto::Protocol::kDot11RadiotapFieldNumber;
+    delete iter;
+    return radiotap;
+}
+
 int StreamBase::frameCount() const
 {
     int count = 0;
@@ -560,10 +569,17 @@ int StreamBase::frameValue(uchar *buf, int bufMaxSize, int frameIndex,
 {
     int maxSize, size, pktLen, len = 0;
 
-    pktLen = frameLen(frameIndex);
+    if (isRadiotapFrame()) {
+        // 802.11 for a wireless dongle: exactly the protocols, which add
+        // up to the frame; the frame length setting only sizes a payload
+        pktLen = frameProtocolLength(frameIndex);
+    }
+    else {
+        pktLen = frameLen(frameIndex);
 
-    // pktLen is adjusted for CRC/FCS which will be added by the NIC
-    pktLen -= kFcsSize;
+        // pktLen is adjusted for CRC/FCS which will be added by the NIC
+        pktLen -= kFcsSize;
+    }
 
     if (pktLen <= 0)
         return 0;
@@ -687,8 +703,10 @@ bool StreamBase::preflightCheck(QStringList &result) const
     bool chkJumbo = true;
     bool chkSignIcmp = true;
     int count = isFrameSizeVariable() ? frameSizeVariableCount() : 1;
+    const bool radiotap = isRadiotapFrame();
 
-    for (int i = 0; i < count; i++)
+    // 802.11 frames are never padded or truncated (see frameValue())
+    for (int i = 0; i < count && !radiotap; i++)
     {
         int pktLen = frameLen(i);
 
@@ -749,7 +767,9 @@ bool StreamBase::preflightCheck(QStringList &result) const
     }
     delete iter;
 
-    if (isFrameVariable()) {
+    // 802.11: the sequence number counts modulo 4096 on its own, so not
+    // sending a multiple of the variable count is expected
+    if (isFrameVariable() && !radiotap) {
         if (frameVariableCount() > frameCount())
         {
             if (frameCount() == 1)

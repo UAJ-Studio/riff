@@ -32,6 +32,7 @@ PROTOS += \
     gre.proto \
     etherip.proto \
     capwap.proto \
+    dot11.proto \
     icmp.proto \
     gmp.proto \
     igmp.proto \
@@ -75,6 +76,7 @@ HEADERS += \
     gre.h \
     etherip.h \
     capwap.h \
+    dot11.h \
     variablefields.h \
     icmp.h \
     igmp.h \
@@ -113,6 +115,7 @@ SOURCES += \
     gre.cpp \
     etherip.cpp \
     capwap.cpp \
+    dot11.cpp \
     icmp.cpp \
     igmp.cpp \
     mld.cpp \

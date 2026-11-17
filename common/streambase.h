@@ -137,6 +137,9 @@ public:
     int frameSizeVariableCount() const;
     int frameVariableCount() const;
     int frameProtocolLength(int frameIndex) const;
+    // Riff: first protocol is Radiotap TX - an 802.11 frame for a wireless
+    // dongle, sent exactly as built (no padding/truncation, no FCS)
+    bool isRadiotapFrame() const;
     int frameCount() const;
     int frameValue(uchar *buf, int bufMaxSize, int frameIndex,
                    FrameValueAttrib *attrib = nullptr) const;

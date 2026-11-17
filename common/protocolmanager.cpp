@@ -35,6 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "dot2snap.h"
 #include "eth2.h"    
 #include "stp.h"
+#include "dot11.h"
 
 // L3 Protos
 #include "arp.h"    
@@ -96,6 +97,16 @@ ProtocolManager::ProtocolManager()
             (void*) Dot2SnapProtocol::createInstance);
     registerProtocol(OstProto::Protocol::kStpFieldNumber,
             (void*) StpProtocol::createInstance);
+
+    // IEEE 802.11 (Riff: frames for a wireless dongle in monitor mode)
+    registerProtocol(OstProto::Protocol::kDot11RadiotapFieldNumber,
+            (void*) Dot11RadiotapProtocol::createInstance);
+    registerProtocol(OstProto::Protocol::kDot11FieldNumber,
+            (void*) Dot11Protocol::createInstance);
+    registerProtocol(OstProto::Protocol::kDot11MgmtFieldNumber,
+            (void*) Dot11MgmtProtocol::createInstance);
+    registerProtocol(OstProto::Protocol::kDot11IeFieldNumber,
+            (void*) Dot11IeProtocol::createInstance);
 
     // Layer 3 Protocols
     registerProtocol(OstProto::Protocol::kArpFieldNumber,

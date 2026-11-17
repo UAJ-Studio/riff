@@ -1,0 +1,117 @@
+Frame control	フレーム制御
+Auto type/subtype	タイプ/サブタイプを自動設定
+Followed by 802.11 Mgmt: management frame of that body's kind. Followed by LLC or SNAP: data frame. Otherwise the type and subtype below.	次が 802.11 Mgmt なら、その本体の種類の管理フレーム。次が LLC か SNAP ならデータフレーム。それ以外は下のタイプとサブタイプを使います。
+0 - Management	0 - 管理
+1 - Control	1 - 制御
+2 - Data	2 - データ
+3 - Extension	3 - 拡張
+Type	タイプ
+Subtype	サブタイプ
+Version	バージョン
+To DS	To DS
+From DS	From DS
+More fragments	後続フラグメントあり
+Retry	再送
+Power management	省電力
+More data	後続データあり
+Protected	保護
++HTC / Order	+HTC / Order
+Only sets the bit: the body is not encrypted	ビットを立てるだけで、本体は暗号化されません
+Flags	フラグ
+Addresses	アドレス
+Address 1 (receiver / destination)	アドレス 1 (受信者 / 宛先)
+Address 2 (transmitter / source)	アドレス 2 (送信者 / 送信元)
+Address 3 (BSSID)	アドレス 3 (BSSID)
+Address 4 (To DS + From DS only)	アドレス 4 (To DS + From DS のときのみ)
+Mode	モード
+Count	カウント
+Step	ステップ
+Fixed	固定
+Increment	インクリメント
+Decrement	デクリメント
+Random	ランダム
+Random: a different locally administered unicast address per packet (repeats after Count packets)	ランダム: パケットごとに異なるローカル管理のユニキャストアドレス (カウント数のパケットで一巡します)
+Other fields	その他のフィールド
+Increment per packet	パケットごとにインクリメント
+Sequence number + 1 for every packet (wraps after 4095)	パケットごとにシーケンス番号を +1 します (4095 の次は 0)
+QoS data frames only. Bits 0-3: TID	QoS データフレームのみ。ビット 0-3: TID
+Duration / ID	Duration / ID
+Sequence number	シーケンス番号
+Fragment number	フラグメント番号
+QoS control	QoS 制御
+Header length follows the frame type: control frames have no Address 3 / sequence control (CTS and ACK only Address 1), Address 4 is added for data frames with To DS and From DS, QoS control for QoS data subtypes.	ヘッダー長はフレームタイプに従います: 制御フレームにはアドレス 3 / シーケンス制御がなく (CTS と ACK はアドレス 1 のみ)、To DS と From DS の両方が立ったデータフレームにはアドレス 4、QoS データのサブタイプには QoS 制御が付きます。
+Reserved	予約
+Information element	情報要素
+SSID (0)	SSID (0)
+Supported Rates (1)	Supported Rates (1)
+DS Parameter Set - channel (3)	DS Parameter Set - チャネル (3)
+Other element (ID + hex data)	その他の要素 (ID + 16進データ)
+Element	要素
+Empty: wildcard SSID (Probe Request) / hidden network (Beacon)	空欄: ワイルドカード SSID (Probe Request) / ステルスネットワーク (Beacon)
+SSID	SSID
+Append a number 1 ... N per packet	パケットごとに番号 1 ... N を付加
+N = 	N =
+Rates (Mb/s)	レート (Mb/s)
+Comma separated, * marks a basic rate, e.g. <tt>1*,2*,5.5*,11*,6,9,12,18</tt> (2.4 GHz) or <tt>6*,9,12*,18,24*,36,48,54</tt> (5 GHz). Rates beyond the eighth go into an Extended Supported Rates element.	カンマ区切り、* はベーシックレート。例: <tt>1*,2*,5.5*,11*,6,9,12,18</tt> (2.4 GHz)、<tt>6*,9,12*,18,24*,36,48,54</tt> (5 GHz)。9 個目以降のレートは Extended Supported Rates 要素に入ります。
+Channel	チャネル
+(choose to fill in)	(選ぶと入力されます)
+Template	テンプレート
+Element ID	要素 ID
+hex bytes, e.g. 00 50 f2 02	16進バイト列 (例: 00 50 f2 02)
+Data	データ
+Length	長さ
+Override	上書き
+Unchecked: calculated automatically. Checked: send this (possibly wrong) length for robustness tests	オフ: 自動計算します。オン: この長さ (誤った値も可) をそのまま送ります (耐性テスト用)
+One element per protocol: add <i>802.11 IE</i> several times in <b>Protocol Selection &gt; Advanced</b>, in the order they should appear (SSID, Supported Rates, DS Parameter Set ...).	1 つのプロトコルで 1 要素です。<b>プロトコル選択 &gt; 詳細</b>で <i>802.11 IE</i> を並べたい順に複数回追加してください (SSID、Supported Rates、DS Parameter Set ...)。
+Management frame body	管理フレーム本体
+The number is the subtype; with Auto type/subtype the 802.11 header uses it	数字はサブタイプです。タイプ/サブタイプ自動設定のとき 802.11 ヘッダーがこれを使います
+Frame	フレーム
+Microseconds (decimal, or hex with 0x)	マイクロ秒 (10進、または 0x 付きの16進)
+Timestamp	タイムスタンプ
+ TU	 TU
+1 TU = 1.024 ms	1 TU = 1.024 ms
+Beacon interval	ビーコン間隔
+0x0001 ESS, 0x0002 IBSS, 0x0010 Privacy, 0x0020 Short preamble, 0x0400 Short slot time	0x0001 ESS、0x0002 IBSS、0x0010 Privacy、0x0020 ショートプリアンブル、0x0400 ショートスロットタイム
+Capability information	Capability 情報
+Listen interval	Listen 間隔
+Current AP address	現在の AP アドレス
+0 = success	0 = 成功
+Status code	ステータスコード
+Association ID with the two top bits set (0xC001 = AID 1)	上位 2 ビットを立てたアソシエーション ID (0xC001 = AID 1)
+Association ID	アソシエーション ID
+0 - Open System	0 - オープンシステム
+1 - Shared Key	1 - 共有キー
+2 - Fast BSS Transition	2 - 高速 BSS 遷移
+3 - SAE	3 - SAE
+Authentication algorithm	認証アルゴリズム
+Authentication sequence	認証シーケンス
+1 - Unspecified	1 - 不特定
+2 - Previous authentication no longer valid	2 - 以前の認証が無効
+3 - Leaving (deauthenticated)	3 - 離脱 (認証解除)
+4 - Inactivity	4 - 無通信
+6 - Class 2 frame from non-authenticated STA	6 - 未認証 STA からのクラス 2 フレーム
+7 - Class 3 frame from non-associated STA	7 - 未アソシエーション STA からのクラス 3 フレーム
+8 - Leaving (disassociated)	8 - 離脱 (アソシエーション解除)
+Reason code	理由コード
+e.g. 0 Spectrum management, 3 Block Ack, 4 Public, 127 Vendor specific	例: 0 スペクトラム管理、3 Block Ack、4 Public、127 ベンダー固有
+Action category	Action カテゴリー
+hex bytes, e.g. 00 50 f2 01	16進バイト列 (例: 00 50 f2 01)
+Action details	Action 詳細
+Add information elements (<i>802.11 IE</i>: SSID, rates, channel ...) after this body in <b>Protocol Selection &gt; Advanced</b>. A Probe Request has no fixed fields, only elements.	情報要素 (<i>802.11 IE</i>: SSID、レート、チャネルなど) は<b>プロトコル選択 &gt; 詳細</b>でこの本体の後ろに追加してください。Probe Request には固定フィールドがなく、要素だけです。
+Radiotap header (transmit settings)	Radiotap ヘッダー (送信設定)
+Rate	レート
+Legacy rate. 1, 2, 5.5 and 11 Mb/s (CCK) are only valid on 2.4 GHz	レガシーレート。1、2、5.5、11 Mb/s (CCK) は 2.4 GHz でのみ有効です
+TX flags	TX フラグ
+No ACK expected	ACK を待たない
+Send unicast frames once, without waiting for an ACK or retrying	ユニキャストフレームを ACK 待ちや再送なしで 1 回だけ送ります
+Keep my sequence number	指定したシーケンス番号を維持
+Ask the driver not to overwrite the 802.11 sequence number	802.11 のシーケンス番号を上書きしないようドライバーに指示します
+Data retries	データ再送回数
+MCS (HT)	MCS (HT)
+MCS 	MCS
+20 MHz	20 MHz
+40 MHz	40 MHz
+Short GI	ショート GI
+Send with an HT (802.11n) rate instead of the legacy rate	レガシーレートの代わりに HT (802.11n) レートで送信します
+The radiotap header tells the wireless dongle how to send the frame; it is not sent over the air. Put it first, then <i>802.11</i> and the frame body (<i>802.11 Mgmt</i> + <i>802.11 IE</i>, or <i>LLC</i> + <i>SNAP</i> + IPv4 ...). Frames starting with Radiotap TX are sent exactly as built: the frame length setting is not used, except to size a <i>Payload</i>.	Radiotap ヘッダーは無線ドングルに送信方法を伝えるもので、電波には乗りません。先頭に置き、続けて <i>802.11</i> とフレーム本体 (<i>802.11 Mgmt</i> + <i>802.11 IE</i>、または <i>LLC</i> + <i>SNAP</i> + IPv4 ...) を追加してください。Radiotap TX で始まるフレームは組み立てたとおりに送信され、フレーム長の設定は <i>Payload</i> のサイズ決め以外には使われません。
+802.11 Supported Rates: invalid rate list "%1"	802.11 Supported Rates: レートの指定が不正です "%1"

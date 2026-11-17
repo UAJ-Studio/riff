@@ -143,6 +143,10 @@ message Protocol {
         kDot2SnapFieldNumber = 207;
         kVlanStackFieldNumber = 208;
         kStpFieldNumber = 209;
+        kDot11RadiotapFieldNumber = 210;  // Riff
+        kDot11FieldNumber = 211;          // Riff
+        kDot11MgmtFieldNumber = 212;      // Riff
+        kDot11IeFieldNumber = 213;        // Riff
 
         kArpFieldNumber = 300;
         kIp4FieldNumber = 301;

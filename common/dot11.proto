@@ -1,0 +1,135 @@
+/*
+Copyright (C) 2026 Riff contributors
+
+This file is part of "Riff"
+
+This is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>
+*/
+
+import "protocol.proto";
+
+package OstProto;
+
+// IEEE 802.11 frames sent through a USB Wi-Fi dongle in monitor mode:
+// Radiotap (TX instructions) + 802.11 header + management body + elements.
+// A stream that starts with Dot11Radiotap is sent exactly as built (no
+// padding to the frame length, no FCS - the dongle adds it).
+
+// Radiotap header for injection (the fields mac80211 uses on TX)
+message Dot11Radiotap {
+    optional bool   use_rate = 1 [default = true];
+    optional uint32 rate = 2 [default = 12];        // 500 kb/s units
+    optional bool   use_tx_flags = 3 [default = true];
+    optional uint32 tx_flags = 4;                   // 0x08 no-ACK, 0x10 no-seq
+    optional bool   use_retries = 5;
+    optional uint32 retries = 6;                    // data retries
+    optional bool   use_mcs = 7;
+    optional uint32 mcs_index = 8;
+    optional uint32 mcs_bw = 9;                     // 0 = 20, 1 = 40 MHz
+    optional bool   mcs_sgi = 10;                   // short guard interval
+}
+
+// How an address changes from frame to frame
+message Dot11Vary {
+    enum Mode {
+        kFixed = 0;
+        kIncrement = 1;
+        kDecrement = 2;
+        kRandom = 3;    // locally administered unicast, repeats after count
+    }
+    optional Mode   mode = 1 [default = kFixed];
+    optional uint32 count = 2 [default = 16];
+    optional uint32 step = 3 [default = 1];
+}
+
+// 802.11 MAC header (multi-byte fields little endian on air, addresses
+// as bytes in the usual order)
+message Dot11 {
+    optional bool   is_auto_type = 1 [default = true];  // from next protocol
+    optional uint32 type = 2;                       // 0 mgmt, 1 ctrl, 2 data
+    optional uint32 subtype = 3 [default = 4];      // probe request
+    optional uint32 version = 4;
+    optional uint32 flags = 5;                      // frame control byte 2
+    optional uint32 duration = 6;
+    optional uint64 addr1 = 7 [default = 0xffffffffffff];
+    optional uint64 addr2 = 8 [default = 0x020000000001];
+    optional uint64 addr3 = 9 [default = 0xffffffffffff];
+    optional uint64 addr4 = 10;
+    optional Dot11Vary addr1_vary = 11;
+    optional Dot11Vary addr2_vary = 12;
+    optional Dot11Vary addr3_vary = 13;
+    optional Dot11Vary addr4_vary = 14;
+    optional uint32 seq_num = 15;
+    optional bool   seq_increment = 16 [default = true];   // mod 4096
+    optional uint32 frag_num = 17;
+    optional uint32 qos_control = 18;
+}
+
+// Fixed fields of a management frame body; the kind is the subtype
+message Dot11Mgmt {
+    enum Kind {
+        kAssocRequest = 0;
+        kAssocResponse = 1;
+        kReassocRequest = 2;
+        kReassocResponse = 3;
+        kProbeRequest = 4;
+        kProbeResponse = 5;
+        kBeacon = 8;
+        kAtim = 9;
+        kDisassoc = 10;
+        kAuth = 11;
+        kDeauth = 12;
+        kAction = 13;
+    }
+    optional Kind   kind = 1 [default = kProbeRequest];
+    optional uint64 timestamp = 2;
+    optional uint32 beacon_interval = 3 [default = 100];   // TUs
+    optional uint32 capability = 4 [default = 0x0401];     // ESS, short slot
+    optional uint32 listen_interval = 5 [default = 10];
+    optional uint32 status = 6;
+    optional uint32 aid = 7 [default = 0xc001];
+    optional uint32 auth_alg = 8;                          // 0 open system
+    optional uint32 auth_seq = 9 [default = 1];
+    optional uint32 reason = 10 [default = 7];
+    optional uint64 current_ap = 11;                       // reassoc request
+    optional uint32 action_category = 12 [default = 127];  // vendor specific
+    optional bytes  action_data = 13;
+}
+
+// One information element (stack several for a complete frame)
+message Dot11Ie {
+    enum Kind {
+        kSsid = 0;
+        kRates = 1;
+        kDsParam = 2;
+        kGeneric = 3;
+    }
+    optional Kind   kind = 1 [default = kSsid];
+    optional string ssid = 2 [default = "Riff"];
+    optional bool   ssid_numbered = 3;              // append 1..ssid_count
+    optional uint32 ssid_count = 4 [default = 10];
+    optional string rates = 5 [default = "1*,2*,5.5*,11*,6,9,12,18"];
+    optional uint32 channel = 6 [default = 1];
+    optional uint32 element_id = 7 [default = 221];
+    optional bytes  data = 8;
+    optional bool   is_override_length = 9;
+    optional uint32 length = 10;
+}
+
+extend Protocol {
+    optional Dot11Radiotap dot11_radiotap = 210;
+    optional Dot11 dot11 = 211;
+    optional Dot11Mgmt dot11_mgmt = 212;
+    optional Dot11Ie dot11_ie = 213;
+}
