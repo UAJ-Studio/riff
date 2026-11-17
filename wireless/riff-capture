@@ -40,7 +40,8 @@ case $? in
 esac
 
 # Riff is using the dongle for transmitting: keep it in WSL after the capture
-if pgrep -x riff-agent >/dev/null 2>&1; then
+# (busybox pgrep -x does not match the agent: it was started by its full path)
+if pidof riff-agent >/dev/null 2>&1 || pgrep -f "^/usr/local/bin/riff-agent" >/dev/null 2>&1; then
     OPTS=$(echo "$OPTS" | sed "s/,release,/,/")
     log "Riff's transmit agent is running: the dongle stays in WSL"
 fi
