@@ -1079,21 +1079,29 @@ void WirelessManager::releaseKeptDongles()
         preps_.value(id).job->kill();
         finishPrep(id);
     }
-    if (!captureKeepAlive_)
-        return;
-    if (!isCaptureRunning()) {
+    // Not only what this run kept: after Riff was killed (or crashed) the
+    // dongles stay in WSL, and the next Riff finds them already attached.
+    QString usbipd = usbipdPath();
+    QStringList kept;
+    if (!usbipd.isEmpty()) {
         QSet<QString> attached;
         QHash<QString, bool> forced = forcedState(&attached);
-        QString usbipd = usbipdPath();
         foreach (const QString &id, attached)
             if (forced.value(id, false))
-                run(usbipd, {"detach", "--busid", id}, 0, 20000);
+                kept << id;
+    }
+    if ((!kept.isEmpty() || captureKeepAlive_) && !isCaptureRunning()) {
+        foreach (const QString &id, kept)
+            run(usbipd, {"detach", "--busid", id}, 0, 20000);
+        // also ends a keep-alive left behind by a killed Riff
         runWsl({"--terminate", kDistro}, 0, 20000);
     }
-    captureKeepAlive_->kill();
-    captureKeepAlive_->waitForFinished(3000);
-    delete captureKeepAlive_;
-    captureKeepAlive_ = 0;
+    if (captureKeepAlive_) {
+        captureKeepAlive_->kill();
+        captureKeepAlive_->waitForFinished(3000);
+        delete captureKeepAlive_;
+        captureKeepAlive_ = 0;
+    }
 }
 
 // Release everything started by start(): agent, USB attachments, keep-alive.
