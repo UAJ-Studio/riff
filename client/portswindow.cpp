@@ -61,6 +61,15 @@ PortsWindow::PortsWindow(PortGroupList *pgl, QWidget *parent)
     tvPortList->addAction(actionExclusive_Control);
     tvPortList->addAction(actionPort_Configuration);
 
+    // USB Wi-Fi dongle ports (Riff wireless agent): channel per port
+    actionWifiChannel_ = new QAction(tr("Wi-Fi Channel..."), this);
+    actionWifiChannel_->setToolTip(tr("Set the channel and width this "
+            "wireless dongle transmits (and receives) on"));
+    actionWifiChannel_->setDisabled(true);
+    tvPortList->addAction(actionWifiChannel_);
+    connect(actionWifiChannel_, SIGNAL(triggered()),
+            SLOT(when_actionWifiChannel_triggered()));
+
     // PortList, StreamList, DeviceWidget actions combined
     // make this window's actions
     addActions(tvPortList->actions());
@@ -395,6 +404,8 @@ void PortsWindow::updatePortViewActions(const QModelIndex& currentIndex)
     if (proxyPortModel)
         current = proxyPortModel->mapToSource(current);
 
+    actionWifiChannel_->setEnabled(isWifiPort(current));
+
     if (!current.isValid())
     {
         qDebug("current is now invalid");
@@ -603,6 +614,27 @@ void PortsWindow::on_actionExclusive_Control_triggered(bool checked)
         config.set_is_exclusive_control(checked);
         plm->portGroup(current.parent()).modifyPort(current.row(), config);
     }
+}
+
+// a port of the Riff wireless agent (port group on port 7879, interface
+// described as "USB Wi-Fi ..." by riff-start.sh)
+bool PortsWindow::isWifiPort(const QModelIndex &index)
+{
+    if (!index.isValid() || !plm->isPort(index))
+        return false;
+    return plm->portGroup(index.parent()).serverPort() == 7879
+        && plm->port(index).systemDescription().startsWith("USB Wi-Fi");
+}
+
+void PortsWindow::when_actionWifiChannel_triggered()
+{
+    QModelIndex current = tvPortList->selectionModel()->currentIndex();
+    if (proxyPortModel)
+        current = proxyPortModel->mapToSource(current);
+    if (!isWifiPort(current))
+        return;
+    Port &port = plm->port(current);
+    emit wifiChannelRequested(port.name(), port.systemDescription());
 }
 
 void PortsWindow::when_actionPort_Configuration_triggered(

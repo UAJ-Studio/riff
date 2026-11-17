@@ -1555,6 +1555,26 @@ This replaces the whole packet.</source>
         <source>Send and capture 802.11 frames with a USB Wi-Fi dongle (through WSL)</source>
         <translation>USB無線ドングルで802.11フレームを送信・キャプチャーします（WSL経由）</translation>
     </message>
+    <message>
+        <source>Wi-Fi Channel</source>
+        <translation>Wi-Fi チャンネル</translation>
+    </message>
+    <message>
+        <source>Channel:</source>
+        <translation>チャンネル:</translation>
+    </message>
+    <message>
+        <source>Width:</source>
+        <translation>帯域幅:</translation>
+    </message>
+    <message>
+        <source>Frames are sent on this channel. A live capture on the same dongle follows it.</source>
+        <translation>フレームはこのチャンネルで送信されます。同じドングルでライブキャプチャしている場合は、そのチャンネルも変わります。</translation>
+    </message>
+    <message>
+        <source>%1: %2, %3 MHz wide</source>
+        <translation>%1: %2、帯域幅 %3 MHz</translation>
+    </message>
 </context>
 <context>
     <name>NativeFileFormat</name>
@@ -3641,6 +3661,14 @@ Debug: %2</source>
         <source>Configuration activated</source>
         <translation>設定は反映済みです</translation>
     </message>
+    <message>
+        <source>Wi-Fi Channel...</source>
+        <translation>Wi-Fi チャンネル...</translation>
+    </message>
+    <message>
+        <source>Set the channel and width this wireless dongle transmits (and receives) on</source>
+        <translation>この無線ドングルが送信（と受信）に使うチャンネルと帯域幅を設定します</translation>
+    </message>
 </context>
 <context>
     <name>Preferences</name>
@@ -5351,6 +5379,22 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     <message>
         <source>Waiting for the dongle(s) being prepared ...</source>
         <translation>準備中のドングルを待っています...</translation>
+    </message>
+    <message>
+        <source>Starting the wireless agent for the prepared dongle(s): they appear as ports in the main window.</source>
+        <translation>準備できたドングルの送信エージェントを起動します。メイン画面にポートとして表示されます。</translation>
+    </message>
+    <message>
+        <source>%1 MHz has no %2 MHz wide channel.</source>
+        <translation>%1 MHz には帯域幅 %2 MHz のチャンネルがありません。</translation>
+    </message>
+    <message>
+        <source>%1: channel set to %2 MHz, %3 MHz wide.</source>
+        <translation>%1: チャンネルを %2 MHz、帯域幅 %3 MHz に設定しました。</translation>
+    </message>
+    <message>
+        <source>The dongle (%1) refused %2 MHz / %3 MHz: the dongle or the country setting does not allow it.</source>
+        <translation>ドングル（%1）が %2 MHz / %3 MHz を受け付けませんでした。ドングルか国の設定で使えないチャンネルです。</translation>
     </message>
 </context>
 <context>

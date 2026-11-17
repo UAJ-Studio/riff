@@ -36,6 +36,8 @@ class WirelessDialog : public QDialog
     Q_OBJECT
 public:
     WirelessDialog(WirelessManager *manager, QWidget *parent = 0);
+    // Wi-Fi channels (2.4/5/6 GHz) with the control frequency (MHz) as data
+    static void fillChannels(QComboBox *box);
 
 public slots:
     void refresh();

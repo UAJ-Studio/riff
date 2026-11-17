@@ -129,3 +129,14 @@ USB %1 is ready: a live capture starts in a few seconds.	USB %1 の準備がで�
 USB %1 could not be prepared ahead; it is prepared when a capture starts.	USB %1 を前もって準備できませんでした。キャプチャを始めるときに準備します。
 Preparing USB %1 for capture in the background ...	USB %1 をキャプチャ用にバックグラウンドで準備しています...
 Waiting for the dongle(s) being prepared ...	準備中のドングルを待っています...
+Wi-Fi Channel...	Wi-Fi チャンネル...
+Set the channel and width this wireless dongle transmits (and receives) on	この無線ドングルが送信（と受信）に使うチャンネルと帯域幅を設定します
+Wi-Fi Channel	Wi-Fi チャンネル
+Channel:	チャンネル:
+Width:	帯域幅:
+Frames are sent on this channel. A live capture on the same dongle follows it.	フレームはこのチャンネルで送信されます。同じドングルでライブキャプチャしている場合は、そのチャンネルも変わります。
+%1: %2, %3 MHz wide	%1: %2、帯域幅 %3 MHz
+Starting the wireless agent for the prepared dongle(s): they appear as ports in the main window.	準備できたドングルの送信エージェントを起動します。メイン画面にポートとして表示されます。
+%1 MHz has no %2 MHz wide channel.	%1 MHz には帯域幅 %2 MHz のチャンネルがありません。
+%1: channel set to %2 MHz, %3 MHz wide.	%1: チャンネルを %2 MHz、帯域幅 %3 MHz に設定しました。
+The dongle (%1) refused %2 MHz / %3 MHz: the dongle or the country setting does not allow it.	ドングル（%1）が %2 MHz / %3 MHz を受け付けませんでした。ドングルか国の設定で使えないチャンネルです。

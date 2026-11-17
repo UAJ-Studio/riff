@@ -493,7 +493,7 @@ void WirelessDialog::onNeedRebuild(QString kernel)
 
 // Channel list for capture: 2.4, 5 and 6 GHz control channels (the dongle
 // and the country decide what actually works; the extcap reports it)
-static void fillChannels(QComboBox *box)
+void WirelessDialog::fillChannels(QComboBox *box)
 {
     for (int c = 1; c <= 14; c++)
         box->addItem(QString("2.4 GHz  ch %1  (%2 MHz)").arg(c)

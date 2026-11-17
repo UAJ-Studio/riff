@@ -41,9 +41,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "fileformat.pb.h"
 
+#include <QApplication>
+#include <QComboBox>
 #include <QDate>
 #include <QDesktopServices>
+#include <QDialogButtonBox>
 #include <QDockWidget>
+#include <QFormLayout>
+#include <QLabel>
+#include <QStatusBar>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QProcess>
@@ -132,6 +138,8 @@ MainWindow::MainWindow(QWidget *parent)
     clipboardHelper = new ClipboardHelper(this);
 
     portsWindow = new PortsWindow(pgl, this);
+    connect(portsWindow, &PortsWindow::wifiChannelRequested,
+            this, &MainWindow::onWifiChannelRequested);
     statsWindow = new PortStatsWindow(pgl, this);
 
     portsDock = new QDockWidget(tr("Ports and Streams"), this);
@@ -710,6 +718,58 @@ void MainWindow::onWirelessAgentReady(QString host, quint16 port)
         return;
     wirelessPortGroup_ = new PortGroup(host, port);
     pgl->addPortGroup(*wirelessPortGroup_);
+}
+
+// Port context menu "Wi-Fi Channel...": pick channel + width for one dongle
+void MainWindow::onWifiChannelRequested(QString iface, QString description)
+{
+    if (!wireless_)
+        return;
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Wi-Fi Channel"));
+    QFormLayout *form = new QFormLayout(&dlg);
+    form->addRow(new QLabel(QString("<b>%1</b> &nbsp; %2")
+                            .arg(iface, description.toHtmlEscaped())));
+    QComboBox *channel = new QComboBox;
+    WirelessDialog::fillChannels(channel);
+    QComboBox *width = new QComboBox;
+    for (int mhz : {20, 40, 80, 160, 320})
+        width->addItem(QString("%1 MHz").arg(mhz), mhz);
+    // last choice for this interface
+    QStringList last = appSettings->value("Wireless/TxChannel/" + iface,
+                                          "5180,20").toString().split(',');
+    int ci = channel->findData(last.value(0).toInt());
+    channel->setCurrentIndex(ci < 0 ? channel->findData(5180) : ci);
+    int wi = width->findData(last.value(1).toInt());
+    width->setCurrentIndex(wi < 0 ? 0 : wi);
+    form->addRow(tr("Channel:"), channel);
+    form->addRow(tr("Width:"), width);
+    QLabel *note = new QLabel(tr("Frames are sent on this channel. A live "
+            "capture on the same dongle follows it."));
+    note->setWordWrap(true);
+    form->addRow(note);
+    QDialogButtonBox *buttons = new QDialogButtonBox(
+            QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    connect(buttons, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    form->addRow(buttons);
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+
+    int freq = channel->currentData().toInt();
+    int mhz = width->currentData().toInt();
+    QString error;
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    bool ok = wireless_->setChannel(iface, freq, mhz, &error);
+    QApplication::restoreOverrideCursor();
+    if (!ok) {
+        QMessageBox::warning(this, tr("Wi-Fi Channel"), error);
+        return;
+    }
+    appSettings->setValue("Wireless/TxChannel/" + iface,
+                          QString("%1,%2").arg(freq).arg(mhz));
+    statusBar()->showMessage(tr("%1: %2, %3 MHz wide")
+            .arg(iface, channel->currentText()).arg(mhz), 5000);
 }
 
 void MainWindow::onWirelessAgentStopped()

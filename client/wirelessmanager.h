@@ -108,6 +108,13 @@ public:
     void prepareRegistered();
     bool isPreparing() const { return !preps_.isEmpty(); }
     void waitPrepared(int timeoutMs);
+    // Retunes one monitor interface of the transmit agent (e.g. "wlan0")
+    // to a control frequency (MHz) and width (20/40/80/160/320 MHz).
+    bool setChannel(const QString &iface, int freq, int width,
+                    QString *error = 0);
+    // Center frequency of the width-MHz channel containing control
+    // frequency freq (same rules as the Wireshark extcap); 0 if none.
+    static int centerFreq(int freq, int width);
 
     State state() const { return state_; }
     QString agentHost() const { return agentHost_; }
@@ -170,6 +177,9 @@ private:
     QProcess *captureKeepAlive_;
     QProcess *agent_;
     QStringList attached_;
+    QStringList ownAttached_;   // attached by start() itself: released on stop
+    bool autoSuppressed_ = false; // the user stopped the agent: no auto start
+    void autoStartAgent();
     QString agentAddr_;     // VM address reported by riff-start.sh
     QString agentHost_;
     QHash<QString, QString> usbIds_; // "0B05:1997" -> driver

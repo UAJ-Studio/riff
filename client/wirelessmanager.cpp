@@ -748,6 +748,7 @@ void WirelessManager::start(QStringList busIds, QString country, int channel)
 {
     if (state_ != Idle)
         return;
+    autoSuppressed_ = false;
     if (busIds.isEmpty()) {
         emit message(tr("Select a dongle first."), true);
         return;
@@ -759,6 +760,7 @@ void WirelessManager::start(QStringList busIds, QString country, int channel)
     agentAddr_.clear();
     agentHost_.clear();
     attached_.clear();
+    ownAttached_.clear();
 
     // keep the distro running while usbipd attaches (it attaches through a
     // running WSL 2 distribution)
@@ -797,6 +799,7 @@ void WirelessManager::start(QStringList busIds, QString country, int channel)
                 cleanup();
                 return;
             }
+            ownAttached_.append(id);
         }
         attached_.append(id);
     }
@@ -814,7 +817,8 @@ void WirelessManager::start(QStringList busIds, QString country, int channel)
                 &QProcess::finished),
             this, &WirelessManager::onAgentFinished);
     agent_->start("wsl.exe", {"-d", kDistro, "-u", "root", "--",
-                  "/opt/riff/riff-start.sh", country, QString::number(channel),
+                  "/opt/riff/riff-start.sh", country,
+                  channel > 0 ? QString::number(channel) : QString("-"),
                   QString::number(kAgentPort)});
 }
 
@@ -920,10 +924,89 @@ void WirelessManager::setChannel(int channel)
     }
 }
 
+// Prepared dongles become ports of the transmit agent without the user
+// pressing Start; their channel stays as prepared (set per port later).
+void WirelessManager::autoStartAgent()
+{
+    if (state_ != Idle || autoSuppressed_ || !preps_.isEmpty())
+        return;
+    QStringList ids;
+    foreach (const UsbDevice &d, listUsbDevices())
+        if (!d.driver.isEmpty() && d.registered
+                && d.state.startsWith("Attached", Qt::CaseInsensitive))
+            ids << d.busId;
+    if (ids.isEmpty())
+        return;
+    // an agent left behind by a killed Riff holds the port
+    runWsl({"-d", kDistro, "-u", "root", "--", "killall", "-q", "riff-agent"},
+           0, 10000);
+    emit message(tr("Starting the wireless agent for the prepared dongle(s): "
+                    "they appear as ports in the main window."), false);
+    start(ids, appSettings->value("Wireless/Country", "JP").toString(), 0);
+}
+
+int WirelessManager::centerFreq(int freq, int width)
+{
+    if (width == 20)
+        return freq;
+    if (freq < 2500) {                       // 2.4 GHz: HT40+ / HT40-
+        int num = freq == 2484 ? 14 : (freq - 2407) / 5;
+        if (width != 40 || num >= 14)
+            return 0;
+        return num <= 7 ? freq + 10 : freq - 10;
+    }
+    int n = width / 20;
+    if (freq < 5950) {                       // 5 GHz
+        if (width > 160)
+            return 0;
+        int num = (freq - 5000) / 5;
+        int base = num >= 149 ? 149 : 36;
+        int center = base + (num - base) / (4 * n) * 4 * n + 2 * (n - 1);
+        static const QList<int> ok40 = {38, 46, 54, 62, 102, 110, 118, 126,
+                                        134, 142, 151, 159, 167, 175};
+        static const QList<int> ok80 = {42, 58, 106, 122, 138, 155, 171};
+        static const QList<int> ok160 = {50, 114, 163};
+        const QList<int> &ok = width == 40 ? ok40 : width == 80 ? ok80 : ok160;
+        return ok.contains(center) ? 5000 + 5 * center : 0;
+    }
+    int num = (freq - 5950) / 5;             // 6 GHz
+    int center = 1 + (num - 1) / (4 * n) * 4 * n + 2 * (n - 1);
+    if (center + 2 * (n - 1) > 233)
+        return 0;
+    return 5950 + 5 * center;
+}
+
+bool WirelessManager::setChannel(const QString &iface, int freq, int width,
+                                 QString *error)
+{
+    int center = centerFreq(freq, width);
+    if (!center) {
+        if (error)
+            *error = tr("%1 MHz has no %2 MHz wide channel.").arg(freq)
+                        .arg(width);
+        return false;
+    }
+    QString out;
+    runWsl({"-d", kDistro, "-u", "root", "--", "/opt/riff/riff-channel.sh",
+            "-f", QString::number(freq), QString::number(width),
+            QString::number(center), iface}, &out, 20000);
+    if (out.contains("RIFF_CHANNEL")) {
+        emit message(tr("%1: channel set to %2 MHz, %3 MHz wide.")
+                        .arg(iface).arg(freq).arg(width), false);
+        return true;
+    }
+    if (error)
+        *error = tr("The dongle (%1) refused %2 MHz / %3 MHz: the dongle or "
+                    "the country setting does not allow it.")
+                    .arg(iface).arg(freq).arg(width);
+    return false;
+}
+
 void WirelessManager::stop()
 {
     if (state_ == Idle)
         return;
+    autoSuppressed_ = true;     // until the user starts it again
     bool wasRunning = state_ == Running;
     setState(Stopping);
     emit message(tr("Stopping the wireless agent ..."), false);
@@ -989,7 +1072,11 @@ void WirelessManager::prepareRegistered()
         if (!d.driver.isEmpty() && d.registered && !preps_.contains(d.busId)
                 && !d.state.startsWith("Attached", Qt::CaseInsensitive))
             todo << d;
-    if (todo.isEmpty() || !isDistroInstalled())
+    if (todo.isEmpty()) {
+        autoStartAgent();   // e.g. already prepared by an earlier Riff
+        return;
+    }
+    if (!isDistroInstalled())
         return;
     ensureCaptureKeepAlive();
     QString usbipd = usbipdPath();
@@ -1019,6 +1106,8 @@ void WirelessManager::prepareRegistered()
                                  "prepared when a capture starts.")
                                  .arg(busId), !ok);
             emit prepared(busId, ok);
+            if (preps_.isEmpty())
+                autoStartAgent();
         });
         p.job->start("wsl.exe", {"-d", kDistro, "-u", "root", "--",
                 "/opt/riff/riff-capture", country, QString::number(freq),
@@ -1121,13 +1210,15 @@ void WirelessManager::cleanup()
     bool capturing = isCaptureRunning();
     QString usbipd = usbipdPath();
     if (!capturing) {
-        foreach (QString id, attached_)
+        // only what start() attached: dongles Riff prepared stay in WSL
+        foreach (QString id, ownAttached_)
             run(usbipd, {"detach", "--busid", id}, 0, 20000);
     }
     else {
         emit message(tr("A Wireshark live capture is running: the dongle "
                         "stays connected to WSL for it."), false);
     }
+    ownAttached_.clear();
     attached_.clear();
     if (keepAlive_) {
         keepAlive_->kill();

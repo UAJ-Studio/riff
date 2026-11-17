@@ -57,6 +57,8 @@ public:
 signals:
     void currentPortChanged(const QModelIndex &current,
                             const QModelIndex &previous);
+    // "Wi-Fi Channel..." on a port of the wireless agent (USB dongle)
+    void wifiChannelRequested(QString iface, QString description);
 
 public slots:
     void clearCurrentSelection();
@@ -82,8 +84,11 @@ private slots:
     void on_actionExclusive_Control_triggered(bool checked);
     void when_actionPort_Configuration_triggered(
             const QModelIndex &portIndex = QModelIndex());
+    void when_actionWifiChannel_triggered();
 
 private:
+    bool isWifiPort(const QModelIndex &index);
+    QAction *actionWifiChannel_;
     PortGroupList *plm;
     QString lastNewPortGroup;
     QSortFilterProxyModel *proxyPortModel;
