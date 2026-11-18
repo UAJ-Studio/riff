@@ -137,6 +137,15 @@ STATE=/run/riff-capture-$DEV.flags
 if [ "$(iw dev "$DEV" info 2>/dev/null | awk '/type/ {print $2}')" != "monitor" ] || [ "$(cat "$STATE" 2>/dev/null)" != "$MFLAGS" ]; then
     # Bringing the link down/up costs ~5 s on rtw89 USB: only when needed.
     ip link set dev "$DEV" down 2>/dev/null
+    if [ "$(iw dev "$DEV" info 2>/dev/null | awk '/type/ {print $2}')" = "monitor" ]; then
+        # New flags on an adapter that is already in monitor mode: rtw89
+        # (measured with RTL8852AU) then keeps a stale receive filter and
+        # hears almost nothing until it has been up once in managed mode.
+        iw dev "$DEV" set type managed 2>/dev/null
+        ip link set dev "$DEV" up 2>/dev/null
+        ip link set dev "$DEV" down 2>/dev/null
+        log "monitor flags changed: adapter reset through managed mode"
+    fi
     iw dev "$DEV" set type monitor 2>/dev/null
     [ "$(iw dev "$DEV" info 2>/dev/null | awk '/type/ {print $2}')" = "monitor" ] || die "adapter/driver refused monitor mode"
     iw dev "$DEV" set monitor $MFLAGS || log "warning: driver rejected monitor flags: $MFLAGS"
