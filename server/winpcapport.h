@@ -52,6 +52,11 @@ protected:
         void run();
     protected:
         void configureHandle(pcap_t *handle) override;
+    private:
+        // Riff: false for adapters without the driver's statistics mode
+        // (e.g. AirPcap): their "statistics" would be ordinary frames
+        bool setStatMode(pcap_t *handle);
+        volatile bool statMode_{false};
     };
 private:
     void populateInterfaceInfo();

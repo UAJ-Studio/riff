@@ -152,13 +152,31 @@ WinPcapPort::PortMonitor::PortMonitor(const char *device, Direction direction,
     : PcapPort::PortMonitor(device, direction, stats)
 {
     if (handle())
-        pcap_setmode(handle(), MODE_STAT);
+        statMode_ = setStatMode(handle());
 }
 
 void WinPcapPort::PortMonitor::configureHandle(pcap_t *handle)
 {
     // a reopened handle (see recoverHandle()) needs the same setup
-    pcap_setmode(handle, MODE_STAT);
+    statMode_ = setStatMode(handle);
+}
+
+// MODE_STAT makes the driver deliver one pair of counters per interval
+// instead of the frames. Adapters that do not support it (AirPcap) would
+// hand over real frames, read as absurd counters, while their capture
+// buffer runs full: give them a filter that passes nothing instead.
+bool WinPcapPort::PortMonitor::setStatMode(pcap_t *handle)
+{
+    if (pcap_setmode(handle, MODE_STAT) == 0)
+        return true;
+    qWarning("%s: no statistics mode (%s) - no Rx/Tx counters for this port",
+             qPrintable(objectName()), pcap_geterr(handle));
+    struct bpf_program none;
+    if (pcap_compile(handle, &none, "less 1", 1, PCAP_NETMASK_UNKNOWN) == 0) {
+        pcap_setfilter(handle, &none);
+        pcap_freecode(&none);
+    }
+    return false;
 }
 
 void WinPcapPort::PortMonitor::run()
@@ -180,6 +198,11 @@ void WinPcapPort::PortMonitor::run()
 
         if (!handle()) {
             recoverHandle();
+            continue;
+        }
+        if (!statMode_) {
+            // no counters from this adapter (see setStatMode())
+            QThread::msleep(500);
             continue;
         }
 
