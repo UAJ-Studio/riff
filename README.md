@@ -1,6 +1,6 @@
 # Riff
 
-**Made by [UAJ-Studio](https://uaj-studio.com)** · [Riff page](https://uaj-studio.com/riff) · [Support Riff on GitHub Sponsors](https://github.com/sponsors/UAJ-Studio)
+**Made by [UAJ-Studio](https://uaj-studio.com)** · [UAJ-Studio website](https://uaj-studio.com) · [Support Riff on GitHub Sponsors](https://github.com/sponsors/UAJ-Studio)
 
 Riff is a packet crafter and traffic generator for Windows, derived from
 [Ostinato](https://ostinato.org) 1.3.0. Besides wired Ethernet ports it can

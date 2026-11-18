@@ -1,4 +1,4 @@
 # Riff is made by UAJ-Studio. Donations are a thank-you only: there are no
 # rewards (no items or features) - supporters may be listed by name.
-github: UAJ-Studio
-custom: ["https://uaj-studio.com/riff"]
+# "github: UAJ-Studio" returns once GitHub Sponsors for UAJ-Studio is approved.
+custom: ["https://uaj-studio.com"]
