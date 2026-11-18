@@ -8,6 +8,7 @@ QT -= gui
 linux*:system(grep -q IFLA_STATS64 /usr/include/linux/if_link.h): \
     DEFINES += HAVE_IFLA_STATS64
 INCLUDEPATH += "../common"
+INCLUDEPATH += $$OUT_PWD/../common   # generated *.pb.h (shadow builds)
 INCLUDEPATH += "../rpc"
 win32 {
     # Support Windows Vista and above only

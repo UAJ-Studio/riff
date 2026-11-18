@@ -2,6 +2,7 @@ TEMPLATE = app
 CONFIG += qt console
 QT += xml network script widgets
 INCLUDEPATH += "../rpc/" "../common/" "../client"
+INCLUDEPATH += $$OUT_PWD/../common
 win32 {
     LIBS += -lwpcap -lpacket
     CONFIG(debug, debug|release) {

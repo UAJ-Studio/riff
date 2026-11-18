@@ -23,7 +23,9 @@ PROTO_CC += $$replace(PROTOS, \.proto, .pb.cc)
 protobuf_decl.name  = protobuf header
 protobuf_decl.input = PROTOS
 protobuf_decl.output  = ${QMAKE_FILE_BASE}.pb.h
-protobuf_decl.commands = protoc --cpp_out="." $${PROTOPATHS} ${QMAKE_FILE_NAME}
+# the .proto file's own directory too, so that shadow builds find it (protoc
+# wants a --proto_path that is a literal prefix of the file name)
+protobuf_decl.commands = protoc --cpp_out="." $${PROTOPATHS} --proto_path=${QMAKE_FILE_IN_PATH} ${QMAKE_FILE_NAME}
 protobuf_decl.variable_out = GENERATED_FILES 
 QMAKE_EXTRA_COMPILERS += protobuf_decl 
 

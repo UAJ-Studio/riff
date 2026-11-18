@@ -7,6 +7,7 @@ win32:QMAKE_TARGET_DESCRIPTION = Riff
 win32:LIBS += -lversion
 QT += widgets network script xml svg
 INCLUDEPATH += "../rpc/" "../common/" "../extra/qhexedit2/src"
+INCLUDEPATH += $$OUT_PWD/../common   # generated *.pb.h (shadow builds)
 win32 {
     QMAKE_LFLAGS += -static-libgcc -static-libstdc++
     CONFIG(debug, debug|release) {
