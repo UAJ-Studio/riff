@@ -42,7 +42,7 @@ rm -f cmd/extcap/*.syso
 rm -f "$VI"
 
 export GOOS=windows GOARCH=amd64 CGO_ENABLED=0 GOFLAGS="-trimpath -buildvcs=false"
-go vet ./...
+go vet ./cmd/extcap ./internal/...   # cmd/setup embeds payload/, made later
 go build -ldflags "-s -w -X riffwifi/internal/common.Version=$VER" \
     -o "$OUT/riff-wifi-extcap.exe" ./cmd/extcap
 ls -la "$OUT/riff-wifi-extcap.exe"
