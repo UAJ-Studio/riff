@@ -59,7 +59,8 @@
 &lt;tr&gt;&lt;td&gt;&lt;b&gt;3&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Send&lt;/b&gt; &amp;mdash; select the port's column in &lt;i&gt;Port Statistics&lt;/i&gt; below and press the &lt;i&gt;Transmit&lt;/i&gt; start button. Sent and received counters update live.&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;
 &lt;hr/&gt;
-&lt;p&gt;Don't see the port you want? Make sure Npcap is installed, and try running Riff as Administrator.&lt;/p&gt;</string>
+&lt;p&gt;Don't see the port you want? Make sure Npcap is installed, and try running Riff as Administrator.&lt;/p&gt;
+&lt;p style=&quot;color:gray;&quot;&gt;Riff is made by &lt;a href=&quot;https://uaj-studio.com&quot;&gt;UAJ-Studio&lt;/a&gt; &amp;mdash; free and open source. If it helps your work, you can &lt;a href=&quot;https://github.com/sponsors/UAJ-Studio&quot;&gt;support it on GitHub Sponsors&lt;/a&gt;.&lt;/p&gt;</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>

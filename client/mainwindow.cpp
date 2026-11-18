@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 #include "clipboardhelper.h"
 #include "jumpurl.h"
+#include "riffurls.h"
 #include "logsmodel.h"
 #include "logswindow.h"
 #include "params.h"
@@ -423,20 +424,20 @@ void MainWindow::on_actionViewRestoreDefaults_triggered()
 
 void MainWindow::on_actionHelpOnline_triggered()
 {
-    QDesktopServices::openUrl(QUrl(jumpUrl("help", "app", "menu")));
+    // Riff's page (README: Riff's additions + links to the upstream docs)
+    QDesktopServices::openUrl(QUrl(RIFF_REPO_URL));
 }
 
 void MainWindow::on_actionDonate_triggered()
 {
-    QDesktopServices::openUrl(QUrl(jumpUrl("donate", "app", "menu")));
+    QDesktopServices::openUrl(QUrl(RIFF_SPONSORS_URL));
 }
 
 void MainWindow::on_actionCheckForUpdates_triggered()
 {
-    Updater *updater = new Updater();
-    connect(updater, SIGNAL(latestVersion(QString)),
-            this, SLOT(onLatestVersion(QString)));
-    updater->checkForNewVersion();
+    // Riff contacts nothing on its own: the releases page shows the latest
+    // version (upstream's update service is about Ostinato)
+    QDesktopServices::openUrl(QUrl(RIFF_RELEASES_URL));
 }
 
 void MainWindow::on_actionHelpAbout_triggered()

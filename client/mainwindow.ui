@@ -63,7 +63,8 @@
      <string>&amp;Help</string>
     </property>
     <addaction name="actionHelpOnline" />
-    <addaction name="separator" />
+    <addaction name="actionDonate" />
+    <addaction name="actionCheckForUpdates" />
     <addaction name="separator" />
     <addaction name="actionHelpAbout" />
     <addaction name="actionAboutQt" />
@@ -153,7 +154,7 @@
     <iconset resource="ostinato.qrc" >:/icons/donate.png</iconset>
    </property>
    <property name="text" >
-    <string>Donate</string>
+    <string>Support Riff (GitHub Sponsors)...</string>
    </property>
   </action>
   <action name="actionCheckForUpdates" >

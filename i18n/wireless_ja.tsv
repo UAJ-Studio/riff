@@ -165,3 +165,6 @@ This stream changes from packet to packet (variable fields, random or counting a
 The protocols would not give the same bytes.	プロトコルにすると同じバイト列になりません。
 Streams	ストリーム
 The port list changed while the dialog was open, so the change could not be applied. Select the port and try again.	画面を開いている間にポート一覧が更新されたため、変更を反映できませんでした。ポートを選び直してから、もう一度操作してください。
+Made by UAJ-Studio (c) 2026\nBased on Ostinato 1.3.0 - Copyright (c) 2007-2023 Srivats P.	Made by UAJ-Studio (c) 2026\nOstinato 1.3.0 をもとにしています - Copyright (c) 2007-2023 Srivats P.
+Support Riff (GitHub Sponsors)...	Riff を支援する（GitHub Sponsors）...
+<a href="https://uaj-studio.com">uaj-studio.com</a> &nbsp;|&nbsp; <a href="https://github.com/UAJ-Studio/riff">Source code (GitHub)</a> &nbsp;|&nbsp; <a href="https://github.com/sponsors/UAJ-Studio">Support Riff</a><br>Upstream project: <a href="https://ostinato.org">ostinato.org</a>	<a href="https://uaj-studio.com">uaj-studio.com</a> &nbsp;|&nbsp; <a href="https://github.com/UAJ-Studio/riff">ソースコード（GitHub）</a> &nbsp;|&nbsp; <a href="https://github.com/sponsors/UAJ-Studio">Riff を支援する</a><br>元のプロジェクト: <a href="https://ostinato.org">ostinato.org</a>

@@ -1,23 +1,62 @@
-# Ostinato
+# Riff
 
-[![Build Status](https://app.travis-ci.com/pstavirs/ostinato.svg?branch=master)](https://app.travis-ci.com/pstavirs/ostinato)
+**Made by [UAJ-Studio](https://uaj-studio.com)** · [Riff page](https://uaj-studio.com/riff) · [Support Riff on GitHub Sponsors](https://github.com/sponsors/UAJ-Studio)
 
-This is the code repository for the Ostinato network packet crafter and traffic generator
+Riff is a packet crafter and traffic generator for Windows, derived from
+[Ostinato](https://ostinato.org) 1.3.0. Besides wired Ethernet ports it can
+send raw 802.11 frames from USB Wi-Fi dongles and capture them live in
+Wireshark — through Riff's own WSL distribution, without touching your other
+WSL setups.
 
-Visit https://ostinato.org for demo video and details
+Riff はWindows用のパケット/トラフィックジェネレーターです（Ostinato 1.3.0 からの派生）。
+有線 LAN に加えて、USB Wi-Fi ドングルから 802.11 の無線フレームを送信し、
+Wireshark でライブキャプチャできます。
 
-Source License: GPLv3+ (see [COPYING](https://raw.githubusercontent.com/pstavirs/ostinato/master/COPYING))
+## Features
 
-## Author's note
-I have been developing and maintaining Ostinato [single-handedly](https://github.com/pstavirs/ostinato/graphs/contributors) for more than 12 years. And during this time I have grudgingly come around to the view that open source cannot survive and thrive without money. Mixing money with open-source is messy, but I don't see a way forward unless we as a community become open to the idea of talking about it and changing our culture so that money is no longer a bad word.
+- Build streams field by field (Ethernet, VLAN, IPv4/IPv6, TCP/UDP, ARP,
+  tunnels, …) or as raw hex — with ready-made templates in both editors.
+  Hex-edited packets are split back into protocols where possible.
+- Send from wired ports with set rates, counts and per-packet variation.
+- USB Wi-Fi dongles (rtw89/rtw88/mt76/ath9k_htc and more): dongles appear as
+  ports; 802.11 protocols (Radiotap TX, MAC header, management frames,
+  information elements) with random or counting addresses.
+- Live 802.11 capture in Wireshark, one or several dongles at once, with a
+  channel per dongle.
+- Japanese and English user interface.
 
-I sell binary licenses on [ostinato.org](https://ostinato.org/downloads) to try and cover the costs of development. Please consider buying those - they are priced low enough that you can afford it or you could just as easily expense them to your organisation.
+## Download
 
-If you build Ostinato from source and find it useful, please sponsor to keep the lights on and sustain the project.
+Get `Riff-<version>-setup.exe` from
+[Releases](https://github.com/UAJ-Studio/riff/releases). It installs Riff for
+the current user (no administrator rights needed), and offers usbipd-win for
+USB Wi-Fi dongles. Riff needs [Npcap](https://npcap.com/).
 
-[![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86&style=for-the-badge)](https://github.com/sponsors/pstavirs)
+Requirements: Windows 10/11 64-bit, Npcap. For USB Wi-Fi dongles: WSL 2 and
+usbipd-win (see [wireless/README.md](wireless/README.md)).
 
-Read the Ostinato [origin story](https://ostinato.org/about).
+## Support
 
-Srivats P<br/>
-Author, Ostinato
+Riff is free and open source. If it is useful to you, you can support its
+development on [GitHub Sponsors](https://github.com/sponsors/UAJ-Studio).
+Donations are a thank-you only — there are no rewards — and supporters who
+wish may be listed by name.
+
+Riff builds on years of work by Srivats P., the author of Ostinato. If you
+use Ostinato itself, please consider supporting it as well:
+[ostinato.org](https://ostinato.org) /
+[GitHub Sponsors](https://github.com/sponsors/pstavirs).
+
+## Privacy
+
+This program will not transfer any information to other networked systems
+unless specifically requested by the user or the person installing or
+operating it.
+
+## License
+
+GPLv3 or later (see [COPYING](COPYING)). Riff is not affiliated with or
+endorsed by the Ostinato project.
+
+Building on Windows: see [win/README-windows.txt](win/README-windows.txt) and
+[wireless/README.md](wireless/README.md).

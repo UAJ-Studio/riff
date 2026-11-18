@@ -22,12 +22,12 @@
     <message>
         <source>Based on Ostinato 1.3.0 - Copyright (c) 2007-2023 Srivats P.
 Riff modifications (c) 2026</source>
-        <translation>Based on Ostinato 1.3.0 - Copyright (c) 2007-2023 Srivats P.
+        <translation type="vanished">Based on Ostinato 1.3.0 - Copyright (c) 2007-2023 Srivats P.
 Riff modifications (c) 2026</translation>
     </message>
     <message>
         <source>Upstream project: &lt;a href=&quot;https://ostinato.org&quot;&gt;ostinato.org&lt;/a&gt;</source>
-        <translation>上流プロジェクト: &lt;a href=&quot;https://ostinato.org&quot;&gt;ostinato.org&lt;/a&gt;</translation>
+        <translation type="vanished">上流プロジェクト: &lt;a href=&quot;https://ostinato.org&quot;&gt;ostinato.org&lt;/a&gt;</translation>
     </message>
     <message>
         <source>Icons (c): Mark James (http://www.famfamfam.com/lab/icons/silk/)</source>
@@ -40,6 +40,16 @@ Riff modifications (c) 2026</translation>
     <message>
         <source>&lt;p&gt;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.&lt;/p&gt;&lt;p&gt;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.&lt;/p&gt;&lt;p&gt;You should have received a copy of the GNU General Public License along with this program. If not, see &lt;a href=&quot;https://www.gnu.org/licenses/&quot;&gt;https://www.gnu.org/licenses/&lt;/a&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;本プログラムはフリーソフトウェアです。フリーソフトウェア財団が発行する GNU General Public License (バージョン3、または任意でそれ以降のバージョン) の条件に従って、再配布および/または改変することができます。&lt;/p&gt;&lt;p&gt;本プログラムは有用であることを期待して配布されていますが、商品性や特定目的への適合性に関する黙示の保証を含め、いかなる保証もありません。詳細は GNU General Public License をご覧ください。&lt;/p&gt;&lt;p&gt;本プログラムとともに GNU General Public License のコピーを受け取っているはずです。受け取っていない場合は &lt;a href=&quot;https://www.gnu.org/licenses/&quot;&gt;https://www.gnu.org/licenses/&lt;/a&gt; をご覧ください。&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>Made by UAJ-Studio (c) 2026
+Based on Ostinato 1.3.0 - Copyright (c) 2007-2023 Srivats P.</source>
+        <translation>Made by UAJ-Studio (c) 2026
+Ostinato 1.3.0 をもとにしています - Copyright (c) 2007-2023 Srivats P.</translation>
+    </message>
+    <message>
+        <source>&lt;a href=&quot;https://uaj-studio.com&quot;&gt;uaj-studio.com&lt;/a&gt; &amp;nbsp;|&amp;nbsp; &lt;a href=&quot;https://github.com/UAJ-Studio/riff&quot;&gt;Source code (GitHub)&lt;/a&gt; &amp;nbsp;|&amp;nbsp; &lt;a href=&quot;https://github.com/sponsors/UAJ-Studio&quot;&gt;Support Riff&lt;/a&gt;&lt;br&gt;Upstream project: &lt;a href=&quot;https://ostinato.org&quot;&gt;ostinato.org&lt;/a&gt;</source>
+        <translation>&lt;a href=&quot;https://uaj-studio.com&quot;&gt;uaj-studio.com&lt;/a&gt; &amp;nbsp;|&amp;nbsp; &lt;a href=&quot;https://github.com/UAJ-Studio/riff&quot;&gt;ソースコード（GitHub）&lt;/a&gt; &amp;nbsp;|&amp;nbsp; &lt;a href=&quot;https://github.com/sponsors/UAJ-Studio&quot;&gt;Riff を支援する&lt;/a&gt;&lt;br&gt;元のプロジェクト: &lt;a href=&quot;https://ostinato.org&quot;&gt;ostinato.org&lt;/a&gt;</translation>
     </message>
 </context>
 <context>
@@ -1941,7 +1951,7 @@ This replaces the whole packet.</source>
     </message>
     <message>
         <source>Donate</source>
-        <translation>寄付</translation>
+        <translation type="vanished">寄付</translation>
     </message>
     <message>
         <source>Check for Updates...</source>
@@ -2054,6 +2064,10 @@ This replaces the whole packet.</source>
     <message>
         <source>USB Wi-Fi dongles</source>
         <translation>USB Wi-Fi ドングル</translation>
+    </message>
+    <message>
+        <source>Support Riff (GitHub Sponsors)...</source>
+        <translation>Riff を支援する（GitHub Sponsors）...</translation>
     </message>
 </context>
 <context>
@@ -4138,7 +4152,7 @@ Debug: %2</source>
 &lt;/table&gt;
 &lt;hr/&gt;
 &lt;p&gt;Don&apos;t see the port you want? Make sure Npcap is installed, and try running Riff as Administrator.&lt;/p&gt;</source>
-        <translation>&lt;p style=&quot;font-size:15pt; font-weight:600;&quot;&gt;Riff へようこそ&lt;/p&gt;
+        <translation type="vanished">&lt;p style=&quot;font-size:15pt; font-weight:600;&quot;&gt;Riff へようこそ&lt;/p&gt;
 &lt;p&gt;3 つのステップでパケットを作成し、ネットワークポートから送信できます。&lt;/p&gt;
 &lt;table cellspacing=&quot;6&quot;&gt;
 &lt;tr&gt;&lt;td&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;ポートを選ぶ&lt;/b&gt; &amp;mdash; 左のリストから送信に使うポートを選択します。&lt;img src=&quot;:/icons/bullet_green.png&quot;/&gt; の付いたポートが使用可能です。(ポートグループをダブルクリックすると、ポートの表示/非表示を切り替えられます)&lt;/td&gt;&lt;/tr&gt;
@@ -4167,6 +4181,28 @@ Debug: %2</source>
     <message>
         <source>Set the channel and width this wireless dongle transmits (and receives) on</source>
         <translation>この無線ドングルが送信（と受信）に使うチャンネルと帯域幅を設定します</translation>
+    </message>
+    <message>
+        <source>&lt;p style=&quot;font-size:15pt; font-weight:600;&quot;&gt;Welcome to Riff&lt;/p&gt;
+&lt;p&gt;Build packets and send them from your network ports in three steps:&lt;/p&gt;
+&lt;table cellspacing=&quot;6&quot;&gt;
+&lt;tr&gt;&lt;td&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Pick a port&lt;/b&gt; &amp;mdash; select the port to send from in the list on the left. Ports marked &lt;img src=&quot;:/icons/bullet_green.png&quot;/&gt; are up. (Double-click a port group to show or hide its ports.)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;b&gt;2&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Create a stream&lt;/b&gt; &amp;mdash; a stream is a packet (or a series of packets). Right-click the stream list and choose &lt;i&gt;New Stream&lt;/i&gt; to set protocols field by field, or &lt;i&gt;New Stream from Hex&lt;/i&gt; to type the bytes directly.&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;b&gt;3&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Send&lt;/b&gt; &amp;mdash; select the port&apos;s column in &lt;i&gt;Port Statistics&lt;/i&gt; below and press the &lt;i&gt;Transmit&lt;/i&gt; start button. Sent and received counters update live.&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+&lt;hr/&gt;
+&lt;p&gt;Don&apos;t see the port you want? Make sure Npcap is installed, and try running Riff as Administrator.&lt;/p&gt;
+&lt;p style=&quot;color:gray;&quot;&gt;Riff is made by &lt;a href=&quot;https://uaj-studio.com&quot;&gt;UAJ-Studio&lt;/a&gt; &amp;mdash; free and open source. If it helps your work, you can &lt;a href=&quot;https://github.com/sponsors/UAJ-Studio&quot;&gt;support it on GitHub Sponsors&lt;/a&gt;.&lt;/p&gt;</source>
+        <translation>&lt;p style=&quot;font-size:15pt; font-weight:600;&quot;&gt;Riff へようこそ&lt;/p&gt;
+&lt;p&gt;3 つのステップでパケットを作成し、ネットワークポートから送信できます。&lt;/p&gt;
+&lt;table cellspacing=&quot;6&quot;&gt;
+&lt;tr&gt;&lt;td&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;ポートを選ぶ&lt;/b&gt; &amp;mdash; 左のリストから送信に使うポートを選択します。&lt;img src=&quot;:/icons/bullet_green.png&quot;/&gt; の付いたポートが使用可能です。(ポートグループをダブルクリックすると、ポートの表示/非表示を切り替えられます)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;b&gt;2&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;ストリームを作る&lt;/b&gt; &amp;mdash; ストリームとは 1 つ(または一連)のパケットです。ストリーム一覧を右クリックし、&lt;i&gt;新規ストリーム&lt;/i&gt;でプロトコルをフィールドごとに設定するか、&lt;i&gt;16進数から新規ストリーム&lt;/i&gt;でバイト列を直接入力します。&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;b&gt;3&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;送信する&lt;/b&gt; &amp;mdash; 下の&lt;i&gt;ポート統計&lt;/i&gt;でポートの列を選択し、&lt;i&gt;送信&lt;/i&gt;の開始ボタンを押します。送受信カウンターがリアルタイムで更新されます。&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+&lt;hr/&gt;
+&lt;p&gt;目的のポートが表示されない場合は、Npcap がインストールされているか確認し、Riff を管理者として実行してみてください。&lt;/p&gt;
+&lt;p style=&quot;color:gray;&quot;&gt;Riff は &lt;a href=&quot;https://uaj-studio.com&quot;&gt;UAJ-Studio&lt;/a&gt; が作っている無料のオープンソースソフトです。お役に立てたら、&lt;a href=&quot;https://github.com/sponsors/UAJ-Studio&quot;&gt;GitHub Sponsors で支援&lt;/a&gt;していただけるとうれしいです。&lt;/p&gt;</translation>
     </message>
 </context>
 <context>
