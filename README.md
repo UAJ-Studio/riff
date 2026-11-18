@@ -1,6 +1,7 @@
 # Riff
 
-**Made by [UAJ-Studio](https://uaj-studio.com)** · [UAJ-Studio website](https://uaj-studio.com) · [Support Riff on GitHub Sponsors](https://github.com/sponsors/UAJ-Studio)
+**Made by [UAJ-Studio](https://uaj-studio.com)** · [UAJ-Studio website](https://uaj-studio.com)
+<!-- Add back " · [Support Riff on GitHub Sponsors](https://github.com/sponsors/UAJ-Studio)" once GitHub Sponsors for UAJ-Studio is approved. -->
 
 Riff is a packet crafter and traffic generator for Windows, derived from
 [Ostinato](https://ostinato.org) 1.3.0. Besides wired Ethernet ports it can
@@ -37,10 +38,14 @@ usbipd-win (see [wireless/README.md](wireless/README.md)).
 
 ## Support
 
+Riff is free and open source. Support through GitHub Sponsors is coming soon.
+
+<!-- Once GitHub Sponsors for UAJ-Studio is approved, replace the line above with:
 Riff is free and open source. If it is useful to you, you can support its
 development on [GitHub Sponsors](https://github.com/sponsors/UAJ-Studio).
 Donations are a thank-you only — there are no rewards — and supporters who
 wish may be listed by name.
+-->
 
 Riff builds on years of work by Srivats P., the author of Ostinato. If you
 use Ostinato itself, please consider supporting it as well:
