@@ -67,7 +67,16 @@ make KLIB="$K" KLIB_BUILD="$K" -j"$JOBS" >build.log 2>&1 || { grep -E 'error' bu
 
 echo "== [3/4] firmware"
 if [ ! -f "$FWSRC/WHENCE" ]; then
-  git clone -q --depth 1 --filter=blob:none --sparse https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git "$FWSRC"
+  # kernel.org first, then its official GitLab mirror (kernel.org is not
+  # always reachable, e.g. from GitHub Actions runners)
+  for u in https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git \
+           https://gitlab.com/kernel-firmware/linux-firmware.git; do
+    rm -rf "$FWSRC"
+    timeout 600 git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 \
+        clone -q --depth 1 --filter=blob:none --sparse "$u" "$FWSRC" && break
+    echo "   (could not clone $u)"
+  done
+  [ -f "$FWSRC/WHENCE" ] || { echo "linux-firmware: no source reachable"; exit 1; }
 fi
 # only what the modules ask for (+ regdb): keeps the clone small
 need=$(for ko in $(find . -name "*.ko"); do modinfo -F firmware $ko; done | sed "s|/[^/]*$|/|; s|^[^/]*$|&|" | sort -u)
@@ -86,8 +95,16 @@ for ko in "$S"/modules/*.ko; do
 done
 # regulatory database (+ signature, checked against the kernel's built-in keys)
 REGDB=${REGDB:-$WORK/wireless-regdb}
-[ -f "$REGDB/regulatory.db" ] || git clone -q --depth 1 \
-    https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git "$REGDB"
+[ -f "$REGDB/regulatory.db" ] || timeout 300 git -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=60 \
+    clone -q --depth 1 https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git "$REGDB" \
+    || echo "   (wireless-regdb git not reachable: using the latest release tarball)"
+if [ ! -f "$REGDB/regulatory.db" ]; then
+  RU=https://mirrors.edge.kernel.org/pub/software/network/wireless-regdb
+  RT=$(curl -sSLf "$RU/" | grep -o 'wireless-regdb-[0-9.]*\.tar\.xz' | sort -u | tail -1)
+  [ -n "$RT" ] || { echo "wireless-regdb: no source reachable"; exit 1; }
+  rm -rf "$REGDB"; mkdir -p "$REGDB"
+  curl -sSLf "$RU/$RT" | tar -xJ -C "$REGDB" --strip-components=1
+fi
 cp "$REGDB/regulatory.db" "$REGDB/regulatory.db.p7s" "$S/firmware/"
 
 echo "== [4/4] pack"
