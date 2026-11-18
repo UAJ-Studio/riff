@@ -27,3 +27,13 @@ ver_info {
     SOURCES += $$APP_VERSION_FILE
     QMAKE_DISTCLEAN += $$APP_VERSION_FILE
 }
+
+# Windows version resource for the executables (product name and version in
+# the file properties, required for code signing): qmake generates
+# <target>_resource.rc from these. QMAKE_TARGET_DESCRIPTION is set per .pro.
+win32:equals(TEMPLATE, app) {
+    VERSION = $$APP_VERSION
+    QMAKE_TARGET_PRODUCT = Riff
+    QMAKE_TARGET_COMPANY = UAJ-Studio
+    QMAKE_TARGET_COPYRIGHT = "GPLv3. Derived from Ostinato (c) 2007-2023 Srivats P."
+}

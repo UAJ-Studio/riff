@@ -1,5 +1,6 @@
 TEMPLATE = app
 TARGET = riff-agent
+win32:QMAKE_TARGET_DESCRIPTION = "Riff agent"
 CONFIG += qt ver_info c++11
 addon: CONFIG -= ver_info
 QT += network script xml

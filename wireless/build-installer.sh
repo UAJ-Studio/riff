@@ -55,9 +55,10 @@ cat > /tmp/riff-versioninfo.json <<EOF
   },
   "StringFileInfo": {
     "FileDescription": "Riff installer",
+    "CompanyName": "UAJ-Studio",
     "FileVersion": "$VER",
     "ProductName": "Riff",
-    "ProductVersion": "$VER",
+    "ProductVersion": "$VER.0",
     "OriginalFilename": "Riff-$VER-setup.exe",
     "InternalName": "Riff setup",
     "LegalCopyright": "GPLv3. Derived from Ostinato (c) 2007-2023 Srivats P."

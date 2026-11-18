@@ -46,4 +46,6 @@ win/tools/*.exe
 
 # Riff installer payload (built by wireless/build-installer.sh)
 wireless/extcap/cmd/setup/payload/
-wireless/extcap/cmd/setup/*.syso
+wireless/extcap/cmd/*/*.syso
+/build-static/
+*_resource.rc

@@ -1,22 +1,28 @@
 #!/bin/bash
-# Collect riff.exe, riff-agent.exe and all non-system DLLs into dist/Riff.
-# Run inside an MSYS2 UCRT64 shell after win/build.sh.
+# Collect riff.exe, riff-agent.exe (and, for a DYNAMIC=1 build, all non-system
+# DLLs) into dist/Riff. Run inside an MSYS2 UCRT64 shell after win/build.sh.
 set -e
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 OUT="$ROOT/dist/Riff"
+if [ "${DYNAMIC:-0}" = 1 ]; then BUILD=$ROOT; else BUILD=$ROOT/build-static; fi
 rm -rf "$OUT" && mkdir -p "$OUT"
-cp "$ROOT/client/release/riff.exe" "$ROOT/server/release/riff-agent.exe" "$OUT/"
+cp "$BUILD/client/release/riff.exe" "$BUILD/server/release/riff-agent.exe" "$OUT/"
+strip "$OUT/riff.exe" "$OUT/riff-agent.exe"
 
-# Qt plugins (platforms, styles, imageformats, ...) and Qt DLLs
-windeployqt-qt5 --release --no-translations --no-compiler-runtime --no-angle --no-opengl-sw \
-    "$OUT/riff.exe" "$OUT/riff-agent.exe" >/dev/null
+# Qt plugins (platforms, styles, imageformats, ...) and Qt DLLs - only for a
+# shared-Qt build; the static build has them inside riff.exe
+if [ "${DYNAMIC:-0}" = 1 ]; then
+    windeployqt-qt5 --release --no-translations --no-compiler-runtime --no-angle --no-opengl-sw \
+        "$OUT/riff.exe" "$OUT/riff-agent.exe" >/dev/null
+fi
 
 # Qt's own translations (standard buttons, file dialogs) for the UI
 # languages Riff ships; Riff's own .qm files are embedded in riff.exe
 mkdir -p "$OUT/translations"
+QT_TR=$MINGW_PREFIX/share/qt5/translations
+[ "${DYNAMIC:-0}" = 1 ] || QT_TR=$MINGW_PREFIX/qt5-static/share/qt5/translations
 for lang in ja; do
-    cp "$MINGW_PREFIX/share/qt5/translations/qtbase_$lang.qm" \
-       "$OUT/translations/"
+    cp "$QT_TR/qtbase_$lang.qm" "$OUT/translations/"
 done
 
 # Remaining MinGW runtime / third-party DLLs from the MSYS2 prefix.
