@@ -127,7 +127,7 @@ NLS=; [ -f /etc/alpine-release ] && NLS=LDLIBS=-lintl
 make -s KLIB="$K" KLIB_BUILD="$K" $NLS defconfig-riff >defconfig.log 2>&1 || { tail -20 defconfig.log; exit 1; }
 # objtool: warnings only (6.18 objtool rejects the init_module alias backports
 # uses around module_init as "deprecated"; the alias itself works)
-make KLIB="$K" KLIB_BUILD="$K" CONFIG_OBJTOOL_WERROR= -j"$JOBS" >build.log 2>&1 || { grep -E "error" build.log | head -30; exit 1; }
+make KLIB="$K" KLIB_BUILD="$K" CONFIG_OBJTOOL_WERROR= -j"$JOBS" >build.log 2>&1 || { grep -E "error|Error|No such|missing" build.log | head -30; echo "--- last lines:"; tail -25 build.log; exit 1; }
 
 echo "== [3/4] firmware"
 if [ ! -f "$FWSRC/WHENCE" ]; then
