@@ -53,6 +53,29 @@ WirelessManager::WirelessManager(QObject *parent)
     : QObject(parent), state_(Idle), keepAlive_(0), captureKeepAlive_(0), agent_(0),
       usbIdsLoaded_(false)
 {
+    // everything the wireless side reports also goes to a log file: the
+    // dialog only shows it while it is open
+    connect(this, &WirelessManager::message, this,
+            [](QString text, bool isError) { wirelessLog(isError ? "! " + text : text); });
+    connect(this, &WirelessManager::portStatus, this,
+            [](QString text, int kind) { if (!text.isEmpty())
+                wirelessLog(QString("[port group %1] %2").arg(kind).arg(text)); });
+}
+
+// %LOCALAPPDATA%\Riff\wireless.log (kept below ~1 MB)
+void WirelessManager::wirelessLog(const QString &line)
+{
+    QDir dir(QDir(qEnvironmentVariable("LOCALAPPDATA")).filePath("Riff"));
+    dir.mkpath(".");
+    QString path = dir.filePath("wireless.log");
+    if (QFileInfo(path).size() > 1024 * 1024) {
+        QFile::remove(path + ".1");
+        QFile::rename(path, path + ".1");
+    }
+    QFile f(path);
+    if (f.open(QIODevice::Append | QIODevice::Text))
+        f.write((QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss.zzz ")
+                 + line + "\n").toUtf8());
 }
 
 WirelessManager::~WirelessManager()
@@ -1254,6 +1277,18 @@ void WirelessManager::prepareRegistered()
         // the dongle may drop off the bus once while its firmware uploads:
         // keep re-attaching until it is ready
         p.attach = new QProcess(this);
+        p.attach->setProcessChannelMode(QProcess::MergedChannels);
+        {
+            QProcess *a = p.attach;
+            QString id = d.busId;
+            connect(a, &QProcess::readyRead, this, [a, id]() {
+                while (a->canReadLine()) {
+                    QString l = QString::fromUtf8(a->readLine()).trimmed();
+                    if (!l.isEmpty())
+                        wirelessLog(QString("attach %1: %2").arg(id, l));
+                }
+            });
+        }
         p.attach->start(usbipd, {"attach", "--wsl", "--busid", d.busId,
                                  "--auto-attach"});
         p.job = new QProcess(this);
@@ -1268,6 +1303,9 @@ void WirelessManager::prepareRegistered()
             if (QProcess *job = preps_.value(busId).job) {
                 foreach (QString l, QString::fromUtf8(job->readAll()).split('\n')) {
                     l = l.trimmed();
+                    if (!l.isEmpty())
+                        wirelessLog(QString("prepare %1 (exit %2): %3")
+                                        .arg(busId).arg(code).arg(l));
                     if (l.startsWith("RIFF_NEED_REBUILD")
                             || l.startsWith("RIFF_WIFI_KERNEL_MISMATCH"))
                         handleAgentLine(l);

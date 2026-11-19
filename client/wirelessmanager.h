@@ -176,6 +176,9 @@ private:
     void setState(State s);
     void handleAgentLine(const QString &line);
     void noDriversFor(const QString &kernel);
+public:
+    static void wirelessLog(const QString &line);
+private:
     void connectWhenReachable(int attempt);
     void cleanup();
     // Captures started from Riff leave their dongles in WSL (fast restart);
