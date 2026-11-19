@@ -54,24 +54,16 @@ use Ostinato itself, please consider supporting it as well:
 
 ## Code signing policy
 
-Riff is applying for free code signing for open source projects from
-[SignPath Foundation](https://signpath.org). Until a signed release is out,
-Windows shows a SmartScreen warning on first start, and PCs with Smart App
-Control turned on block Riff.
-<!-- After approval, replace the paragraph above with:
-Free code signing provided by [SignPath.io](https://about.signpath.io),
-certificate by [SignPath Foundation](https://signpath.org).
--->
+The current release of Riff is not code-signed. Code signing is planned for a
+future release.
 
-- Committers and reviewers: [UAJ-Studio members](https://github.com/orgs/UAJ-Studio/people)
-- Approvers: [UAJ-Studio owners](https://github.com/orgs/UAJ-Studio/people?query=role%3Aowner)
+- Windows SmartScreen shows a warning on first start. Choose **More info** →
+  **Run anyway** to start Riff.
+- On PCs with **Smart App Control** turned on, Riff does not start until a
+  signed release is available.
 
-Only files built from this repository by its
-[GitHub Actions workflow](.github/workflows/build.yml) are signed: the
-installer and the Riff executables in it (`riff.exe`, `riff-agent.exe`,
-`riff-wifi-extcap.exe`). Every release is approved by an approver before it
-is signed. The bundled usbipd-win installer is signed by its own publisher;
-Npcap is not bundled.
+The bundled usbipd-win installer is signed by its own publisher; Npcap is not
+bundled.
 
 ## Privacy
 
