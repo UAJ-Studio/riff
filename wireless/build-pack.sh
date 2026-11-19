@@ -106,6 +106,11 @@ fi
 # init_module. Its initcall only runs a FIPS self-test - drop the
 # registration there.
 if grep -q '^subsys_initcall(aes_mod_init);' compat/lib-crypto-aes.c 2>/dev/null; then
+  # the copy exists for the CBC-MAC API, but keys it on the kernel's own
+  # CONFIG_CRYPTO_LIB_AES_CBC_MACS (off in 6.18): mac80211 then misses
+  # backport_aes_cmac_*. It is only built when that API is needed.
+  sed -i 's/IS_ENABLED(CONFIG_CRYPTO_LIB_AES_CBC_MACS)/1 \/* Riff: the reason this copy is built *\//' \
+      compat/lib-crypto-aes.c
   sed -i 's/^subsys_initcall(aes_mod_init);/\/* Riff: linked into compat.ko, which has its own module_init *\//; s/^module_exit(aes_mod_exit);//; s/^static int __init aes_mod_init(void)/static int __init __maybe_unused aes_mod_init(void)/; s/^static void __exit aes_mod_exit(void)/static void __exit __maybe_unused aes_mod_exit(void)/' \
       compat/lib-crypto-aes.c
 fi
