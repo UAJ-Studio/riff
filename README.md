@@ -1,6 +1,6 @@
 # Riff
 
-**Made by [UAJ-Studio](https://uaj-studio.com)** · [UAJ-Studio website](https://uaj-studio.com)
+**Made by [UAJ-Studio](https://uaj-studio.com)** · [Riff page](https://uaj-studio.com/riff)
 <!-- Add back " · [Support Riff on GitHub Sponsors](https://github.com/sponsors/UAJ-Studio)" once GitHub Sponsors for UAJ-Studio is approved. -->
 
 Riff is a packet crafter and traffic generator for Windows, derived from
