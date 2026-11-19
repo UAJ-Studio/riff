@@ -11,8 +11,14 @@
 # build-essential flex bison bc libelf-dev libssl-dev kmod.
 set -euo pipefail
 KV=${1:?kernel version, e.g. 6.6.87.2}
-BPV=${BPV:-6.18.55}        # base backports (wireless stack)
-BPN=${BPN:-7.2}            # newer backports, only its rtw89 is used
+BPN=${BPN:-7.2}            # newer backports: rtw89 (USB) comes from here
+# base backports (the wireless stack): backports build on kernels OLDER than
+# themselves - 6.18.55 for the 6.6 kernel; from kernel 6.18 on (WSL 3.0) the
+# newer one, whose compat code knows these kernels
+kver() { echo "$1" | awk -F. '{printf "%d%03d\n", $1, $2}'; }
+if [ -z "${BPV:-}" ]; then
+  if [ "$(kver "$KV")" -ge "$(kver 6.18)" ]; then BPV=$BPN; else BPV=6.18.55; fi
+fi
 HERE=$(cd "$(dirname "$0")" && pwd)
 WORK=${WORK:-/opt/build/riff}
 FWSRC=${FWSRC:-$WORK/linux-firmware}
@@ -31,6 +37,13 @@ if [ ! -f "$K/Module.symvers" ]; then
   make olddefconfig >/dev/null
   # vmlinux is only built for Module.symvers; it is never booted
   make -j"$JOBS" vmlinux modules >build.log 2>&1 || { tail -30 build.log; exit 1; }
+  # keep only what building external modules needs (Module.symvers, config,
+  # headers, scripts, objtool): a small tree CI can cache per kernel
+  rm -rf .git
+  find . \( -path ./scripts -o -path ./tools \) -prune -o -type f \
+       \( -name '*.o' -o -name '*.ko' -o -name '*.a' -o -name '.*.cmd' \
+          -o -name '*.mod.c' -o -name '*.mod' -o -name 'vmlinux.o' \) -print0 \
+    | xargs -0 rm -f
 fi
 cd "$K"
 # exactly the stock release string (git's "+" would break vermagic)

@@ -90,9 +90,22 @@ jobs:
           sudo apt-get install -y -q git curl zstd perl build-essential flex bison bc \
               libelf-dev libssl-dev kmod dwarves cpio rsync python3
 
+      # the pruned kernel build (Module.symvers, headers, scripts) of each
+      # kernel never changes: reused when only the pack sources change
+      - name: Cache kernel tree
+        if: steps.pack.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/pack/kernel-${{ matrix.kernel }}
+          key: kernel-${{ matrix.kernel }}-v1
+
       - name: Wireless pack
         if: steps.pack.outputs.cache-hit != 'true'
         run: sudo env WORK="$RUNNER_TEMP/pack" bash wireless/build-pack.sh "${{ matrix.kernel }}"
+
+      - name: Let the cache read the kernel tree
+        if: steps.pack.outputs.cache-hit != 'true'
+        run: sudo chmod -R a+rX "$RUNNER_TEMP/pack/kernel-${{ matrix.kernel }}" || true
 
       - name: Publish
         env:
