@@ -71,7 +71,14 @@ Include=wl*
 INI
 install -d $R/opt/riff/packs
 install -m755 "$HERE/riff-start.sh" "$HERE/riff-channel.sh" "$HERE/riff-load.sh" \
-               "$HERE/riff-capture" $R/opt/riff/
+               "$HERE/riff-capture" "$HERE/riff-getpack.sh" "$HERE/riff-buildpack.sh" \
+               $R/opt/riff/
+# the pack recipe, for building a pack on the user's PC when WSL moved to a
+# kernel no published pack exists for (riff-buildpack.sh)
+install -d $R/opt/riff/build/compat
+install -m755 "$HERE/build-pack.sh" "$HERE/riff-wifi-load.sh" $R/opt/riff/build/
+install -m644 "$HERE/drivers.list" "$HERE/riff.defconfig" $R/opt/riff/build/
+cp "$HERE"/compat/* $R/opt/riff/build/compat/
 cp "$HERE"/packs/riff-wifi-*.tar.zst $R/opt/riff/packs/ 2>/dev/null || echo "   (no packs in $HERE/packs yet)"
 # supported USB IDs for the Windows side (same driver set in every pack)
 P1=$(ls "$HERE"/packs/riff-wifi-*.tar.zst 2>/dev/null | tail -1)
@@ -91,7 +98,9 @@ rm -f $R/etc/resolv.conf
 # content version: Riff compares the installed distro's /opt/riff/VERSION
 # with the bundled one and offers to update the distro when they differ
 V=$( (cat "$AGENT" "$HERE/riff-start.sh" "$HERE/riff-channel.sh" \
-          "$HERE/riff-load.sh" "$HERE/riff-capture"; \
+          "$HERE/riff-load.sh" "$HERE/riff-capture" "$HERE/riff-getpack.sh" \
+          "$HERE/riff-buildpack.sh" "$HERE/build-pack.sh" "$HERE/drivers.list" \
+          "$HERE/riff.defconfig" "$HERE"/compat/*; \
       ls -l $R/opt/riff/packs; apk_list=$(chroot $R apk info 2>/dev/null); \
       echo "$apk_list") | sha256sum | cut -c1-12)
 echo "$V" > $R/opt/riff/VERSION

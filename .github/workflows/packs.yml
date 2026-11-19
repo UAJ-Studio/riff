@@ -1,0 +1,125 @@
+# Wireless driver packs for new WSL kernels, without anyone doing anything:
+# once a day this checks Microsoft's WSL kernel releases and builds the Riff
+# wireless pack for every kernel that has none yet. Packs go to the
+# "wireless-packs" release (a pre-release, so it never becomes "Latest");
+# Riff downloads the one for the kernel a PC runs (wireless/riff-getpack.sh).
+name: Wireless packs
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      kernels:
+        description: 'Kernel versions to (re)build, space separated (empty: the missing ones)'
+        required: false
+
+permissions:
+  contents: write
+
+env:
+  PACK_TAG: wireless-packs
+  MIN_KERNEL: 6.6.87.2      # oldest WSL kernel Riff supports
+  MAX_BUILDS: 4             # per run; the rest follow the next day
+
+concurrency:
+  group: wireless-packs
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    name: Find kernels without a pack
+    runs-on: ubuntu-24.04
+    outputs:
+      kernels: ${{ steps.find.outputs.kernels }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Kernels and published packs
+        id: find
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT: ${{ github.event.inputs.kernels }}
+        run: |
+          if ! gh release view "$PACK_TAG" >/dev/null 2>&1; then
+            gh release create "$PACK_TAG" --prerelease --latest=false --target main \
+                --title "Wireless driver packs (automatic)" \
+                --notes "Driver packs for USB Wi-Fi dongles, one per Microsoft WSL kernel. Built automatically by GitHub Actions (.github/workflows/packs.yml) from this repository's source; Riff downloads the one it needs. Not a Riff release - get Riff from the latest release."
+          fi
+          have=$(gh release view "$PACK_TAG" --json assets -q '.assets[].name' \
+                 | sed -n 's/^riff-wifi-\(.*\)-microsoft-standard-WSL2\.tar\.zst$/\1/p' | sort -u)
+          if [ -n "$INPUT" ]; then
+            todo=$(echo $INPUT | tr ' ' '\n')
+          else
+            all=$(gh api --paginate "repos/microsoft/WSL2-Linux-Kernel/git/matching-refs/tags/linux-msft-wsl-" \
+                  -q '.[].ref' | sed -n 's#^refs/tags/linux-msft-wsl-\([0-9.]*\)$#\1#p' | sort -uV)
+            # newest first, not older than MIN_KERNEL, no pack yet
+            todo=$(printf '%s\n' $all | while read -r k; do
+                     [ "$(printf '%s\n%s\n' "$MIN_KERNEL" "$k" | sort -V | head -1)" = "$MIN_KERNEL" ] && echo "$k"
+                   done | sort -rV | { grep -vxF -f <(printf '%s\n' $have "") || true; } \
+                   | head -n "$MAX_BUILDS")
+          fi
+          echo "published: $(echo $have)"
+          echo "to build:  $(echo $todo)"
+          echo "kernels=$(printf '%s\n' $todo | jq -R . | jq -sc 'map(select(length > 0))')" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Pack ${{ matrix.kernel }}
+    needs: discover
+    if: needs.discover.outputs.kernels != '[]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        kernel: ${{ fromJSON(needs.discover.outputs.kernels) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache wireless pack
+        id: pack
+        uses: actions/cache@v4
+        with:
+          path: wireless/packs
+          key: pack-${{ matrix.kernel }}-${{ hashFiles('wireless/build-pack.sh', 'wireless/drivers.list', 'wireless/riff.defconfig', 'wireless/compat/**', 'wireless/riff-wifi-load.sh') }}
+
+      - name: Build tools
+        if: steps.pack.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q git curl zstd perl build-essential flex bison bc \
+              libelf-dev libssl-dev kmod dwarves cpio rsync python3
+
+      - name: Wireless pack
+        if: steps.pack.outputs.cache-hit != 'true'
+        run: sudo env WORK="$RUNNER_TEMP/pack" bash wireless/build-pack.sh "${{ matrix.kernel }}"
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          F=wireless/packs/riff-wifi-${{ matrix.kernel }}-microsoft-standard-WSL2.tar.zst
+          sha256sum "$F" | sed 's# .*/#  #' > "$F.sha256"
+          cat "$F.sha256"
+          gh release upload "$PACK_TAG" "$F" "$F.sha256" --clobber
+
+  # GitHub turns off scheduled workflows in a repository without activity
+  # for 60 days: an empty commit now and then keeps this check running.
+  keepalive:
+    name: Keep the daily check active
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Empty commit if the repository has been quiet for 45 days
+        run: |
+          last=$(git log -1 --format=%ct)
+          if [ $(( $(date +%s) - last )) -gt $(( 45 * 86400 )) ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit --allow-empty -m "Keep the daily wireless-pack check active"
+            git push
+          else
+            echo "recent activity: nothing to do"
+          fi

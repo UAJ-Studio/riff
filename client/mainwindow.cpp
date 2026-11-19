@@ -53,6 +53,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QStatusBar>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QPushButton>
 #include <QProcess>
 #include <QProgressDialog>
 #include <QTimer>
@@ -703,25 +704,37 @@ void MainWindow::ensureWireless()
     }
 }
 
-// WSL runs a kernel this Riff has no dongle drivers for (the manager tells
-// once per kernel). Not modal: Riff keeps working with its wired ports.
+// WSL runs a kernel no dongle drivers could be found or downloaded for (the
+// manager tells once per kernel). Not modal: Riff keeps working with its
+// wired ports. Offers to build the drivers on this PC.
 void MainWindow::onWirelessNoDrivers(QString kernel)
 {
     QMessageBox *box = new QMessageBox(QMessageBox::Information,
         tr("USB Wi-Fi dongles"),
-        tr("<p><b>The dongle drivers for this WSL version are not included "
-           "yet.</b></p>"
-           "<p>WSL on this PC runs the kernel %1. Riff's dongle drivers are "
-           "built for each WSL kernel, and this one is not supported yet. "
-           "A newer version of Riff will support it - see the "
-           "<a href=\"%2\">Riff page</a>.</p>"
+        tr("<p><b>The dongle drivers for this WSL version could not be "
+           "downloaded.</b></p>"
+           "<p>WSL on this PC runs the kernel %1. Riff downloads the drivers "
+           "for a new WSL kernel by itself, but they are not published yet "
+           "(that normally happens automatically within a day) or this PC "
+           "is not connected to the Internet. Riff tries again the next "
+           "time it starts.</p>"
+           "<p>You can also build the drivers on this PC now. It needs an "
+           "Internet connection and takes about an hour; keep Riff open "
+           "until it is done.</p>"
            "<p>The wired Ethernet ports work as usual.</p>")
-           .arg(kernel.toHtmlEscaped(), RIFF_PAGE_URL),
-        QMessageBox::Ok, this);
+           .arg(kernel.toHtmlEscaped()),
+        QMessageBox::NoButton, this);
+    QPushButton *build = box->addButton(tr("Build on This PC"),
+                                        QMessageBox::AcceptRole);
+    box->addButton(QMessageBox::Close);
     box->setTextFormat(Qt::RichText);
-    box->setTextInteractionFlags(Qt::TextBrowserInteraction);
     box->setAttribute(Qt::WA_DeleteOnClose);
     box->setModal(false);
+    connect(box, &QMessageBox::buttonClicked, this,
+            [this, build](QAbstractButton *b) {
+        if (b == build && wireless_)
+            wireless_->buildDrivers();
+    });
     box->show();
 }
 

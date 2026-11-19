@@ -929,14 +929,57 @@ void WirelessManager::handleAgentLine(const QString &line)
 // stop starting the agent automatically, which would only fail again.
 void WirelessManager::noDriversFor(const QString &kernel)
 {
-    emit message(tr("This Riff has no dongle drivers for the WSL kernel %1 "
-                    "yet.").arg(kernel), true);
+    emit message(tr("No dongle drivers could be found or downloaded for the "
+                    "WSL kernel %1.").arg(kernel), true);
     if (noDriversKernel_ == kernel)
         return;
     noDriversKernel_ = kernel;
     emit portStatus(tr("no dongle drivers for this WSL kernel (%1) yet")
                     .arg(kernel), 1);
     QTimer::singleShot(0, this, [this, kernel]() { emit needRebuild(kernel); });
+}
+
+void WirelessManager::buildDrivers()
+{
+    if (build_)
+        return;
+    emit message(tr("Building the dongle drivers for this WSL kernel on this "
+                    "PC. This takes about an hour; keep Riff open."), false);
+    emit portStatus(tr("building the dongle drivers (about an hour) ..."), 0);
+    build_ = new QProcess(this);
+    build_->setProcessChannelMode(QProcess::MergedChannels);
+    connect(build_, &QProcess::readyRead, this, [this]() {
+        while (build_ && build_->canReadLine()) {
+            QString l = QString::fromUtf8(build_->readLine()).trimmed();
+            if (l.startsWith("RIFF_BUILD_STEP")) {
+                QString step = l.mid(16);
+                emit message(tr("Building the drivers: %1").arg(step), false);
+                emit portStatus(tr("building the dongle drivers: %1").arg(step), 0);
+            } else if (l.startsWith("RIFF_BUILD_ERROR")) {
+                emit message(tr("Building the drivers failed: %1").arg(l.mid(17)),
+                             true);
+            } else if (l.startsWith("RIFF_PACK_") || l.startsWith("RIFF_BUILD_DONE")) {
+                emit message(l, false);
+            }
+        }
+    });
+    connect(build_, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+            this, [this](int code, QProcess::ExitStatus st) {
+        bool ok = st == QProcess::NormalExit && code == 0;
+        build_->deleteLater();
+        build_ = nullptr;
+        if (ok) {
+            emit message(tr("The dongle drivers are ready."), false);
+            noDriversKernel_.clear();
+            emit portStatus("", 2);
+            QTimer::singleShot(0, this, &WirelessManager::prepareRegistered);
+        } else {
+            emit portStatus(tr("the dongle drivers could not be built"), 1);
+        }
+        emit driversBuilt(ok);
+    });
+    build_->start("wsl.exe", {"-d", kDistro, "-u", "root", "--",
+                              "sh", "/opt/riff/riff-buildpack.sh"});
 }
 
 // Prefer localhost (WSL forwards it in most setups); fall back to the VM's

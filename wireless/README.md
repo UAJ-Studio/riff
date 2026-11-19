@@ -20,16 +20,33 @@ ar5523, Ralink rt2x00). Wi-Fi 7: RTL8922AU, MT7925U.
 - `build-pack.sh <WSL kernel version>` — builds `packs/riff-wifi-<release>.tar.zst`
 - `riff-wifi-load.sh <pack dir> [country]` — loader (inside the pack); exit 3
   means the pack is for another kernel (WSL was updated)
+- `riff-getpack.sh` — downloads the pack for the running kernel (WSL updated)
+- `riff-buildpack.sh` — builds that pack on the PC when none can be downloaded
 - `riff.defconfig`, `drivers.list` — what is built / loaded
 - `compat/` — shims for building the 6.18/7.2 stack on older kernels; each
   is keyed on the kernel version that introduced the API
 
-## WSL kernel updates
-Modules only load into the kernel release they were built for. When WSL
-updates its kernel (Store/`wsl --update`; offline PCs never update on their
-own), run `build-pack.sh <new version>` (tag `linux-msft-wsl-<version>` of
-microsoft/WSL2-Linux-Kernel) and ship the new pack. Riff bundles packs for
-known kernels and only needs the network to fetch a pack for a newer one.
+## WSL kernel updates (no manual work)
+Modules only load into the kernel release they were built for, and WSL
+updates its kernel on its own (WSL 3.0 moved from 6.6 to 6.18). Nobody has
+to do anything when that happens:
+
+1. **Published automatically** — `.github/workflows/packs.yml` runs once a
+   day, lists Microsoft's WSL kernel tags (`linux-msft-wsl-<version>` of
+   microsoft/WSL2-Linux-Kernel) and builds `build-pack.sh <version>` for
+   every kernel that has no pack yet. Packs (+ `.sha256`) go to the
+   `wireless-packs` pre-release. An empty commit every 45 quiet days keeps
+   GitHub from turning the daily schedule off.
+2. **Downloaded automatically** — `riff-load.sh` finds no pack for the
+   running kernel, so `riff-getpack.sh` fetches it from that release
+   (checksum and kernel release checked) and stores it in the distro.
+3. **Built on the PC as the last resort** — if no pack can be downloaded
+   (not published yet, CI gone), Riff offers to build it on the PC:
+   `riff-buildpack.sh` runs the same recipe inside the RiffWireless distro
+   (installs the build tools, about an hour, needs the Internet).
+
+Riff also bundles packs for the kernels listed in `build.yml`, so a PC
+without Internet works with those.
 
 Country: the world regdomain forbids initiating radiation on 5 GHz, so
 injected frames would be dropped; the loader sets the configured country.

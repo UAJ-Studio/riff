@@ -5,7 +5,7 @@
 #  - Microsoft's stock kernel: load the Riff wireless pack built for it.
 # Used by riff-start.sh (Riff's transmit agent) and riff-capture (Wireshark
 # live capture). Messages go to stdout; exit 3 = no pack for this kernel
-# (WSL was updated: the drivers have to be rebuilt).
+# (WSL was updated and no pack could be fetched: build one on this PC).
 CC=${1:-JP}
 # One loader at a time: captures and Riff's background preparation start
 # together, and a second loader would delete the pack the first is loading
@@ -21,6 +21,9 @@ if [ -d /sys/module/mac80211 ] && ! grep -q '^mac80211 ' /proc/modules; then
   exit 0
 fi
 if [ ! -f "$P/RELEASE" ] || [ "$(cat $P/RELEASE)" != "$R" ]; then
+  # WSL was updated: fetch the pack built for the new kernel (published by
+  # the repository's CI), or else it has to be built on this PC
+  [ -f "$PK" ] || sh /opt/riff/riff-getpack.sh "$R"
   if [ ! -f "$PK" ]; then echo "RIFF_NEED_REBUILD kernel=$R"; exit 3; fi
   rm -rf $P; mkdir -p $P
   tar --zstd -xf "$PK" -C $P || { echo "RIFF_ERROR pack extract"; exit 1; }

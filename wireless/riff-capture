@@ -35,7 +35,7 @@ die() { echo "[riff-capture] ERROR: $*" >&2; exit 2; }
 sh /opt/riff/riff-load.sh "${COUNTRY:-JP}" >&2
 case $? in
     0) ;;
-    3) die "WSL has been updated (kernel $(uname -r)): open Riff > Tools > Wireless Dongle to rebuild the dongle drivers." ;;
+    3) die "No dongle drivers for this WSL kernel ($(uname -r)) could be downloaded yet. Start Riff: it tries again, and offers to build them on this PC." ;;
     *) die "could not load the Wi-Fi drivers" ;;
 esac
 

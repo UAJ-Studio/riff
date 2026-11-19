@@ -2056,8 +2056,12 @@ This replaces the whole packet.</source>
         <translation>Riff の紹介ページ（uaj-studio.com）...</translation>
     </message>
     <message>
-        <source>&lt;p&gt;&lt;b&gt;The dongle drivers for this WSL version are not included yet.&lt;/b&gt;&lt;/p&gt;&lt;p&gt;WSL on this PC runs the kernel %1. Riff&apos;s dongle drivers are built for each WSL kernel, and this one is not supported yet. A newer version of Riff will support it - see the &lt;a href=&quot;%2&quot;&gt;Riff page&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;The wired Ethernet ports work as usual.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;&lt;b&gt;この WSL の版に対応したドングルのドライバーが、まだ入っていません。&lt;/b&gt;&lt;/p&gt;&lt;p&gt;この PC の WSL はカーネル %1 で動いています。Riff のドングル用ドライバーは WSL のカーネルごとに作っていて、このカーネルにはまだ対応していません。新しい版の Riff で対応します（&lt;a href="%2"&gt;紹介ページ&lt;/a&gt;で確認できます）。&lt;/p&gt;&lt;p&gt;有線 LAN のポートはそのまま使えます。&lt;/p&gt;</translation>
+        <source>&lt;p&gt;&lt;b&gt;The dongle drivers for this WSL version could not be downloaded.&lt;/b&gt;&lt;/p&gt;&lt;p&gt;WSL on this PC runs the kernel %1. Riff downloads the drivers for a new WSL kernel by itself, but they are not published yet (that normally happens automatically within a day) or this PC is not connected to the Internet. Riff tries again the next time it starts.&lt;/p&gt;&lt;p&gt;You can also build the drivers on this PC now. It needs an Internet connection and takes about an hour; keep Riff open until it is done.&lt;/p&gt;&lt;p&gt;The wired Ethernet ports work as usual.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;&lt;b&gt;この WSL の版に対応したドングルのドライバーを、ダウンロードできませんでした。&lt;/b&gt;&lt;/p&gt;&lt;p&gt;この PC の WSL はカーネル %1 で動いています。Riff は新しい WSL カーネル用のドライバーを自動でダウンロードしますが、まだ公開されていないか（公開は通常 1 日以内に自動で行われます）、この PC がインターネットにつながっていません。次に Riff を起動したときに、もう一度試します。&lt;/p&gt;&lt;p&gt;今すぐこの PC でドライバーを作ることもできます。インターネット接続が必要で、1 時間ほどかかります。終わるまで Riff は開いたままにしてください。&lt;/p&gt;&lt;p&gt;有線 LAN のポートはそのまま使えます。&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>Build on This PC</source>
+        <translation>この PC で作る</translation>
     </message>
 </context>
 <context>
@@ -5973,12 +5977,40 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
         <translation>送信エージェントを起動できませんでした</translation>
     </message>
     <message>
-        <source>This Riff has no dongle drivers for the WSL kernel %1 yet.</source>
-        <translation>この Riff には、WSL カーネル %1 用のドングルのドライバーがまだ入っていません。</translation>
-    </message>
-    <message>
         <source>no dongle drivers for this WSL kernel (%1) yet</source>
         <translation>この WSL カーネル（%1）用のドングルのドライバーがまだありません</translation>
+    </message>
+    <message>
+        <source>No dongle drivers could be found or downloaded for the WSL kernel %1.</source>
+        <translation>WSL カーネル %1 用のドングルのドライバーが、見つからず、ダウンロードもできませんでした。</translation>
+    </message>
+    <message>
+        <source>Building the dongle drivers for this WSL kernel on this PC. This takes about an hour; keep Riff open.</source>
+        <translation>この PC で、この WSL カーネル用のドングルのドライバーを作っています。1 時間ほどかかります。Riff は開いたままにしてください。</translation>
+    </message>
+    <message>
+        <source>building the dongle drivers (about an hour) ...</source>
+        <translation>ドングルのドライバーを作成中（1 時間ほど）...</translation>
+    </message>
+    <message>
+        <source>Building the drivers: %1</source>
+        <translation>ドライバーの作成: %1</translation>
+    </message>
+    <message>
+        <source>building the dongle drivers: %1</source>
+        <translation>ドングルのドライバーを作成中: %1</translation>
+    </message>
+    <message>
+        <source>Building the drivers failed: %1</source>
+        <translation>ドライバーを作れませんでした: %1</translation>
+    </message>
+    <message>
+        <source>The dongle drivers are ready.</source>
+        <translation>ドングルのドライバーの準備ができました。</translation>
+    </message>
+    <message>
+        <source>the dongle drivers could not be built</source>
+        <translation>ドングルのドライバーを作れませんでした</translation>
     </message>
 </context>
 <context>

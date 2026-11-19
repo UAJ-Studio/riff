@@ -125,6 +125,9 @@ public slots:
     void start(QStringList busIds, QString country, int channel);
     void stop();
     void setChannel(int channel);
+    // WSL runs a kernel no driver pack could be downloaded for: build one
+    // on this PC inside the distro (about an hour, needs the Internet)
+    void buildDrivers();
 
     // Dongles used with Riff stay "registered" (usbipd bind --force): the
     // Windows Wi-Fi driver never runs on them, so it is never torn down.
@@ -142,6 +145,7 @@ signals:
     void agentReady(QString host, quint16 port);
     void agentStopped();
     void needRebuild(QString kernel);
+    void driversBuilt(bool ok);
     void registrationChanged();
     void prepared(QString busId, bool ok);
     // state of the wireless port group before its agent is reachable:
@@ -188,6 +192,7 @@ private:
     bool autoSuppressed_ = false; // the user stopped the agent: no auto start
     bool prepFailed_ = false;
     QString noDriversKernel_;     // WSL kernel without a driver pack (once)
+    QProcess *build_ = nullptr;   // riff-buildpack.sh while it runs
     void autoStartAgent();
     QString agentAddr_;     // VM address reported by riff-start.sh
     QString agentHost_;

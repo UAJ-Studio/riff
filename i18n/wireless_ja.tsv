@@ -171,3 +171,13 @@ Support Riff (GitHub Sponsors)...	Riff を支援する（GitHub Sponsors）...
 This Riff has no dongle drivers for the WSL kernel %1 yet.	この Riff には、WSL カーネル %1 用のドングルのドライバーがまだ入っていません。
 no dongle drivers for this WSL kernel (%1) yet	この WSL カーネル（%1）用のドングルのドライバーがまだありません
 <p><b>The dongle drivers for this WSL version are not included yet.</b></p><p>WSL on this PC runs the kernel %1. Riff's dongle drivers are built for each WSL kernel, and this one is not supported yet. A newer version of Riff will support it - see the <a href="%2">Riff page</a>.</p><p>The wired Ethernet ports work as usual.</p>	<p><b>この WSL の版に対応したドングルのドライバーが、まだ入っていません。</b></p><p>この PC の WSL はカーネル %1 で動いています。Riff のドングル用ドライバーは WSL のカーネルごとに作っていて、このカーネルにはまだ対応していません。新しい版の Riff で対応します（<a href="%2">紹介ページ</a>で確認できます）。</p><p>有線 LAN のポートはそのまま使えます。</p>
+No dongle drivers could be found or downloaded for the WSL kernel %1.	WSL カーネル %1 用のドングルのドライバーが、見つからず、ダウンロードもできませんでした。
+Building the dongle drivers for this WSL kernel on this PC. This takes about an hour; keep Riff open.	この PC で、この WSL カーネル用のドングルのドライバーを作っています。1 時間ほどかかります。Riff は開いたままにしてください。
+building the dongle drivers (about an hour) ...	ドングルのドライバーを作成中（1 時間ほど）...
+Building the drivers: %1	ドライバーの作成: %1
+building the dongle drivers: %1	ドングルのドライバーを作成中: %1
+Building the drivers failed: %1	ドライバーを作れませんでした: %1
+The dongle drivers are ready.	ドングルのドライバーの準備ができました。
+the dongle drivers could not be built	ドングルのドライバーを作れませんでした
+Build on This PC	この PC で作る
+<p><b>The dongle drivers for this WSL version could not be downloaded.</b></p><p>WSL on this PC runs the kernel %1. Riff downloads the drivers for a new WSL kernel by itself, but they are not published yet (that normally happens automatically within a day) or this PC is not connected to the Internet. Riff tries again the next time it starts.</p><p>You can also build the drivers on this PC now. It needs an Internet connection and takes about an hour; keep Riff open until it is done.</p><p>The wired Ethernet ports work as usual.</p>	<p><b>この WSL の版に対応したドングルのドライバーを、ダウンロードできませんでした。</b></p><p>この PC の WSL はカーネル %1 で動いています。Riff は新しい WSL カーネル用のドライバーを自動でダウンロードしますが、まだ公開されていないか（公開は通常 1 日以内に自動で行われます）、この PC がインターネットにつながっていません。次に Riff を起動したときに、もう一度試します。</p><p>今すぐこの PC でドライバーを作ることもできます。インターネット接続が必要で、1 時間ほどかかります。終わるまで Riff は開いたままにしてください。</p><p>有線 LAN のポートはそのまま使えます。</p>
