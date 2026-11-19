@@ -17,6 +17,8 @@ the Free Software Foundation, either version 3 of the License, or
 #define RIFF_PAGE_URL      "https://uaj-studio.com/riff"
 #define RIFF_REPO_URL      "https://github.com/UAJ-Studio/riff"
 #define RIFF_RELEASES_URL  RIFF_REPO_URL "/releases"
-#define RIFF_SPONSORS_URL  "https://github.com/sponsors/UAJ-Studio"
+// GitHub Sponsors for UAJ-Studio is not approved yet: "support" links go to
+// the Riff page until then (then: "https://github.com/sponsors/UAJ-Studio")
+#define RIFF_SPONSORS_URL  RIFF_PAGE_URL
 
 #endif

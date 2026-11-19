@@ -48,8 +48,8 @@ Based on Ostinato 1.3.0 - Copyright (c) 2007-2023 Srivats P.</source>
 Ostinato 1.3.0 をもとにしています - Copyright (c) 2007-2023 Srivats P.</translation>
     </message>
     <message>
-        <source>&lt;a href=&quot;https://uaj-studio.com&quot;&gt;uaj-studio.com&lt;/a&gt; &amp;nbsp;|&amp;nbsp; &lt;a href=&quot;https://github.com/UAJ-Studio/riff&quot;&gt;Source code (GitHub)&lt;/a&gt; &amp;nbsp;|&amp;nbsp; &lt;a href=&quot;https://github.com/sponsors/UAJ-Studio&quot;&gt;Support Riff&lt;/a&gt;&lt;br&gt;Upstream project: &lt;a href=&quot;https://ostinato.org&quot;&gt;ostinato.org&lt;/a&gt;</source>
-        <translation>&lt;a href=&quot;https://uaj-studio.com&quot;&gt;uaj-studio.com&lt;/a&gt; &amp;nbsp;|&amp;nbsp; &lt;a href=&quot;https://github.com/UAJ-Studio/riff&quot;&gt;ソースコード（GitHub）&lt;/a&gt; &amp;nbsp;|&amp;nbsp; &lt;a href=&quot;https://github.com/sponsors/UAJ-Studio&quot;&gt;Riff を支援する&lt;/a&gt;&lt;br&gt;元のプロジェクト: &lt;a href=&quot;https://ostinato.org&quot;&gt;ostinato.org&lt;/a&gt;</translation>
+        <source>&lt;a href=&quot;https://uaj-studio.com&quot;&gt;uaj-studio.com&lt;/a&gt; &amp;nbsp;|&amp;nbsp; &lt;a href=&quot;https://github.com/UAJ-Studio/riff&quot;&gt;Source code (GitHub)&lt;/a&gt; &amp;nbsp;|&amp;nbsp; &lt;a href=&quot;https://uaj-studio.com/riff&quot;&gt;Riff page&lt;/a&gt;&lt;br&gt;Upstream project: &lt;a href=&quot;https://ostinato.org&quot;&gt;ostinato.org&lt;/a&gt;</source>
+        <translation>&lt;a href=&quot;https://uaj-studio.com&quot;&gt;uaj-studio.com&lt;/a&gt; &amp;nbsp;|&amp;nbsp; &lt;a href=&quot;https://github.com/UAJ-Studio/riff&quot;&gt;ソースコード（GitHub）&lt;/a&gt; &amp;nbsp;|&amp;nbsp; &lt;a href=&quot;https://uaj-studio.com/riff&quot;&gt;Riff の紹介ページ&lt;/a&gt;&lt;br&gt;元のプロジェクト: &lt;a href=&quot;https://ostinato.org&quot;&gt;ostinato.org&lt;/a&gt;</translation>
     </message>
 </context>
 <context>
@@ -2066,8 +2066,8 @@ This replaces the whole packet.</source>
         <translation>USB Wi-Fi ドングル</translation>
     </message>
     <message>
-        <source>Support Riff (GitHub Sponsors)...</source>
-        <translation>Riff を支援する（GitHub Sponsors）...</translation>
+        <source>Riff Page (uaj-studio.com)...</source>
+        <translation>Riff の紹介ページ（uaj-studio.com）...</translation>
     </message>
 </context>
 <context>
@@ -4192,7 +4192,7 @@ Debug: %2</source>
 &lt;/table&gt;
 &lt;hr/&gt;
 &lt;p&gt;Don&apos;t see the port you want? Make sure Npcap is installed, and try running Riff as Administrator.&lt;/p&gt;
-&lt;p style=&quot;color:gray;&quot;&gt;Riff is made by &lt;a href=&quot;https://uaj-studio.com&quot;&gt;UAJ-Studio&lt;/a&gt; &amp;mdash; free and open source. If it helps your work, you can &lt;a href=&quot;https://github.com/sponsors/UAJ-Studio&quot;&gt;support it on GitHub Sponsors&lt;/a&gt;.&lt;/p&gt;</source>
+&lt;p style=&quot;color:gray;&quot;&gt;Riff is made by &lt;a href=&quot;https://uaj-studio.com&quot;&gt;UAJ-Studio&lt;/a&gt; &amp;mdash; free and open source. Learn more on the &lt;a href=&quot;https://uaj-studio.com/riff&quot;&gt;Riff page&lt;/a&gt;.&lt;/p&gt;</source>
         <translation>&lt;p style=&quot;font-size:15pt; font-weight:600;&quot;&gt;Riff へようこそ&lt;/p&gt;
 &lt;p&gt;3 つのステップでパケットを作成し、ネットワークポートから送信できます。&lt;/p&gt;
 &lt;table cellspacing=&quot;6&quot;&gt;
@@ -4202,7 +4202,7 @@ Debug: %2</source>
 &lt;/table&gt;
 &lt;hr/&gt;
 &lt;p&gt;目的のポートが表示されない場合は、Npcap がインストールされているか確認し、Riff を管理者として実行してみてください。&lt;/p&gt;
-&lt;p style=&quot;color:gray;&quot;&gt;Riff は &lt;a href=&quot;https://uaj-studio.com&quot;&gt;UAJ-Studio&lt;/a&gt; が作っている無料のオープンソースソフトです。お役に立てたら、&lt;a href=&quot;https://github.com/sponsors/UAJ-Studio&quot;&gt;GitHub Sponsors で支援&lt;/a&gt;していただけるとうれしいです。&lt;/p&gt;</translation>
+&lt;p style=&quot;color:gray;&quot;&gt;Riff は &lt;a href=&quot;https://uaj-studio.com&quot;&gt;UAJ-Studio&lt;/a&gt; が作っている無料のオープンソースソフトです。詳しくは&lt;a href=&quot;https://uaj-studio.com/riff&quot;&gt;紹介ページ&lt;/a&gt;をご覧ください。&lt;/p&gt;</translation>
     </message>
 </context>
 <context>

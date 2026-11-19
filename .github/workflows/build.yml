@@ -142,3 +142,43 @@ jobs:
           name: riff-setup
           path: dist/Riff-*-setup.exe
           if-no-files-found: error
+
+  # Tag riff-<version> (matching APP_VERSION in version.pri): publish the
+  # GitHub release from here, with the installer under its versioned name and
+  # as Riff-setup.exe (the Riff page downloads
+  # releases/latest/download/Riff-setup.exe). Notes: .github/release-notes/<tag>.md
+  release:
+    name: Publish release
+    if: startsWith(github.ref, 'refs/tags/riff-')
+    needs: windows
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: riff-setup
+          path: out
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          VER=${TAG#riff-}
+          APP=$(sed -n 's/^APP_VERSION *= *//p' version.pri | head -1)
+          [ "$VER" = "$APP" ] || { echo "tag $TAG does not match APP_VERSION $APP"; exit 1; }
+          SETUP=out/Riff-$VER-setup.exe
+          [ -f "$SETUP" ] || { echo "missing $SETUP"; exit 1; }
+          cp "$SETUP" out/Riff-setup.exe
+          NOTES=.github/release-notes/$TAG.md
+          [ -f "$NOTES" ] || { echo "missing $NOTES"; exit 1; }
+          SHA=$(sha256sum "$SETUP" | cut -d' ' -f1)
+          sed "s/@SHA256@/$SHA/g" "$NOTES" > "$RUNNER_TEMP/notes.md"
+          TITLE=$(head -1 "$RUNNER_TEMP/notes.md" | sed 's/^# *//')
+          tail -n +2 "$RUNNER_TEMP/notes.md" > "$RUNNER_TEMP/body.md"
+          gh release create "$TAG" "$SETUP" out/Riff-setup.exe \
+              --title "$TITLE" --notes-file "$RUNNER_TEMP/body.md" --verify-tag --latest
+          gh release view "$TAG" --json url,assets -q '.url, (.assets[] | .name)'

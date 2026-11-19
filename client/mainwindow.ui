@@ -154,7 +154,7 @@
     <iconset resource="ostinato.qrc" >:/icons/donate.png</iconset>
    </property>
    <property name="text" >
-    <string>Support Riff (GitHub Sponsors)...</string>
+    <string>Riff Page (uaj-studio.com)...</string>
    </property>
   </action>
   <action name="actionCheckForUpdates" >
