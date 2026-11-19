@@ -719,8 +719,9 @@ void MainWindow::onWirelessNoDrivers(QString kernel)
            "is not connected to the Internet. Riff tries again the next "
            "time it starts.</p>"
            "<p>You can also build the drivers on this PC now. It needs an "
-           "Internet connection and takes about an hour; keep Riff open "
-           "until it is done.</p>"
+           "Internet connection and takes about 10 minutes (about an hour "
+           "if the quick way does not work); keep Riff open until it is "
+           "done.</p>"
            "<p>The wired Ethernet ports work as usual.</p>")
            .arg(kernel.toHtmlEscaped()),
         QMessageBox::NoButton, this);

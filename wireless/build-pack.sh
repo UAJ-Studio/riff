@@ -29,6 +29,20 @@ JOBS=${JOBS:-$(nproc)}
 mkdir -p "$WORK" "$OUT"
 
 echo "== [1/4] kernel tree $REL"
+# FAST=1 (building on the PC that runs this very kernel): no kernel build -
+# only the build preparation, and Module.symvers (the CRC of every exported
+# symbol) read from the running kernel and its modules (riff-symvers.py).
+# About 10 minutes instead of most of an hour.
+if [ "${FAST:-0}" = 1 ] && [ "$(uname -r)" = "$REL" ] && [ ! -f "$K/Module.symvers" ]; then
+  [ -f "$K/Makefile" ] || git clone -q --depth 1 --branch "linux-msft-wsl-$KV" \
+      https://github.com/microsoft/WSL2-Linux-Kernel.git "$K"
+  cd "$K"
+  # the running kernel's own configuration, else Microsoft's
+  zcat /proc/config.gz > .config 2>/dev/null || cp Microsoft/config-wsl .config
+  make olddefconfig >/dev/null
+  make -j"$JOBS" modules_prepare >build.log 2>&1 || { tail -30 build.log; exit 1; }
+  python3 "$HERE/riff-symvers.py" Module.symvers || { echo "reading the running kernel's symbol versions failed"; exit 1; }
+fi
 if [ ! -f "$K/Module.symvers" ]; then
   [ -d "$K/.git" ] || git clone -q --depth 1 --branch "linux-msft-wsl-$KV" \
       https://github.com/microsoft/WSL2-Linux-Kernel.git "$K"
@@ -82,8 +96,10 @@ if ! grep -q 'define __assign_str(dst)' "$K/include/trace/stages/stage6_event_ca
   for f in $(grep -rl "__assign_str" --include=*.h .); do perl -0pi "$HERE/compat/fix-trace.pl" "$f"; done
 fi
 cp "$HERE/riff.defconfig" defconfigs/riff
-make -s KLIB="$K" KLIB_BUILD="$K" defconfig-riff >/dev/null 2>&1
-make KLIB="$K" KLIB_BUILD="$K" -j"$JOBS" >build.log 2>&1 || { grep -E 'error' build.log | head -30; exit 1; }
+make -s KLIB="$K" KLIB_BUILD="$K" defconfig-riff >defconfig.log 2>&1 || { tail -20 defconfig.log; exit 1; }
+# objtool: warnings only (6.18 objtool rejects the init_module alias backports
+# uses around module_init as "deprecated"; the alias itself works)
+make KLIB="$K" KLIB_BUILD="$K" CONFIG_OBJTOOL_WERROR= -j"$JOBS" >build.log 2>&1 || { grep -E "error" build.log | head -30; exit 1; }
 
 echo "== [3/4] firmware"
 if [ ! -f "$FWSRC/WHENCE" ]; then

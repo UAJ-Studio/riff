@@ -21,7 +21,7 @@ sh /opt/riff/riff-getpack.sh "$R" && { echo "RIFF_BUILD_DONE kernel=$R (download
 echo "RIFF_BUILD_STEP installing the build tools"
 apk add -q --no-cache bash build-base bc bison flex perl python3 git curl zstd \
     tar xz cpio rsync findutils diffutils coreutils gawk sed grep kmod \
-    elfutils-dev openssl-dev linux-headers pahole >/dev/null 2>&1 \
+    elfutils-dev openssl-dev linux-headers pahole gettext-dev >/dev/null 2>&1 \
   || { echo "RIFF_BUILD_ERROR could not install the build tools (Internet connection?)"; exit 1; }
 
 W=/var/tmp/riff-build
@@ -31,15 +31,25 @@ cleanup() {
   # the tools are only needed for this build
   apk del -q bash build-base bc bison flex perl python3 git curl xz cpio rsync \
       findutils diffutils coreutils gawk elfutils-dev openssl-dev linux-headers \
-      pahole >/dev/null 2>&1 || true
+      pahole gettext-dev >/dev/null 2>&1 || true
 }
 # (explicit cleanup below: busybox sh loses the exit status in an EXIT trap)
 
-echo "RIFF_BUILD_STEP building the drivers for kernel $KV (about an hour)"
-WORK=$W OUT=/opt/riff/packs bash /opt/riff/build/build-pack.sh "$KV" 2>&1 \
-  | while IFS= read -r l; do
-      case "$l" in "== "*) echo "RIFF_BUILD_STEP ${l#== }";; *) echo "  $l";; esac
-    done
+build() {   # build [FAST=1]
+  env "$@" WORK=$W OUT=/opt/riff/packs bash /opt/riff/build/build-pack.sh "$KV" 2>&1 \
+    | while IFS= read -r l; do
+        case "$l" in "== "*) echo "RIFF_BUILD_STEP ${l#== }";; *) echo "  $l";; esac
+      done
+}
+# quick way first: symbol versions read from the running kernel (~10 min)
+echo "RIFF_BUILD_STEP building the drivers for kernel $KV (about 10 minutes)"
+build FAST=1
+if [ ! -f "/opt/riff/packs/riff-wifi-$R.tar.zst" ]; then
+  # else the full kernel build (about an hour)
+  echo "RIFF_BUILD_STEP the quick way failed: full build (about an hour)"
+  rm -rf "$W/kernel-$KV"
+  build FAST=0
+fi
 cleanup
 if [ -f "/opt/riff/packs/riff-wifi-$R.tar.zst" ]; then
   echo "RIFF_BUILD_DONE kernel=$R"

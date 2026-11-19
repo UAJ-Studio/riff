@@ -944,8 +944,9 @@ void WirelessManager::buildDrivers()
     if (build_)
         return;
     emit message(tr("Building the dongle drivers for this WSL kernel on this "
-                    "PC. This takes about an hour; keep Riff open."), false);
-    emit portStatus(tr("building the dongle drivers (about an hour) ..."), 0);
+                    "PC. This takes about 10 minutes (about an hour if the quick "
+                    "way does not work); keep Riff open."), false);
+    emit portStatus(tr("building the dongle drivers ..."), 0);
     build_ = new QProcess(this);
     build_->setProcessChannelMode(QProcess::MergedChannels);
     connect(build_, &QProcess::readyRead, this, [this]() {
