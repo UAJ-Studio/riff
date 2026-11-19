@@ -90,6 +90,16 @@ if grep -q '^struct sockaddr_unsized {' "$K/include/linux/socket.h" 2>/dev/null;
   perl -0pi -e 's/#if LINUX_VERSION_IS_LESS\(6,19,0\)(\n\/\*\*\n \* struct sockaddr_unsized)/#if 0 \/* Riff: in this kernel already *\/$1/' \
       backport-include/linux/socket.h
 fi
+# objtool (6.18) refuses a function whose first symbol is init_module or
+# cleanup_module ("Magic init_module() function name is deprecated").
+# backports declares its aliases with cold instead of the kernel's
+# __copy(fn) - declare them the way the kernel's own module_init does.
+if [ "$(kver "$KV")" -ge "$(kver 6.18)" ]; then
+  sed -i 's/__attribute__((cold,alias("__init_backport")))/__copy(__init_backport) __attribute__((alias("__init_backport")))/; s/__attribute__((cold,alias("__exit_compat")))/__copy(__exit_compat) __attribute__((alias("__exit_compat")))/' \
+      backport-include/linux/module.h
+  grep -q '__copy(__init_backport)' backport-include/linux/module.h \
+    || { echo "module_init alias patch failed"; exit 1; }
+fi
 bash "$HERE/compat/rtw89-apply.sh" "$B" "$B7"
 # before 6.10: 2-argument __assign_str in trace headers
 if ! grep -q 'define __assign_str(dst)' "$K/include/trace/stages/stage6_event_callback.h"; then
