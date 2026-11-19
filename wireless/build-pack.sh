@@ -101,6 +101,21 @@ if [ "$(kver "$KV")" -ge "$(kver 6.18)" ]; then
   grep -q '___ADDRESSABLE(init_module' backport-include/linux/module.h \
     || { echo "module_init alias patch failed"; exit 1; }
 fi
+# The newer backports links its AES library copy (6.18 kernels lack the new
+# CBC-MAC API) into compat.ko, which has its own module_init: two
+# init_module. Its initcall only runs a FIPS self-test - drop the
+# registration there.
+if grep -q '^subsys_initcall(aes_mod_init);' compat/lib-crypto-aes.c 2>/dev/null; then
+  sed -i 's/^subsys_initcall(aes_mod_init);/\/* Riff: linked into compat.ko, which has its own module_init *\//; s/^module_exit(aes_mod_exit);//; s/^static int __init aes_mod_init(void)/static int __init __maybe_unused aes_mod_init(void)/; s/^static void __exit aes_mod_exit(void)/static void __exit __maybe_unused aes_mod_exit(void)/' \
+      compat/lib-crypto-aes.c
+fi
+# class->namespace returns the net namespace itself (const void *) before
+# the ns_common rework the newer backports expects
+if grep -q 'const void \*(\*namespace)(const struct device' "$K/include/linux/device/class.h" 2>/dev/null \
+   && grep -q 'static const struct ns_common \*wiphy_namespace' net/wireless/sysfs.c; then
+  sed -i 's/^static const struct ns_common \*wiphy_namespace(/static const void *wiphy_namespace(/; s/return to_ns_common(wiphy_net(wiphy));/return wiphy_net(wiphy);/' \
+      net/wireless/sysfs.c
+fi
 bash "$HERE/compat/rtw89-apply.sh" "$B" "$B7"
 # before 6.10: 2-argument __assign_str in trace headers
 if ! grep -q 'define __assign_str(dst)' "$K/include/trace/stages/stage6_event_callback.h"; then

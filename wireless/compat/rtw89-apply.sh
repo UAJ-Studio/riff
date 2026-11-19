@@ -12,9 +12,15 @@ cp -r "$M/drivers/net/wireless/realtek/rtw89" "$R"
 cp "$HERE/rtw89-compat.h" "$R/wificap-compat.h"
 sed -i '1a ccflags-y += -include $(src)/wificap-compat.h' "$R/Makefile"
 
-# 6.18 mac80211 has no RX_FLAG_RADIOTAP_VHT: skip driver-built VHT radiotap.
-sed -i '/^static void rtw89_core_update_radiotap_vht(/,/^}/ s/if (!phy_ppdu)/if (1 || !phy_ppdu)/' "$R/core.c"
-grep -q 'if (1 || !phy_ppdu)' "$R/core.c" || { echo "VHT radiotap patch failed"; exit 1; }
+if grep -rqs 'struct ieee80211_radiotap_vht {' "$K/include/net/"; then
+  # the base backports' mac80211 is as new as rtw89's (kernel 6.18+ uses the
+  # newer backports for both): driver-built VHT radiotap works as it is
+  sed -i '1a ccflags-y += -DRIFF_HAVE_RADIOTAP_VHT' "$R/Makefile"
+else
+  # 6.18 mac80211 has no RX_FLAG_RADIOTAP_VHT: skip driver-built VHT radiotap.
+  sed -i '/^static void rtw89_core_update_radiotap_vht(/,/^}/ s/if (!phy_ppdu)/if (1 || !phy_ppdu)/' "$R/core.c"
+  grep -q 'if (1 || !phy_ppdu)' "$R/core.c" || { echo "VHT radiotap patch failed"; exit 1; }
+fi
 
 # Riff: do not switch USB 2 connected dongles to USB 3 mode by default
 # (module parameter switch_usb_mode, like morrownr's out-of-tree rtw89).

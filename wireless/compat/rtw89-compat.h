@@ -44,7 +44,9 @@
 #endif
 
 /* mac80211 in 6.18 cannot take driver-supplied VHT radiotap; rtw89's helper
- * that fills it is turned into a no-op by the backport script. */
+ * that fills it is turned into a no-op by the backport script. A newer
+ * mac80211 (RIFF_HAVE_RADIOTAP_VHT, set by rtw89-apply.sh) has it all. */
+#ifndef RIFF_HAVE_RADIOTAP_VHT
 struct ieee80211_radiotap_vht {
 	__le16 known;
 	u8 flags;
@@ -55,6 +57,7 @@ struct ieee80211_radiotap_vht {
 	__le16 partial_aid;
 } __packed;
 #define RX_FLAG_RADIOTAP_VHT 0
+#endif
 
 /* for_each_station(): __ieee80211_iterate_stations() is backported into
  * net/mac80211/util.c by the build script. */
