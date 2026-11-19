@@ -96,7 +96,9 @@ if ! grep -q 'define __assign_str(dst)' "$K/include/trace/stages/stage6_event_ca
   for f in $(grep -rl "__assign_str" --include=*.h .); do perl -0pi "$HERE/compat/fix-trace.pl" "$f"; done
 fi
 cp "$HERE/riff.defconfig" defconfigs/riff
-make -s KLIB="$K" KLIB_BUILD="$K" defconfig-riff >defconfig.log 2>&1 || { tail -20 defconfig.log; exit 1; }
+# musl (Alpine, building on the PC): gettext lives in a separate libintl
+NLS=; [ -f /etc/alpine-release ] && NLS=LDLIBS=-lintl
+make -s KLIB="$K" KLIB_BUILD="$K" $NLS defconfig-riff >defconfig.log 2>&1 || { tail -20 defconfig.log; exit 1; }
 # objtool: warnings only (6.18 objtool rejects the init_module alias backports
 # uses around module_init as "deprecated"; the alias itself works)
 make KLIB="$K" KLIB_BUILD="$K" CONFIG_OBJTOOL_WERROR= -j"$JOBS" >build.log 2>&1 || { grep -E "error" build.log | head -30; exit 1; }
@@ -116,7 +118,11 @@ if [ ! -f "$FWSRC/WHENCE" ]; then
 fi
 # only what the modules ask for (+ regdb): keeps the clone small
 need=$(for ko in $(find . -name "*.ko"); do modinfo -F firmware $ko; done | sed "s|/[^/]*$|/|; s|^[^/]*$|&|" | sort -u)
-(cd "$FWSRC" && git sparse-checkout add WHENCE $need >/dev/null 2>&1) || true
+# cone mode takes directories only (top-level files are always there); newer
+# git refuses the whole list when a plain file is in it
+dirs=$(printf '%s\n' $need | sed -n 's|/$||p')
+(cd "$FWSRC" && git sparse-checkout add $dirs >/dev/null 2>&1) \
+  || { echo "linux-firmware: could not fetch $dirs"; exit 1; }
 S=$WORK/stage-$KV; rm -rf "$S"; mkdir -p "$S/modules" "$S/firmware"
 find . -name '*.ko' -exec cp {} "$S/modules/" \;
 strip --strip-debug "$S"/modules/*.ko   # debug info only; symbol CRCs stay
