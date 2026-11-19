@@ -69,6 +69,13 @@ cp "$HERE/compat/airoha_offload.h" backport-include/linux/soc/airoha/
 if ! grep -q netns_immutable "$K/include/linux/netdevice.h"; then
   sed -i -E 's/([a-z_>.-]+)->netns_immutable = true;/\1->features |= NETIF_F_NETNS_LOCAL;/; s/([a-z_>.-]+)->netns_immutable = false;/\1->features \&= ~NETIF_F_NETNS_LOCAL;/' net/wireless/core.c
 fi
+# Microsoft's stable kernels pick up newer APIs early; backports keys its
+# copies on the mainline version and would define them twice. Drop a copy
+# the kernel headers already have.
+if grep -q '^struct sockaddr_unsized {' "$K/include/linux/socket.h" 2>/dev/null; then
+  perl -0pi -e 's/#if LINUX_VERSION_IS_LESS\(6,19,0\)(\n\/\*\*\n \* struct sockaddr_unsized)/#if 0 \/* Riff: in this kernel already *\/$1/' \
+      backport-include/linux/socket.h
+fi
 bash "$HERE/compat/rtw89-apply.sh" "$B" "$B7"
 # before 6.10: 2-argument __assign_str in trace headers
 if ! grep -q 'define __assign_str(dst)' "$K/include/trace/stages/stage6_event_callback.h"; then

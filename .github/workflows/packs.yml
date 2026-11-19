@@ -93,8 +93,9 @@ jobs:
       # the pruned kernel build (Module.symvers, headers, scripts) of each
       # kernel never changes: reused when only the pack sources change
       - name: Cache kernel tree
+        id: kcache
         if: steps.pack.outputs.cache-hit != 'true'
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: ${{ runner.temp }}/pack/kernel-${{ matrix.kernel }}
           key: kernel-${{ matrix.kernel }}-v1
@@ -104,8 +105,17 @@ jobs:
         run: sudo env WORK="$RUNNER_TEMP/pack" bash wireless/build-pack.sh "${{ matrix.kernel }}"
 
       - name: Let the cache read the kernel tree
-        if: steps.pack.outputs.cache-hit != 'true'
+        if: always() && steps.pack.outputs.cache-hit != 'true'
         run: sudo chmod -R a+rX "$RUNNER_TEMP/pack/kernel-${{ matrix.kernel }}" || true
+
+      # saved even when the pack step failed: the next try skips the kernel
+      - name: Save kernel tree
+        if: always() && steps.pack.outputs.cache-hit != 'true' && steps.kcache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/pack/kernel-${{ matrix.kernel }}
+          key: kernel-${{ matrix.kernel }}-v1
 
       - name: Publish
         env:
