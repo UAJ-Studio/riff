@@ -47,7 +47,6 @@ private slots:
     void onInstall();
     void onMessage(QString text, bool isError);
     void onStateChanged(int state);
-    void onNeedRebuild(QString kernel);
     void onChannelChanged(int index);
     void onLiveCapture();
     void onRegister();

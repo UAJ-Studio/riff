@@ -225,8 +225,6 @@ WirelessDialog::WirelessDialog(WirelessManager *manager, QWidget *parent)
     connect(manager_, &WirelessManager::message, this, &WirelessDialog::onMessage);
     connect(manager_, &WirelessManager::stateChanged,
             this, &WirelessDialog::onStateChanged);
-    connect(manager_, &WirelessManager::needRebuild,
-            this, &WirelessDialog::onNeedRebuild);
     connect(registerButton_, &QPushButton::clicked, this, &WirelessDialog::onRegister);
     connect(returnButton_, &QPushButton::clicked, this, &WirelessDialog::onGiveBack);
     connect(devices_, &QTreeWidget::currentItemChanged, this, [this]() { updateButtons(); });
@@ -476,20 +474,6 @@ void WirelessDialog::onStateChanged(int /*state*/)
         refresh();
 }
 
-void WirelessDialog::onNeedRebuild(QString kernel)
-{
-    onMessage(tr("WSL has been updated (kernel %1): the dongle drivers have "
-                 "to be rebuilt for it.").arg(kernel), true);
-    QMessageBox::information(this, windowTitle(),
-        tr("<p><b>WSL has been updated, so the dongle drivers need to be "
-           "rebuilt.</b></p>"
-           "<p>Windows updated the WSL kernel to %1. The dongle drivers "
-           "included with Riff are built for a specific kernel, so they "
-           "have to be rebuilt once for the new one.</p>"
-           "<p>Rebuilding takes about an hour and needs an Internet "
-           "connection. Your other WSL distributions are not affected.</p>")
-           .arg(kernel));
-}
 
 // Channel list for capture: 2.4, 5 and 6 GHz control channels (the dongle
 // and the country decide what actually works; the extcap reports it)

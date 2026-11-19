@@ -14,41 +14,75 @@ permissions:
   contents: read
 
 env:
-  WSL_KERNEL: 6.6.87.2      # Microsoft WSL kernel the wireless pack is built for
   NPCAP_SDK: 1.15
   NPCAP_SDK_SHA256: 52c7b9fb4abee3ad9fe739bb545c3efe77b731c8e127122bdf328eafdae3ed4f
   USBIPD: 5.3.0
   USBIPD_SHA256: 1c984914aec944de19b64eff232421439629699f8138e3ddc29301175bc6d938
 
 jobs:
-  wireless:
-    name: RiffWireless distro
+  # One wireless pack (kernel modules + firmware) per Microsoft WSL kernel
+  # Riff supports: the pack must match the kernel WSL runs exactly. Add a
+  # line here when Microsoft ships a new WSL kernel.
+  pack:
+    name: Wireless pack ${{ matrix.kernel }}
     runs-on: ubuntu-24.04
     timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        kernel:
+          - 6.6.87.2      # WSL 2.5 / 2.6
+          - 6.18.54.1     # WSL 3.0.3
+          - 6.18.58.1     # WSL 3.0.5
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build tools
-        run: |
-          sudo apt-get update -q
-          sudo apt-get install -y -q git curl zstd perl build-essential flex bison bc \
-              libelf-dev libssl-dev kmod dwarves cpio rsync python3
-
-      # The pack (kernel modules + firmware) only changes with the kernel
-      # version or the pack sources; building it means building the kernel.
+      # building a pack means building the kernel: keep it until the kernel
+      # or the pack sources change
       - name: Cache wireless pack
         id: pack
         uses: actions/cache@v4
         with:
           path: wireless/packs
-          key: pack-${{ env.WSL_KERNEL }}-${{ hashFiles('wireless/build-pack.sh', 'wireless/drivers.list', 'wireless/riff.defconfig', 'wireless/compat/**', 'wireless/riff-wifi-load.sh') }}
+          key: pack-${{ matrix.kernel }}-${{ hashFiles('wireless/build-pack.sh', 'wireless/drivers.list', 'wireless/riff.defconfig', 'wireless/compat/**', 'wireless/riff-wifi-load.sh') }}
+
+      - name: Build tools
+        if: steps.pack.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q git curl zstd perl build-essential flex bison bc \
+              libelf-dev libssl-dev kmod dwarves cpio rsync python3
 
       - name: Wireless pack
         if: steps.pack.outputs.cache-hit != 'true'
-        run: sudo env WORK="$RUNNER_TEMP/pack" bash wireless/build-pack.sh "$WSL_KERNEL"
+        run: sudo env WORK="$RUNNER_TEMP/pack" bash wireless/build-pack.sh "${{ matrix.kernel }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pack-${{ matrix.kernel }}
+          path: wireless/packs/riff-wifi-${{ matrix.kernel }}-microsoft-standard-WSL2.tar.zst
+          if-no-files-found: error
+
+  wireless:
+    name: RiffWireless distro
+    needs: pack
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: pack-*
+          path: wireless/packs
+          merge-multiple: true
+
+      - name: Build tools
+        run: sudo apt-get install -y -q zstd curl
 
       - name: Distro rootfs
         run: |
+          ls -l wireless/packs
           mkdir -p wireless/dist
           git archive -o wireless/dist/src.tar HEAD
           sudo env WORK="$RUNNER_TEMP/distro" bash wireless/build-distro.sh

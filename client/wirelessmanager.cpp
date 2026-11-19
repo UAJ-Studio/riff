@@ -907,7 +907,7 @@ void WirelessManager::handleAgentLine(const QString &line)
     } else if (tag == "RIFF_ADDR") {
         agentAddr_ = w.value(1);
     } else if (tag == "RIFF_NEED_REBUILD") {
-        emit needRebuild(line.section("kernel=", 1));
+        noDriversFor(line.section("kernel=", 1));
     } else if (tag == "RIFF_NO_DONGLE") {
         emit message(tr("No Wi-Fi interface appeared. The dongle may not be "
                         "supported, or it needs to be re-plugged."), true);
@@ -916,10 +916,27 @@ void WirelessManager::handleAgentLine(const QString &line)
     } else if (tag.startsWith("RIFF_WIFI_ERROR") || tag == "RIFF_ERROR") {
         emit message(tr("Error: %1").arg(line.mid(tag.size() + 1)), true);
     } else if (tag == "RIFF_WIFI_KERNEL_MISMATCH") {
-        emit needRebuild(line.section("running=", 1).section(' ', 0, 0));
+        noDriversFor(line.section("running=", 1).section(' ', 0, 0));
     } else if (line.startsWith("Ready to send traffic")) {
         connectWhenReachable(0);
     }
+}
+
+// The RiffWireless distro has no driver pack for the kernel WSL runs (WSL
+// was updated to a kernel this Riff does not know yet). Tell the user once
+// per kernel - queued, never from inside the agent's output handler: a modal
+// box there spins an event loop in which the agent process is deleted - and
+// stop starting the agent automatically, which would only fail again.
+void WirelessManager::noDriversFor(const QString &kernel)
+{
+    emit message(tr("This Riff has no dongle drivers for the WSL kernel %1 "
+                    "yet.").arg(kernel), true);
+    if (noDriversKernel_ == kernel)
+        return;
+    noDriversKernel_ = kernel;
+    emit portStatus(tr("no dongle drivers for this WSL kernel (%1) yet")
+                    .arg(kernel), 1);
+    QTimer::singleShot(0, this, [this, kernel]() { emit needRebuild(kernel); });
 }
 
 // Prefer localhost (WSL forwards it in most setups); fall back to the VM's
@@ -990,7 +1007,8 @@ void WirelessManager::setChannel(int channel)
 // pressing Start; their channel stays as prepared (set per port later).
 void WirelessManager::autoStartAgent()
 {
-    if (state_ != Idle || autoSuppressed_ || !preps_.isEmpty())
+    if (state_ != Idle || autoSuppressed_ || !preps_.isEmpty()
+            || !noDriversKernel_.isEmpty())
         return;
     QStringList ids;
     foreach (const UsbDevice &d, listUsbDevices())
@@ -1163,6 +1181,8 @@ void WirelessManager::prepareRegistered()
 {
     if (state_ != Idle)
         return;     // the transmit agent owns the dongles
+    if (!noDriversKernel_.isEmpty())
+        return;     // no drivers for this WSL kernel: it would only fail
     if (!ensureUsbipdService())
         return;
     QList<UsbDevice> todo;
@@ -1193,11 +1213,22 @@ void WirelessManager::prepareRegistered()
         p.attach->start(usbipd, {"attach", "--wsl", "--busid", d.busId,
                                  "--auto-attach"});
         p.job = new QProcess(this);
+        // riff-capture reports the driver loader's lines (e.g. no pack for
+        // this WSL kernel) on stderr
+        p.job->setProcessChannelMode(QProcess::MergedChannels);
         QString busId = d.busId;
         connect(p.job, QOverload<int, QProcess::ExitStatus>::of(
                     &QProcess::finished), this,
                 [this, busId](int code, QProcess::ExitStatus st) {
             bool ok = st == QProcess::NormalExit && code == 0;
+            if (QProcess *job = preps_.value(busId).job) {
+                foreach (QString l, QString::fromUtf8(job->readAll()).split('\n')) {
+                    l = l.trimmed();
+                    if (l.startsWith("RIFF_NEED_REBUILD")
+                            || l.startsWith("RIFF_WIFI_KERNEL_MISMATCH"))
+                        handleAgentLine(l);
+                }
+            }
             finishPrep(busId);
             emit message(ok ? tr("USB %1 is ready: a live capture starts in "
                                  "a few seconds.").arg(busId)
@@ -1209,7 +1240,10 @@ void WirelessManager::prepareRegistered()
                 prepFailed_ = true;
             if (preps_.isEmpty()) {
                 autoStartAgent();
-                if (state_ == Idle)     // no agent started after all
+                if (state_ == Idle && !noDriversKernel_.isEmpty())
+                    emit portStatus(tr("no dongle drivers for this WSL "
+                            "kernel (%1) yet").arg(noDriversKernel_), 1);
+                else if (state_ == Idle)    // no agent started after all
                     emit portStatus(prepFailed_
                             ? tr("the dongle(s) could not be readied") : "",
                             prepFailed_ ? 1 : 2);
@@ -1304,7 +1338,10 @@ void WirelessManager::releaseKeptDongles()
 void WirelessManager::cleanup()
 {
     if (state_ == Starting)     // failed before the agent was reachable
-        emit portStatus(tr("the wireless agent could not start"), 1);
+        emit portStatus(noDriversKernel_.isEmpty()
+                ? tr("the wireless agent could not start")
+                : tr("no dongle drivers for this WSL kernel (%1) yet")
+                      .arg(noDriversKernel_), 1);
     else if (state_ == Stopping)
         emit portStatus("", 2);
     if (agent_) {

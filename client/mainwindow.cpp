@@ -698,7 +698,31 @@ void MainWindow::ensureWireless()
                 this, &MainWindow::onWirelessAgentStopped);
         connect(wireless_, &WirelessManager::portStatus,
                 this, &MainWindow::onWirelessPortStatus);
+        connect(wireless_, &WirelessManager::needRebuild,
+                this, &MainWindow::onWirelessNoDrivers);
     }
+}
+
+// WSL runs a kernel this Riff has no dongle drivers for (the manager tells
+// once per kernel). Not modal: Riff keeps working with its wired ports.
+void MainWindow::onWirelessNoDrivers(QString kernel)
+{
+    QMessageBox *box = new QMessageBox(QMessageBox::Information,
+        tr("USB Wi-Fi dongles"),
+        tr("<p><b>The dongle drivers for this WSL version are not included "
+           "yet.</b></p>"
+           "<p>WSL on this PC runs the kernel %1. Riff's dongle drivers are "
+           "built for each WSL kernel, and this one is not supported yet. "
+           "A newer version of Riff will support it - see the "
+           "<a href=\"%2\">Riff page</a>.</p>"
+           "<p>The wired Ethernet ports work as usual.</p>")
+           .arg(kernel.toHtmlEscaped(), RIFF_PAGE_URL),
+        QMessageBox::Ok, this);
+    box->setTextFormat(Qt::RichText);
+    box->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    box->setAttribute(Qt::WA_DeleteOnClose);
+    box->setModal(false);
+    box->show();
 }
 
 // Until the wireless agent is reachable its port group is shown with what

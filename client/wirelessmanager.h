@@ -171,6 +171,7 @@ private:
     void loadUsbIds();
     void setState(State s);
     void handleAgentLine(const QString &line);
+    void noDriversFor(const QString &kernel);
     void connectWhenReachable(int attempt);
     void cleanup();
     // Captures started from Riff leave their dongles in WSL (fast restart);
@@ -186,6 +187,7 @@ private:
     QStringList ownAttached_;   // attached by start() itself: released on stop
     bool autoSuppressed_ = false; // the user stopped the agent: no auto start
     bool prepFailed_ = false;
+    QString noDriversKernel_;     // WSL kernel without a driver pack (once)
     void autoStartAgent();
     QString agentAddr_;     // VM address reported by riff-start.sh
     QString agentHost_;

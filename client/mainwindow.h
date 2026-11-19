@@ -78,6 +78,7 @@ private slots:
     void onWirelessAgentReady(QString host, quint16 port);
     void onWirelessAgentStopped();
     void onWirelessPortStatus(QString text, int kind);
+    void onWirelessNoDrivers(QString kernel);
     void onWifiChannelRequested(QString iface, QString description);
     void stopLocalServerMonitor();
     void onLocalServerFinished(int exitCode, QProcess::ExitStatus exitStatus);

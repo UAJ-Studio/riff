@@ -20,16 +20,6 @@
         <translation>Version/Revision Placeholder</translation>
     </message>
     <message>
-        <source>Based on Ostinato 1.3.0 - Copyright (c) 2007-2023 Srivats P.
-Riff modifications (c) 2026</source>
-        <translation type="vanished">Based on Ostinato 1.3.0 - Copyright (c) 2007-2023 Srivats P.
-Riff modifications (c) 2026</translation>
-    </message>
-    <message>
-        <source>Upstream project: &lt;a href=&quot;https://ostinato.org&quot;&gt;ostinato.org&lt;/a&gt;</source>
-        <translation type="vanished">上流プロジェクト: &lt;a href=&quot;https://ostinato.org&quot;&gt;ostinato.org&lt;/a&gt;</translation>
-    </message>
-    <message>
         <source>Icons (c): Mark James (http://www.famfamfam.com/lab/icons/silk/)</source>
         <translation>Icons (c): Mark James (http://www.famfamfam.com/lab/icons/silk/)</translation>
     </message>
@@ -1950,10 +1940,6 @@ This replaces the whole packet.</source>
         <translation>ヘルプ (オンライン)</translation>
     </message>
     <message>
-        <source>Donate</source>
-        <translation type="vanished">寄付</translation>
-    </message>
-    <message>
         <source>Check for Updates...</source>
         <translation>更新を確認...</translation>
     </message>
@@ -2068,6 +2054,10 @@ This replaces the whole packet.</source>
     <message>
         <source>Riff Page (uaj-studio.com)...</source>
         <translation>Riff の紹介ページ（uaj-studio.com）...</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;&lt;b&gt;The dongle drivers for this WSL version are not included yet.&lt;/b&gt;&lt;/p&gt;&lt;p&gt;WSL on this PC runs the kernel %1. Riff&apos;s dongle drivers are built for each WSL kernel, and this one is not supported yet. A newer version of Riff will support it - see the &lt;a href=&quot;%2&quot;&gt;Riff page&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;The wired Ethernet ports work as usual.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;&lt;b&gt;この WSL の版に対応したドングルのドライバーが、まだ入っていません。&lt;/b&gt;&lt;/p&gt;&lt;p&gt;この PC の WSL はカーネル %1 で動いています。Riff のドングル用ドライバーは WSL のカーネルごとに作っていて、このカーネルにはまだ対応していません。新しい版の Riff で対応します（&lt;a href="%2"&gt;紹介ページ&lt;/a&gt;で確認できます）。&lt;/p&gt;&lt;p&gt;有線 LAN のポートはそのまま使えます。&lt;/p&gt;</translation>
     </message>
 </context>
 <context>
@@ -4143,26 +4133,6 @@ Debug: %2</source>
         <translation>ポート設定...</translation>
     </message>
     <message>
-        <source>&lt;p style=&quot;font-size:15pt; font-weight:600;&quot;&gt;Welcome to Riff&lt;/p&gt;
-&lt;p&gt;Build packets and send them from your network ports in three steps:&lt;/p&gt;
-&lt;table cellspacing=&quot;6&quot;&gt;
-&lt;tr&gt;&lt;td&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Pick a port&lt;/b&gt; &amp;mdash; select the port to send from in the list on the left. Ports marked &lt;img src=&quot;:/icons/bullet_green.png&quot;/&gt; are up. (Double-click a port group to show or hide its ports.)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;&lt;b&gt;2&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Create a stream&lt;/b&gt; &amp;mdash; a stream is a packet (or a series of packets). Right-click the stream list and choose &lt;i&gt;New Stream&lt;/i&gt; to set protocols field by field, or &lt;i&gt;New Stream from Hex&lt;/i&gt; to type the bytes directly.&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;&lt;b&gt;3&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;Send&lt;/b&gt; &amp;mdash; select the port&apos;s column in &lt;i&gt;Port Statistics&lt;/i&gt; below and press the &lt;i&gt;Transmit&lt;/i&gt; start button. Sent and received counters update live.&lt;/td&gt;&lt;/tr&gt;
-&lt;/table&gt;
-&lt;hr/&gt;
-&lt;p&gt;Don&apos;t see the port you want? Make sure Npcap is installed, and try running Riff as Administrator.&lt;/p&gt;</source>
-        <translation type="vanished">&lt;p style=&quot;font-size:15pt; font-weight:600;&quot;&gt;Riff へようこそ&lt;/p&gt;
-&lt;p&gt;3 つのステップでパケットを作成し、ネットワークポートから送信できます。&lt;/p&gt;
-&lt;table cellspacing=&quot;6&quot;&gt;
-&lt;tr&gt;&lt;td&gt;&lt;b&gt;1&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;ポートを選ぶ&lt;/b&gt; &amp;mdash; 左のリストから送信に使うポートを選択します。&lt;img src=&quot;:/icons/bullet_green.png&quot;/&gt; の付いたポートが使用可能です。(ポートグループをダブルクリックすると、ポートの表示/非表示を切り替えられます)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;&lt;b&gt;2&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;ストリームを作る&lt;/b&gt; &amp;mdash; ストリームとは 1 つ(または一連)のパケットです。ストリーム一覧を右クリックし、&lt;i&gt;新規ストリーム&lt;/i&gt;でプロトコルをフィールドごとに設定するか、&lt;i&gt;16進数から新規ストリーム&lt;/i&gt;でバイト列を直接入力します。&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;&lt;b&gt;3&lt;/b&gt;&lt;/td&gt;&lt;td&gt;&lt;b&gt;送信する&lt;/b&gt; &amp;mdash; 下の&lt;i&gt;ポート統計&lt;/i&gt;でポートの列を選択し、&lt;i&gt;送信&lt;/i&gt;の開始ボタンを押します。送受信カウンターがリアルタイムで更新されます。&lt;/td&gt;&lt;/tr&gt;
-&lt;/table&gt;
-&lt;hr/&gt;
-&lt;p&gt;目的のポートが表示されない場合は、Npcap がインストールされているか確認し、Riff を管理者として実行してみてください。&lt;/p&gt;</translation>
-    </message>
-    <message>
         <source>Configuration has changed - &lt;font color=&apos;red&apos;&gt;&lt;b&gt;click Apply&lt;/b&gt;&lt;/font&gt; to activate the changes</source>
         <translation>設定が変更されました - &lt;font color=&apos;red&apos;&gt;&lt;b&gt;[適用]をクリック&lt;/b&gt;&lt;/font&gt;すると反映されます</translation>
     </message>
@@ -5172,14 +5142,6 @@ Right-click to create a stream</source>
         <translation>ストリームを16進数で編集</translation>
     </message>
     <message>
-        <source>This stream is defined field by field. Editing it as hex turns it into a fixed sequence of bytes taken from its first packet - protocol settings, variable fields and changing frame lengths are replaced.
-
-Use &quot;Edit Stream&quot; instead if you want to keep them.</source>
-        <translation type="vanished">このストリームはフィールド単位で定義されています。16進数で編集すると、最初のパケットのバイト列をもとにした固定のバイト列に変換され、プロトコル設定・可変フィールド・可変フレーム長は失われます。
-
-これらを残したい場合は「ストリームの編集」を使ってください。</translation>
-    </message>
-    <message>
         <source>Its MAC addresses are set to &quot;Resolve&quot; or &quot;Self&quot;, which only the agent can fill in - they will become 00:00:00:00:00:00. Enter the real MAC addresses in the hex editor.</source>
         <translation>MAC アドレスが「解決」または「自身」になっています。これらはエージェントしか決められないため 00:00:00:00:00:00 になります。16進エディタで実際の MAC アドレスを入力してください。</translation>
     </message>
@@ -5656,14 +5618,6 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
         <translation>チェックしたデバイスの中に、対応している無線ドングルではないものがあります。Riffが使っている間はWindowsから使えなくなります（キーボードやカメラなら動かなくなります）。続けますか？</translation>
     </message>
     <message>
-        <source>WSL has been updated (kernel %1): the dongle drivers have to be rebuilt for it.</source>
-        <translation>WSLが更新されました（カーネル %1）。ドングルのドライバーを作り直す必要があります。</translation>
-    </message>
-    <message>
-        <source>&lt;p&gt;&lt;b&gt;WSL has been updated, so the dongle drivers need to be rebuilt.&lt;/b&gt;&lt;/p&gt;&lt;p&gt;Windows updated the WSL kernel to %1. The dongle drivers included with Riff are built for a specific kernel, so they have to be rebuilt once for the new one.&lt;/p&gt;&lt;p&gt;Rebuilding takes about an hour and needs an Internet connection. Your other WSL distributions are not affected.&lt;/p&gt;</source>
-        <translation>&lt;p&gt;&lt;b&gt;WSLが更新されたため、ドングルのドライバーを作り直す必要があります。&lt;/b&gt;&lt;/p&gt;&lt;p&gt;WindowsによってWSLのカーネルが %1 に更新されました。Riffに入っているドングルのドライバーは特定のカーネル向けに作られているため、新しいカーネル用に一度作り直す必要があります。&lt;/p&gt;&lt;p&gt;作り直しには1時間ほどかかり、インターネット接続が必要です。他のWSLディストリビューションには影響しません。&lt;/p&gt;</translation>
-    </message>
-    <message>
         <source>Installed - an update is available (click Update).</source>
         <translation>インストール済み - 更新があります（「更新」を押してください）。</translation>
     </message>
@@ -6017,6 +5971,14 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     <message>
         <source>the wireless agent could not start</source>
         <translation>送信エージェントを起動できませんでした</translation>
+    </message>
+    <message>
+        <source>This Riff has no dongle drivers for the WSL kernel %1 yet.</source>
+        <translation>この Riff には、WSL カーネル %1 用のドングルのドライバーがまだ入っていません。</translation>
+    </message>
+    <message>
+        <source>no dongle drivers for this WSL kernel (%1) yet</source>
+        <translation>この WSL カーネル（%1）用のドングルのドライバーがまだありません</translation>
     </message>
 </context>
 <context>
