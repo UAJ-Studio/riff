@@ -91,7 +91,6 @@ jobs:
             mingw-w64-ucrt-x86_64-qt5-static
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-ninja
-            mingw-w64-ucrt-x86_64-python
 
       - name: Cache protobuf
         id: protobuf
@@ -126,8 +125,11 @@ jobs:
       - name: Package
         run: win/package.sh
 
-      - name: Installer
+      - name: Installer (Inno Setup)
         run: |
+          ISCC="/c/Program Files (x86)/Inno Setup 6/ISCC.exe"
+          [ -f "$ISCC" ] || choco install innosetup -y --no-progress
+          export ISCC
           MSI="$(cygpath -u "$RUNNER_TEMP")/usbipd.msi"
           curl -sSLf -o "$MSI" \
               "https://github.com/dorssel/usbipd-win/releases/download/v$USBIPD/usbipd-win_${USBIPD}_x64.msi"
