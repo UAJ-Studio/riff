@@ -90,14 +90,15 @@ if grep -q '^struct sockaddr_unsized {' "$K/include/linux/socket.h" 2>/dev/null;
   perl -0pi -e 's/#if LINUX_VERSION_IS_LESS\(6,19,0\)(\n\/\*\*\n \* struct sockaddr_unsized)/#if 0 \/* Riff: in this kernel already *\/$1/' \
       backport-include/linux/socket.h
 fi
-# objtool (6.18) refuses a function whose first symbol is init_module or
-# cleanup_module ("Magic init_module() function name is deprecated").
-# backports declares its aliases with cold instead of the kernel's
-# __copy(fn) - declare them the way the kernel's own module_init does.
+# objtool (6.18, IBT) seals the ENDBR of functions whose address is never
+# taken, and refuses to do it for init_module/cleanup_module ("Magic
+# init_module() function name is deprecated"). The kernel's module_init
+# takes their address with ___ADDRESSABLE; backports uses __CFI_ADDRESSABLE,
+# which is empty without CFI. Declare them the way the kernel does.
 if [ "$(kver "$KV")" -ge "$(kver 6.18)" ]; then
-  sed -i 's/__attribute__((cold,alias("__init_backport")))/__copy(__init_backport) __attribute__((alias("__init_backport")))/; s/__attribute__((cold,alias("__exit_compat")))/__copy(__exit_compat) __attribute__((alias("__exit_compat")))/' \
+  sed -i 's/__attribute__((cold,alias("__init_backport")))/__copy(__init_backport) __attribute__((alias("__init_backport")))/; s/__attribute__((cold,alias("__exit_compat")))/__copy(__exit_compat) __attribute__((alias("__exit_compat")))/; s/__CFI_ADDRESSABLE(init_module, __initdata)/___ADDRESSABLE(init_module, __initdata)/; s/__CFI_ADDRESSABLE(cleanup_module, __exitdata)/___ADDRESSABLE(cleanup_module, __exitdata)/' \
       backport-include/linux/module.h
-  grep -q '__copy(__init_backport)' backport-include/linux/module.h \
+  grep -q '___ADDRESSABLE(init_module' backport-include/linux/module.h \
     || { echo "module_init alias patch failed"; exit 1; }
 fi
 bash "$HERE/compat/rtw89-apply.sh" "$B" "$B7"
