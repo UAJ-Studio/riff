@@ -182,6 +182,13 @@ cp "$REGDB/regulatory.db" "$REGDB/regulatory.db.p7s" "$S/firmware/"
 
 echo "== [4/4] pack"
 echo "$REL" > "$S/RELEASE"
+# where it was built from (shown on the release too)
+cat > "$S/SOURCE" <<SRC
+kernel:    https://github.com/microsoft/WSL2-Linux-Kernel tag linux-msft-wsl-$KV
+backports: https://github.com/openwrt/backports backports-v$BPV (rtw89 from backports-v$BPN)
+firmware:  linux-firmware (kernel.org / gitlab.com/kernel-firmware), wireless-regdb
+recipe:    https://github.com/UAJ-Studio/riff wireless/build-pack.sh
+SRC
 grep -vE '^\s*(#|$)' "$HERE/drivers.list" > "$S/DRIVERS"
 cp "$HERE/riff-wifi-load.sh" "$S/"
 for m in $(cat "$S/DRIVERS"); do [ -f "$S/modules/$m.ko" ] || { echo "driver $m was not built"; exit 1; }; done

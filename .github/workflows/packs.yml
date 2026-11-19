@@ -41,10 +41,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           INPUT: ${{ github.event.inputs.kernels }}
         run: |
+          NOTES="Driver packs for USB Wi-Fi dongles, one per Microsoft WSL kernel. **Not a Riff release** - get Riff from the [latest release](https://github.com/UAJ-Studio/riff/releases/latest).
+
+          Built automatically by GitHub Actions ([packs.yml](https://github.com/UAJ-Studio/riff/blob/main/.github/workflows/packs.yml)) with [wireless/build-pack.sh](https://github.com/UAJ-Studio/riff/blob/main/wireless/build-pack.sh). \`riff-wifi-<version>-microsoft-standard-WSL2.tar.zst\` is built from Microsoft's official kernel source, [microsoft/WSL2-Linux-Kernel](https://github.com/microsoft/WSL2-Linux-Kernel) tag \`linux-msft-wsl-<version>\`, with OpenWrt backports and linux-firmware; its \`SOURCE\` file lists the exact sources. Each pack has a \`.sha256\`; Riff checks it and the kernel release before using a pack it downloads."
           if ! gh release view "$PACK_TAG" >/dev/null 2>&1; then
             gh release create "$PACK_TAG" --prerelease --latest=false --target main \
-                --title "Wireless driver packs (automatic)" \
-                --notes "Driver packs for USB Wi-Fi dongles, one per Microsoft WSL kernel. Built automatically by GitHub Actions (.github/workflows/packs.yml) from this repository's source; Riff downloads the one it needs. Not a Riff release - get Riff from the latest release."
+                --title "Wireless driver packs (automatic)" --notes "$NOTES"
+          else
+            gh release edit "$PACK_TAG" --prerelease --latest=false --notes "$NOTES"
           fi
           have=$(gh release view "$PACK_TAG" --json assets -q '.assets[].name' \
                  | sed -n 's/^riff-wifi-\(.*\)-microsoft-standard-WSL2\.tar\.zst$/\1/p' | sort -u)
@@ -125,6 +129,9 @@ jobs:
           sha256sum "$F" | sed 's# .*/#  #' > "$F.sha256"
           cat "$F.sha256"
           gh release upload "$PACK_TAG" "$F" "$F.sha256" --clobber
+          # never the "Latest" release (the Riff page downloads
+          # releases/latest/download/Riff-setup.exe)
+          gh release edit "$PACK_TAG" --prerelease --latest=false
 
   # GitHub turns off scheduled workflows in a repository without activity
   # for 60 days: an empty commit now and then keeps this check running.

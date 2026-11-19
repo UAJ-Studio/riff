@@ -60,7 +60,7 @@ fi
 
 echo "== [2/3] runtime root"
 R=$WORK/riffwireless-root; mkroot $R
-inroot $R "apk add -q --no-cache qt5-qtbase qt5-qtscript libpcap libnl3 iw kmod zstd tar tcpdump && rm -rf /var/cache/apk/*"
+inroot $R "apk add -q --no-cache qt5-qtbase qt5-qtscript libpcap libnl3 iw kmod zstd tar tcpdump curl ca-certificates && rm -rf /var/cache/apk/*"
 install -m755 "$AGENT" $R/usr/local/bin/riff-agent
 # portable-mode ini next to the binary: only show the Wi-Fi dongle(s) in Riff.
 # wl*, not wlan*: all WSL 2 distros share one kernel, and a running distro
