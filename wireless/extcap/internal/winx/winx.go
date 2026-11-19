@@ -240,3 +240,23 @@ func StartDetached(exe string, args ...string) error {
 	}
 	return start(0)
 }
+
+// StartApp starts a GUI program normally (window shown), in its own
+// directory and outside any job of ours. Not StartDetached: its SW_HIDE
+// start-up flag would keep the program's first window hidden.
+func StartApp(exe string, args ...string) error {
+	const breakaway = 0x01000000 // CREATE_BREAKAWAY_FROM_JOB
+	start := func(flags uint32) error {
+		c := exec.Command(exe, args...)
+		c.Dir = filepath.Dir(exe)
+		c.SysProcAttr = &syscall.SysProcAttr{CreationFlags: flags}
+		if err := c.Start(); err != nil {
+			return err
+		}
+		return c.Process.Release()
+	}
+	if err := start(breakaway); err == nil {
+		return nil
+	}
+	return start(0)
+}

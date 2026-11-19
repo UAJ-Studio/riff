@@ -243,7 +243,7 @@ func install(auto bool) error {
 	fmt.Println("  ※ 新しいバージョンは、新しいセットアップを実行するだけで更新できます")
 	fmt.Println("  ※ 削除するには: 設定 →「インストールされているアプリ」→ Riff → アンインストール")
 	if !auto && ask("Riff を起動しますか?", auto, true) {
-		_ = winx.StartDetached(exe)
+		_ = winx.StartApp(exe)
 	}
 	return nil
 }
