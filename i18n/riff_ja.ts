@@ -5713,6 +5713,14 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
         <source>Riff only - register again (%1)</source>
         <translation>Riff専用・再登録が必要（%1）</translation>
     </message>
+    <message>
+        <source>Windows capture adapter - give it back to Windows</source>
+        <translation>Windows のキャプチャ機器 - Windows に戻してください</translation>
+    </message>
+    <message>
+        <source>Windows capture adapter (an AirPcap port in Riff)</source>
+        <translation>Windows のキャプチャ機器（Riff では AirPcap のポートとして使えます）</translation>
+    </message>
 </context>
 <context>
     <name>WirelessManager</name>
@@ -5755,10 +5763,6 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     <message>
         <source>Connecting USB device %1 to WSL ...</source>
         <translation>USBデバイス %1 をWSLに接続しています...</translation>
-    </message>
-    <message>
-        <source>Connecting USB device %1 failed: %2</source>
-        <translation>USBデバイス %1 の接続に失敗しました: %2</translation>
     </message>
     <message>
         <source>Loading the dongle drivers and starting the agent ...</source>
@@ -6011,6 +6015,14 @@ To create one, select the protocol on the left and click &apos;+&apos; above</so
     <message>
         <source>building the dongle drivers ...</source>
         <translation>ドングルのドライバーを作成中 ...</translation>
+    </message>
+    <message>
+        <source>Connecting USB device %1 failed; going on without it: %2</source>
+        <translation>USB デバイス %1 を WSL に接続できなかったので、これを除いて続けます: %2</translation>
+    </message>
+    <message>
+        <source>None of the dongles could be connected to WSL.</source>
+        <translation>どのドングルも WSL に接続できませんでした。</translation>
     </message>
 </context>
 <context>

@@ -720,8 +720,8 @@ void WirelessManager::loadUsbIds()
     QTextStream ts(&f);
     while (!ts.atEnd()) {
         QStringList w = ts.readLine().split(' ', Qt::SkipEmptyParts);
-        if (w.size() >= 2)
-            usbIds_.insert(w.at(0).toUpper(), w.at(1));
+        if (w.size() >= 2 && !w.at(0).startsWith("cace:", Qt::CaseInsensitive))
+            usbIds_.insert(w.at(0).toUpper(), w.at(1));   // AirPcap: see listUsbDevices()
     }
 }
 
@@ -764,6 +764,14 @@ QList<WirelessManager::UsbDevice> WirelessManager::listUsbDevices(
         d.name = m.captured(3).trimmed();
         d.state = m.captured(4).trimmed();
         d.driver = usbIds_.value(d.vidPid.toUpper());
+        // AirPcap (CACE Technologies): a capture adapter for Windows
+        // (Wireshark, Riff's own AirPcap port). Linux has a driver for
+        // some (carl9170), but taking it into WSL would only fight the
+        // Windows side that uses it.
+        if (d.vidPid.startsWith("cace:")) {
+            d.driver.clear();
+            d.windowsCapture = true;
+        }
         list.append(d);
     }
     // registered = usbipd forced bind (not shown by "usbipd list")
@@ -878,14 +886,20 @@ void WirelessManager::start(QStringList busIds, QString country, int channel)
                          false);
             if (run(usbipd, {"attach", "--wsl", "--busid", id}, &out, 60000)
                     != 0) {
-                emit message(tr("Connecting USB device %1 failed: %2")
-                                .arg(id, out.trimmed()), true);
-                cleanup();
-                return;
+                // one dongle that cannot be attached (e.g. Windows still
+                // uses it) must not keep the others from working
+                emit message(tr("Connecting USB device %1 failed; going on "
+                                "without it: %2").arg(id, out.trimmed()), true);
+                continue;
             }
             ownAttached_.append(id);
         }
         attached_.append(id);
+    }
+    if (attached_.isEmpty()) {
+        emit message(tr("None of the dongles could be connected to WSL."), true);
+        cleanup();
+        return;
     }
 
     emit message(tr("Loading the dongle drivers and starting the agent ..."),
@@ -1255,8 +1269,9 @@ void WirelessManager::prepareRegistered()
     QList<UsbDevice> todo;
     foreach (const UsbDevice &d, listUsbDevices())
         if (!d.driver.isEmpty() && d.registered && !preps_.contains(d.busId)
-                && !d.state.startsWith("Attached", Qt::CaseInsensitive))
-            todo << d;
+                && !d.state.startsWith("Attached", Qt::CaseInsensitive)
+                && !prepFailedIds_.contains(d.busId))
+            todo << d;     // (one that failed is not retried on its own)
     if (todo.isEmpty()) {
         autoStartAgent();   // e.g. already prepared by an earlier Riff
         return;
@@ -1318,8 +1333,12 @@ void WirelessManager::prepareRegistered()
                                  "prepared when a capture starts.")
                                  .arg(busId), !ok);
             emit prepared(busId, ok);
-            if (!ok)
+            if (!ok) {
                 prepFailed_ = true;
+                prepFailedIds_.insert(busId);
+            } else {
+                prepFailedIds_.remove(busId);
+            }
             if (preps_.isEmpty()) {
                 autoStartAgent();
                 if (state_ == Idle && !noDriversKernel_.isEmpty())

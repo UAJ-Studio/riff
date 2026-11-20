@@ -295,20 +295,33 @@ void WirelessDialog::refresh()
                const WirelessManager::UsbDevice &b) {
                 return !a.driver.isEmpty() && b.driver.isEmpty();
             });
+        // nothing chosen before (or none of it plugged in): the dongles
+        // already registered for Riff - never every supported device
+        bool savedPresent = false;
+        foreach (const WirelessManager::UsbDevice &d, list)
+            if (checked.contains(d.busId))
+                savedPresent = true;
         foreach (const WirelessManager::UsbDevice &d, list) {
             QTreeWidgetItem *it = new QTreeWidgetItem(devices_);
             bool sup = !d.driver.isEmpty();
-            it->setCheckState(0, (checked.contains(d.busId) ||
-                    (checked.isEmpty() && sup)) ? Qt::Checked : Qt::Unchecked);
+            it->setCheckState(0, sup && (checked.contains(d.busId) ||
+                    (!savedPresent && d.registered)) ? Qt::Checked : Qt::Unchecked);
+            if (d.windowsCapture)   // AirPcap: a Windows port, never a dongle
+                it->setFlags(it->flags() & ~Qt::ItemIsUserCheckable);
             it->setText(1, d.busId);
             it->setText(2, d.name);
-            it->setText(3, !sup ? tr("Not supported")
+            it->setText(3, d.windowsCapture
+                    ? (d.registered
+                       ? tr("Windows capture adapter - give it back to Windows")
+                       : tr("Windows capture adapter (an AirPcap port in Riff)"))
+                    : !sup ? tr("Not supported")
                     : d.registered ? tr("Riff only (%1)").arg(d.driver)
                     : d.remembered ? tr("Riff only - register again (%1)")
                                          .arg(d.driver)
                                    : tr("Supported (%1)").arg(d.driver));
             it->setData(3, Qt::UserRole, d.registered);
             it->setData(3, Qt::UserRole + 1, d.remembered);
+            it->setData(3, Qt::UserRole + 2, sup);     // a Riff dongle
             it->setText(4, d.state);
             it->setToolTip(2, d.vidPid);
             if (!sup)
@@ -396,7 +409,7 @@ void WirelessDialog::updateButtons()
     }
     bool idle = st == WirelessManager::Idle;
     QTreeWidgetItem *cur = devices_->currentItem();
-    bool curSupported = cur && cur->text(3) != tr("Not supported");
+    bool curSupported = cur && cur->data(3, Qt::UserRole + 2).toBool();
     bool curRegistered = cur && cur->data(3, Qt::UserRole).toBool();
     bool envOk = wslOk_ && usbipdOk_;
     registerButton_->setEnabled(envOk && idle && curSupported && !curRegistered);
@@ -428,7 +441,7 @@ void WirelessDialog::onStartStop()
         if (it->checkState(0) != Qt::Checked)
             continue;
         ids << it->text(1);
-        if (it->text(3) == tr("Not supported"))
+        if (!it->data(3, Qt::UserRole + 2).toBool())
             unsupported = true;
     }
     if (ids.isEmpty()) {

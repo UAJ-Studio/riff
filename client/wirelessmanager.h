@@ -50,6 +50,9 @@ public:
         bool remembered = false; // registered for Riff at this port before,
                                  // not now: two dongles with the same serial
                                  // swapped their Windows device IDs
+        bool windowsCapture = false; // AirPcap: a Windows capture adapter
+                                     // (Riff uses it as a Windows port),
+                                     // never one of Riff's WSL dongles
     };
     enum State { Idle, Starting, Running, Stopping };
 
@@ -194,6 +197,7 @@ private:
     QStringList ownAttached_;   // attached by start() itself: released on stop
     bool autoSuppressed_ = false; // the user stopped the agent: no auto start
     bool prepFailed_ = false;
+    QSet<QString> prepFailedIds_;  // not prepared ahead this session: not retried automatically
     QString noDriversKernel_;     // WSL kernel without a driver pack (once)
     QProcess *build_ = nullptr;   // riff-buildpack.sh while it runs
     void autoStartAgent();

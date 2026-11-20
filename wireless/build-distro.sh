@@ -82,7 +82,8 @@ cp "$HERE"/compat/* $R/opt/riff/build/compat/
 cp "$HERE"/packs/riff-wifi-*.tar.zst $R/opt/riff/packs/ 2>/dev/null || echo "   (no packs in $HERE/packs yet)"
 # supported USB IDs for the Windows side (same driver set in every pack)
 P1=$(ls "$HERE"/packs/riff-wifi-*.tar.zst 2>/dev/null | tail -1)
-[ -n "$P1" ] && tar --zstd -xOf "$P1" ./USBIDS > "$OUT/riff-wifi-usbids.txt" && \
+# AirPcap (cace:) is a Windows capture adapter: never one of Riff's dongles
+[ -n "$P1" ] && tar --zstd -xOf "$P1" ./USBIDS | grep -vi '^cace:' > "$OUT/riff-wifi-usbids.txt" && \
   echo "   $(wc -l < "$OUT/riff-wifi-usbids.txt") supported USB IDs -> dist/riff-wifi-usbids.txt"
 cat > $R/etc/wsl.conf <<'CONF'
 [automount]
