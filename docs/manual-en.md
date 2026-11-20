@@ -79,7 +79,15 @@ A stream is one packet (or a series of packets) to send. Right-click the stream 
 - **New Stream**: choose protocols (Ethernet, VLAN, IPv4/IPv6, TCP/UDP, ARP, tunnels, …) and set their fields.
 - **New Stream from Hex**: type the bytes of the packet in hex. A hex dump copied from Wireshark can be pasted too.
 
+<img src="images/stream-list-menu.jpg" alt="Right-click menu of the stream list" width="360">
+
+![The stream editor (New Stream)](images/stream-editor.png)
+
+(The screenshots show the Japanese user interface; the English one has the same layout.)
+
 Both editors have **Start from Template** to create common packets in one click:
+
+<img src="images/template-menu.jpg" alt="The Start from Template menu" width="220">
 
 | Group | Examples |
 |---|---|
@@ -130,6 +138,8 @@ usbipd-win hands the dongle to **Riff's own WSL environment (RiffWireless)**, wh
 ### 4.2 The Wireless Dongle window
 
 **Tools > Wireless Dongle** has four sections:
+
+![The Wireless Dongle window](images/wireless-dongle-window.png)
 
 | Section | What it does |
 |---|---|
