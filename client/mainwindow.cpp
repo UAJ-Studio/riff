@@ -425,8 +425,9 @@ void MainWindow::on_actionViewRestoreDefaults_triggered()
 
 void MainWindow::on_actionHelpOnline_triggered()
 {
-    // Riff's page (README: Riff's additions + links to the upstream docs)
-    QDesktopServices::openUrl(QUrl(RIFF_REPO_URL));
+    // the user manual in the UI's language (the Japanese translation of
+    // this URL is the Japanese manual)
+    QDesktopServices::openUrl(QUrl(tr("https://github.com/UAJ-Studio/riff/blob/main/docs/manual-en.md")));
 }
 
 void MainWindow::on_actionDonate_triggered()

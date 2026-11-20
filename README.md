@@ -13,6 +13,8 @@ Riff はWindows用のパケット/トラフィックジェネレーターです�
 有線 LAN に加えて、USB Wi-Fi ドングルから 802.11 の無線フレームを送信し、
 Wireshark でライブキャプチャできます。
 
+**User manual / 使い方マニュアル:** [English](docs/manual-en.md) · [日本語](docs/manual-ja.md)
+
 ## Features
 
 - Build streams field by field (Ethernet, VLAN, IPv4/IPv6, TCP/UDP, ARP,

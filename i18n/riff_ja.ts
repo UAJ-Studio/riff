@@ -1936,10 +1936,6 @@ This replaces the whole packet.</source>
         <translation>セッションを保存...</translation>
     </message>
     <message>
-        <source>Help (Online)</source>
-        <translation>ヘルプ (オンライン)</translation>
-    </message>
-    <message>
         <source>Check for Updates...</source>
         <translation>更新を確認...</translation>
     </message>
@@ -2062,6 +2058,14 @@ This replaces the whole packet.</source>
     <message>
         <source>&lt;p&gt;&lt;b&gt;The dongle drivers for this WSL version could not be downloaded.&lt;/b&gt;&lt;/p&gt;&lt;p&gt;WSL on this PC runs the kernel %1. Riff downloads the drivers for a new WSL kernel by itself, but they are not published yet (that normally happens automatically within a day) or this PC is not connected to the Internet. Riff tries again the next time it starts.&lt;/p&gt;&lt;p&gt;You can also build the drivers on this PC now. It needs an Internet connection and takes about 10 minutes (about an hour if the quick way does not work); keep Riff open until it is done.&lt;/p&gt;&lt;p&gt;The wired Ethernet ports work as usual.&lt;/p&gt;</source>
         <translation>&lt;p&gt;&lt;b&gt;この WSL の版に対応したドングルのドライバーを、ダウンロードできませんでした。&lt;/b&gt;&lt;/p&gt;&lt;p&gt;この PC の WSL はカーネル %1 で動いています。Riff は新しい WSL カーネル用のドライバーを自動でダウンロードしますが、まだ公開されていないか（公開は通常 1 日以内に自動で行われます）、この PC がインターネットにつながっていません。次に Riff を起動したときに、もう一度試します。&lt;/p&gt;&lt;p&gt;今すぐこの PC でドライバーを作ることもできます。インターネット接続が必要で、10 分ほどかかります（早い方法がうまくいかない場合は 1 時間ほど）。終わるまで Riff は開いたままにしてください。&lt;/p&gt;&lt;p&gt;有線 LAN のポートはそのまま使えます。&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>User Manual (Online)</source>
+        <translation>使い方マニュアル（オンライン）</translation>
+    </message>
+    <message>
+        <source>https://github.com/UAJ-Studio/riff/blob/main/docs/manual-en.md</source>
+        <translation>https://github.com/UAJ-Studio/riff/blob/main/docs/manual-ja.md</translation>
     </message>
 </context>
 <context>

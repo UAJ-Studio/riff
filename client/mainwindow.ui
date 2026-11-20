@@ -146,7 +146,7 @@
     <iconset resource="ostinato.qrc" >:/icons/help.png</iconset>
    </property>
    <property name="text" >
-    <string>Help (Online)</string>
+    <string>User Manual (Online)</string>
    </property>
   </action>
   <action name="actionDonate" >

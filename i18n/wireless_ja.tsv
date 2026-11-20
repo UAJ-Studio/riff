@@ -185,3 +185,5 @@ Windows capture adapter - give it back to Windows	Windows のキャプチャ機�
 Windows capture adapter (an AirPcap port in Riff)	Windows のキャプチャ機器（Riff では AirPcap のポートとして使えます）
 Connecting USB device %1 failed; going on without it: %2	USB デバイス %1 を WSL に接続できなかったので、これを除いて続けます: %2
 None of the dongles could be connected to WSL.	どのドングルも WSL に接続できませんでした。
+https://github.com/UAJ-Studio/riff/blob/main/docs/manual-en.md	https://github.com/UAJ-Studio/riff/blob/main/docs/manual-ja.md
+User Manual (Online)	使い方マニュアル（オンライン）
