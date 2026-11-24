@@ -126,6 +126,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           F=wireless/packs/riff-wifi-${{ matrix.kernel }}-microsoft-standard-WSL2.tar.zst
+          # built as root (sudo): make the folder the runner's again
+          sudo chown -R "$(id -u):$(id -g)" wireless/packs
           sha256sum "$F" | sed 's# .*/#  #' > "$F.sha256"
           cat "$F.sha256"
           gh release upload "$PACK_TAG" "$F" "$F.sha256" --clobber

@@ -90,6 +90,17 @@ if grep -q '^struct sockaddr_unsized {' "$K/include/linux/socket.h" 2>/dev/null;
   perl -0pi -e 's/#if LINUX_VERSION_IS_LESS\(6,19,0\)(\n\/\*\*\n \* struct sockaddr_unsized)/#if 0 \/* Riff: in this kernel already *\/$1/' \
       backport-include/linux/socket.h
 fi
+# Some 6.18 stable kernels have the first typed allocators, whose gfp
+# argument is required (kzalloc_obj(P, GFP)); backports 7.2 leaves it out.
+# Redefine them after the kernel's <linux/slab.h>.
+if grep -q 'define kzalloc_obj(P, GFP)' "$K/include/linux/slab.h" 2>/dev/null; then
+  cp "$HERE/compat/riff-slab-obj.h" backport-include/riff-slab-obj.h
+  if [ ! -f backport-include/linux/slab.h ]; then
+    printf '#ifndef __RIFF_BP_SLAB_H\n#define __RIFF_BP_SLAB_H\n#include_next <linux/slab.h>\n#endif\n' \
+        > backport-include/linux/slab.h
+  fi
+  echo '#include <riff-slab-obj.h>' >> backport-include/linux/slab.h
+fi
 # objtool (6.18, IBT) seals the ENDBR of functions whose address is never
 # taken, and refuses to do it for init_module/cleanup_module ("Magic
 # init_module() function name is deprecated"). The kernel's module_init
