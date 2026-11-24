@@ -58,5 +58,18 @@
 #define kzalloc_flex(P, FAM, N, ...) \
 	((typeof(P) *)kzalloc(struct_size_t(typeof(P), FAM, N), __riff_gfp(__VA_ARGS__)))
 #endif
+/* the kvmalloc forms came separately: keyed on their own name */
+#ifndef kvzalloc_objs
+#define __riff_kv_gfp_sel(g, ...) g
+#define __riff_kv_gfp(...) __riff_kv_gfp_sel(__VA_ARGS__ __VA_OPT__(,) GFP_KERNEL)
+#define kvmalloc_obj(P, ...) \
+	((typeof(P) *)kvmalloc(sizeof(typeof(P)), __riff_kv_gfp(__VA_ARGS__)))
+#define kvzalloc_obj(P, ...) \
+	((typeof(P) *)kvzalloc(sizeof(typeof(P)), __riff_kv_gfp(__VA_ARGS__)))
+#define kvmalloc_objs(P, N, ...) \
+	((typeof(P) *)kvmalloc_array(N, sizeof(typeof(P)), __riff_kv_gfp(__VA_ARGS__)))
+#define kvzalloc_objs(P, N, ...) \
+	((typeof(P) *)kvcalloc(N, sizeof(typeof(P)), __riff_kv_gfp(__VA_ARGS__)))
+#endif
 
 #endif
