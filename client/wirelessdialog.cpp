@@ -295,11 +295,12 @@ void WirelessDialog::refresh()
                const WirelessManager::UsbDevice &b) {
                 return !a.driver.isEmpty() && b.driver.isEmpty();
             });
-        // nothing chosen before (or none of it plugged in): the dongles
-        // already registered for Riff - never every supported device
+        // nothing chosen before (or none of it plugged in, or only devices
+        // Riff cannot use): the dongles already registered for Riff - never
+        // every supported device
         bool savedPresent = false;
         foreach (const WirelessManager::UsbDevice &d, list)
-            if (checked.contains(d.busId))
+            if (checked.contains(d.busId) && !d.driver.isEmpty())
                 savedPresent = true;
         foreach (const WirelessManager::UsbDevice &d, list) {
             QTreeWidgetItem *it = new QTreeWidgetItem(devices_);
