@@ -322,6 +322,7 @@ void WirelessDialog::refresh()
             it->setData(3, Qt::UserRole, d.registered);
             it->setData(3, Qt::UserRole + 1, d.remembered);
             it->setData(3, Qt::UserRole + 2, sup);     // a Riff dongle
+            it->setData(3, Qt::UserRole + 3, d.windowsCapture);
             it->setText(4, d.state);
             it->setToolTip(2, d.vidPid);
             if (!sup)
@@ -414,7 +415,18 @@ void WirelessDialog::updateButtons()
     bool envOk = wslOk_ && usbipdOk_;
     registerButton_->setEnabled(envOk && idle && curSupported && !curRegistered);
     returnButton_->setEnabled(envOk && idle && curRegistered);
-    devices_->setEnabled(idle);
+    // the checks stay as they are while the agent runs, but the list can
+    // still be scrolled and read (a disabled list does not scroll)
+    for (int i = 0; i < devices_->topLevelItemCount(); i++) {
+        QTreeWidgetItem *it = devices_->topLevelItem(i);
+        const bool checkable = idle
+                && !it->data(3, Qt::UserRole + 3).toBool();
+        Qt::ItemFlags f = it->flags();
+        f = checkable ? (f | Qt::ItemIsUserCheckable)
+                      : (f & ~Qt::ItemIsUserCheckable);
+        if (f != it->flags())
+            it->setFlags(f);
+    }
     refreshButton_->setEnabled(idle);
     country_->setEnabled(idle);
     captureButton_->setEnabled(wslOk_ && usbipdOk_ && distroOk_
