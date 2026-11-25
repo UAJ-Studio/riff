@@ -123,6 +123,8 @@ Name: "{autodesktop}\Riff"; Filename: "{app}\riff.exe"; WorkingDir: "{app}"; Com
 [Run]
 Filename: "https://npcap.com/#download"; Description: "{cm:OpenNpcapPage}"; Flags: shellexec postinstall nowait skipifsilent; Check: not NpcapInstalled
 Filename: "{app}\riff.exe"; WorkingDir: "{app}"; Description: "{cm:LaunchProgram,Riff}"; Flags: nowait postinstall skipifsilent
+; update started from Riff (Help > Check for Updates): start it again
+Filename: "{app}\riff.exe"; WorkingDir: "{app}"; Flags: nowait; Check: IsRiffUpdate
 
 [UninstallDelete]
 ; settings files Riff may create next to itself
@@ -136,6 +138,12 @@ function NpcapInstalled: Boolean;
 begin
   Result := FileExists(ExpandConstant('{sys}\Npcap\wpcap.dll')) or
             FileExists(ExpandConstant('{sys}\wpcap.dll'));
+end;
+
+{ setup started by Riff's own update (riff.exe passes /RIFFUPDATE) }
+function IsRiffUpdate: Boolean;
+begin
+  Result := Pos('/RIFFUPDATE', Uppercase(GetCmdTail)) > 0;
 end;
 
 function UsbipdInstalled: Boolean;
@@ -185,7 +193,8 @@ begin
   if CurStep = ssPostInstall then begin
     { the older console installer registered itself under this key }
     RegDeleteKeyIncludingSubkeys(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\Riff');
-    if WizardIsTaskSelected('usbipd') then
+    { an update from Riff never asks for administrator rights }
+    if WizardIsTaskSelected('usbipd') and not IsRiffUpdate then
       InstallUsbipd;
   end;
 end;

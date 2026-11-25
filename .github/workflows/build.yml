@@ -233,9 +233,11 @@ jobs:
           NOTES=.github/release-notes/$TAG.md
           [ -f "$NOTES" ] || { echo "missing $NOTES"; exit 1; }
           SHA=$(sha256sum "$SETUP" | cut -d' ' -f1)
+          # Riff's in-app update checks the download against this
+          echo "$SHA  Riff-$VER-setup.exe" > "$SETUP.sha256"
           sed "s/@SHA256@/$SHA/g" "$NOTES" > "$RUNNER_TEMP/notes.md"
           TITLE=$(head -1 "$RUNNER_TEMP/notes.md" | sed 's/^# *//')
           tail -n +2 "$RUNNER_TEMP/notes.md" > "$RUNNER_TEMP/body.md"
-          gh release create "$TAG" "$SETUP" out/Riff-setup.exe \
+          gh release create "$TAG" "$SETUP" "$SETUP.sha256" out/Riff-setup.exe \
               --title "$TITLE" --notes-file "$RUNNER_TEMP/body.md" --verify-tag --latest
           gh release view "$TAG" --json url,assets -q '.url, (.assets[] | .name)'

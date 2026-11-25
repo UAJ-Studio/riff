@@ -37,6 +37,7 @@ LIBS += -lprotobuf
 LIBS += -L"../extra/qhexedit2/$(OBJECTS_DIR)/" -lqhexedit2
 RESOURCES += ostinato.qrc riff.qrc
 HEADERS += \
+    riffupdater.h \
     hexpacketeditor.h \
     wirelessdialog.h \
     wirelessmanager.h \
@@ -104,6 +105,7 @@ FORMS += \
     variablefieldswidget.ui
 
 SOURCES += \
+    riffupdater.cpp \
     hexpacketeditor.cpp \
     wirelessdialog.cpp \
     wirelessmanager.cpp \

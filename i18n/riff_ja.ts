@@ -1940,6 +1940,54 @@ This replaces the whole packet.</source>
         <translation>更新を確認...</translation>
     </message>
     <message>
+        <source>Check for Updates at Start</source>
+        <translation>起動時に更新を確認する</translation>
+    </message>
+    <message>
+        <source>Riff Update</source>
+        <translation>Riff の更新</translation>
+    </message>
+    <message>
+        <source>This Riff (%1) is the latest version.</source>
+        <translation>この Riff（%1）は最新の版です。</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;&lt;b&gt;Riff %1 is available&lt;/b&gt; (you have %2). &lt;a href=&apos;%3&apos;&gt;What&apos;s new&lt;/a&gt;&lt;/p&gt;&lt;p&gt;&lt;b&gt;Update&lt;/b&gt; downloads it, closes Riff, updates it and starts Riff again. Your settings are kept.&lt;/p&gt;</source>
+        <translation>&lt;p&gt;&lt;b&gt;Riff %1 が出ています&lt;/b&gt;（今は %2）。&lt;a href=&apos;%3&apos;&gt;変更点&lt;/a&gt;&lt;/p&gt;&lt;p&gt;「更新」を押すと、ダウンロードしてから Riff を閉じて更新し、もう一度起動します。設定はそのまま残ります。&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>Update</source>
+        <translation>更新</translation>
+    </message>
+    <message>
+        <source>Later</source>
+        <translation>あとで</translation>
+    </message>
+    <message>
+        <source>Could not check for updates: %1</source>
+        <translation>更新を確認できませんでした：%1</translation>
+    </message>
+    <message>
+        <source>Riff %1 is available</source>
+        <translation>Riff %1 が出ています</translation>
+    </message>
+    <message>
+        <source>Downloading Riff %1...</source>
+        <translation>Riff %1 をダウンロードしています...</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>キャンセル</translation>
+    </message>
+    <message>
+        <source>The update could not be downloaded: %1</source>
+        <translation>更新をダウンロードできませんでした：%1</translation>
+    </message>
+    <message>
+        <source>Closing Riff and updating...</source>
+        <translation>Riff を閉じて更新しています...</translation>
+    </message>
+    <message>
         <source>Ports and Streams</source>
         <translation>ポートとストリーム</translation>
     </message>
@@ -6404,6 +6452,33 @@ Length (x4)</source>
     <message>
         <source>&gt;HH HH; </source>
         <translation>&gt;HH HH; </translation>
+    </message>
+</context>
+<context>
+    <name>RiffUpdater</name>
+    <message>
+        <source>no Riff release found</source>
+        <translation>Riff のリリースが見つかりません</translation>
+    </message>
+    <message>
+        <source>the release has no checksum</source>
+        <translation>リリースにチェックサムがありません</translation>
+    </message>
+    <message>
+        <source>cannot create %1</source>
+        <translation>%1 を作れません</translation>
+    </message>
+    <message>
+        <source>cannot write %1</source>
+        <translation>%1 に書き込めません</translation>
+    </message>
+    <message>
+        <source>the downloaded file is damaged (checksum mismatch)</source>
+        <translation>ダウンロードしたファイルが壊れています（チェックサムが一致しません）</translation>
+    </message>
+    <message>
+        <source>cannot start %1</source>
+        <translation>%1 を起動できません</translation>
     </message>
 </context>
 </TS>

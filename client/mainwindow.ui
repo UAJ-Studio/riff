@@ -65,6 +65,7 @@
     <addaction name="actionHelpOnline" />
     <addaction name="actionDonate" />
     <addaction name="actionCheckForUpdates" />
+    <addaction name="actionCheckAtStart" />
     <addaction name="separator" />
     <addaction name="actionHelpAbout" />
     <addaction name="actionAboutQt" />
@@ -160,6 +161,14 @@
   <action name="actionCheckForUpdates" >
    <property name="text" >
     <string>Check for Updates...</string>
+   </property>
+  </action>
+  <action name="actionCheckAtStart" >
+   <property name="checkable" >
+    <bool>true</bool>
+   </property>
+   <property name="text" >
+    <string>Check for Updates at Start</string>
    </property>
   </action>
  </widget>

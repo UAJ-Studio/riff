@@ -28,11 +28,13 @@ class LogsWindow;
 class PortGroup;
 class PortsWindow;
 class PortStatsWindow;
+class RiffUpdater;
 class WirelessDialog;
 class WirelessManager;
 
 class QDockWidget;
 class QProcess;
+class QProgressDialog;
 
 class MainWindow : public QMainWindow, private Ui::MainWindow
 {
@@ -58,6 +60,14 @@ private:
     WirelessDialog *wirelessDialog_;
     void ensureWireless();
     PortGroup *wirelessPortGroup_;
+
+    RiffUpdater *updater_;
+    QWidget *updateBar_;
+    QProgressDialog *updateProgress_;
+    bool manualUpdateCheck_;
+    void autoUpdateCheck();
+    void showUpdateBar(QString ver);
+    void startUpdate();
 
 public:
     MainWindow(QWidget *parent = 0);
@@ -86,6 +96,9 @@ private slots:
     void reportLocalServerError();
     void onNewVersion(QString version);
     void onLatestVersion(QString version);
+    void onUpdateChecked(bool newer, QString latest);
+    void onUpdateCheckFailed(QString error);
+    void on_actionCheckAtStart_toggled(bool on);
 };
 
 #endif

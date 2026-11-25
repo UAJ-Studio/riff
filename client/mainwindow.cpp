@@ -36,6 +36,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include "sessionfileformat.h"
 #include "settings.h"
 #include "ui_about.h"
+#include "riffupdater.h"
 #include "updater.h"
 #include "wirelessdialog.h"
 #include "wirelessmanager.h"
@@ -45,6 +46,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 #include <QApplication>
 #include <QComboBox>
 #include <QDate>
+#include <QDateTime>
+#include <QHBoxLayout>
 #include <QDesktopServices>
 #include <QDialogButtonBox>
 #include <QDockWidget>
@@ -75,7 +78,8 @@ ClipboardHelper  *clipboardHelper;
 
 MainWindow::MainWindow(QWidget *parent) 
     : QMainWindow (parent), wireless_(NULL), wirelessDialog_(NULL),
-      wirelessPortGroup_(NULL)
+      wirelessPortGroup_(NULL), updater_(NULL), updateBar_(NULL),
+      updateProgress_(NULL), manualUpdateCheck_(false)
 {
     if (appParams.optLocalDrone()) {
         QString serverApp = QCoreApplication::applicationDirPath();
@@ -207,8 +211,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(actionViewShowMyReservedPortsOnly, SIGNAL(toggled(bool)),
             statsWindow, SLOT(showMyReservedPortsOnly(bool)));
 
-    // Riff: no automatic update check - upstream (ostinato.org) releases
-    // are a different product line
+    // Riff update check: once a day, a while after start (Help menu turns
+    // it off); upstream's ostinato.org check is a different product line
+    actionCheckAtStart->setChecked(
+            appSettings->value(kRiffUpdateCheckAtStart, true).toBool());
+    QTimer::singleShot(8000, this, [this]() { autoUpdateCheck(); });
+    QTimer *updateTimer = new QTimer(this);
+    connect(updateTimer, &QTimer::timeout, this, [this]() { autoUpdateCheck(); });
+    updateTimer->start(6 * 60 * 60 * 1000);
 
     // TODO: If session file specified (and valid?), don't add local drone PG
     // Add the "Local" Port Group
@@ -437,9 +447,155 @@ void MainWindow::on_actionDonate_triggered()
 
 void MainWindow::on_actionCheckForUpdates_triggered()
 {
-    // Riff contacts nothing on its own: the releases page shows the latest
-    // version (upstream's update service is about Ostinato)
-    QDesktopServices::openUrl(QUrl(RIFF_RELEASES_URL));
+    manualUpdateCheck_ = true;
+    if (!updater_) {
+        updater_ = new RiffUpdater(this);
+        connect(updater_, &RiffUpdater::checked,
+                this, &MainWindow::onUpdateChecked);
+        connect(updater_, &RiffUpdater::checkFailed,
+                this, &MainWindow::onUpdateCheckFailed);
+    }
+    updater_->check();
+}
+
+void MainWindow::on_actionCheckAtStart_toggled(bool on)
+{
+    appSettings->setValue(kRiffUpdateCheckAtStart, on);
+}
+
+// asks GitHub for the latest release at most once in 20 hours
+void MainWindow::autoUpdateCheck()
+{
+    if (!appSettings->value(kRiffUpdateCheckAtStart, true).toBool())
+        return;
+    if (updateProgress_)
+        return;
+    QDateTime last = appSettings->value(kRiffUpdateLastCheck).toDateTime();
+    if (last.isValid() && last.secsTo(QDateTime::currentDateTime()) < 20*3600)
+        return;
+    on_actionCheckForUpdates_triggered();
+    manualUpdateCheck_ = false;
+}
+
+void MainWindow::onUpdateChecked(bool newer, QString latest)
+{
+    const bool manual = manualUpdateCheck_;
+    manualUpdateCheck_ = false;
+    appSettings->setValue(kRiffUpdateLastCheck, QDateTime::currentDateTime());
+
+    if (!newer) {
+        if (manual)
+            QMessageBox::information(this, tr("Riff Update"),
+                tr("This Riff (%1) is the latest version.").arg(version));
+        return;
+    }
+
+    showUpdateBar(latest);
+
+    // the dialog once per version; the status bar keeps the Update button
+    if (!manual && appSettings->value(kRiffUpdateNotified).toString() == latest)
+        return;
+    appSettings->setValue(kRiffUpdateNotified, latest);
+
+    QMessageBox *box = new QMessageBox(QMessageBox::Information,
+        tr("Riff Update"),
+        tr("<p><b>Riff %1 is available</b> (you have %2). "
+           "<a href='%3'>What's new</a></p>"
+           "<p><b>Update</b> downloads it, closes Riff, updates it and "
+           "starts Riff again. Your settings are kept.</p>")
+            .arg(latest).arg(version)
+            .arg(updater_->notesUrl().toString()),
+        QMessageBox::NoButton, this);
+    box->setAttribute(Qt::WA_DeleteOnClose);
+    box->setTextFormat(Qt::RichText);
+    box->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    QPushButton *update = box->addButton(tr("Update"), QMessageBox::AcceptRole);
+    box->addButton(tr("Later"), QMessageBox::RejectRole);
+    box->setDefaultButton(update);
+    connect(update, &QPushButton::clicked, this, [this]() { startUpdate(); });
+    box->open();
+}
+
+void MainWindow::onUpdateCheckFailed(QString error)
+{
+    const bool manual = manualUpdateCheck_;
+    manualUpdateCheck_ = false;
+    if (manual)
+        QMessageBox::warning(this, tr("Riff Update"),
+            tr("Could not check for updates: %1").arg(error));
+}
+
+void MainWindow::showUpdateBar(QString ver)
+{
+    if (updateBar_) {
+        statusBar()->removeWidget(updateBar_);
+        updateBar_->deleteLater();
+    }
+    updateBar_ = new QWidget(this);
+    QHBoxLayout *layout = new QHBoxLayout(updateBar_);
+    layout->setContentsMargins(0, 0, 0, 0);
+    QLabel *label = new QLabel(tr("Riff %1 is available").arg(ver), updateBar_);
+    QPushButton *button = new QPushButton(tr("Update"), updateBar_);
+    connect(button, &QPushButton::clicked, this, [this]() { startUpdate(); });
+    layout->addWidget(label);
+    layout->addWidget(button);
+    statusBar()->addPermanentWidget(updateBar_);
+}
+
+void MainWindow::startUpdate()
+{
+    if (!updater_ || updateProgress_)
+        return;
+
+    updateProgress_ = new QProgressDialog(
+            tr("Downloading Riff %1...").arg(updater_->latestVersion()),
+            tr("Cancel"), 0, 100, this);
+    updateProgress_->setWindowTitle(tr("Riff Update"));
+    updateProgress_->setWindowModality(Qt::WindowModal);
+    updateProgress_->setMinimumDuration(0);
+    updateProgress_->setAutoClose(false);
+    updateProgress_->setAutoReset(false);
+    updateProgress_->setValue(0);
+
+    auto done = [this]() {
+        disconnect(updater_, &RiffUpdater::progress, this, nullptr);
+        disconnect(updater_, &RiffUpdater::downloaded, this, nullptr);
+        disconnect(updater_, &RiffUpdater::downloadFailed, this, nullptr);
+        if (updateProgress_) {
+            updateProgress_->deleteLater();
+            updateProgress_ = NULL;
+        }
+    };
+    connect(updateProgress_, &QProgressDialog::canceled, this, [this, done]() {
+        updater_->cancelDownload();
+        done();
+    });
+    connect(updater_, &RiffUpdater::progress, this,
+            [this](qint64 got, qint64 total) {
+        if (updateProgress_ && total > 0)
+            updateProgress_->setValue(int(got * 100 / total));
+    });
+    connect(updater_, &RiffUpdater::downloadFailed, this,
+            [this, done](QString error) {
+        done();
+        if (!error.isEmpty())
+            QMessageBox::warning(this, tr("Riff Update"),
+                tr("The update could not be downloaded: %1").arg(error));
+    });
+    connect(updater_, &RiffUpdater::downloaded, this, [this, done]() {
+        updateProgress_->setLabelText(tr("Closing Riff and updating..."));
+        updateProgress_->setCancelButton(NULL);
+        QString error;
+        if (!updater_->runInstaller(&error)) {
+            done();
+            QMessageBox::warning(this, tr("Riff Update"), error);
+            return;
+        }
+        done();
+        // the setup waits for Riff to close, then starts it again
+        qApp->quit();
+    });
+    updater_->download();
 }
 
 void MainWindow::on_actionHelpAbout_triggered()

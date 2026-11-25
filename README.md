@@ -108,7 +108,15 @@ bundled.
 
 This program will not transfer any information to other networked systems
 unless specifically requested by the user or the person installing or
-operating it.
+operating it, with these exceptions, which only download from GitHub:
+
+- **Update check**: about once a day Riff asks GitHub for the version of the
+  latest Riff release. Nothing about you or the PC is sent beyond what any
+  web request carries (the IP address, and "Riff/&lt;version&gt;" as the user
+  agent). Turn it off with **Help > Check for Updates at Start**. Pressing
+  **Update** downloads the new setup from GitHub and runs it.
+- **USB Wi-Fi dongle drivers**: when the WSL kernel has changed, Riff
+  downloads the driver pack for that kernel from this repository's releases.
 
 ## License
 

@@ -91,6 +91,11 @@ const QString kApplicationWindowGeometryKey("LastUse/ApplicationWindowGeometry")
 const QString kApplicationWindowLayout("LastUse/ApplicationWindowLayout");
 const QString kLastUpdateCheck("LastUse/UpdateCheck");
 
+// Riff update check
+const QString kRiffUpdateCheckAtStart("RiffUpdate/CheckAtStart");
+const QString kRiffUpdateLastCheck("RiffUpdate/LastCheck");
+const QString kRiffUpdateNotified("RiffUpdate/Notified");
+
 #endif
 
 

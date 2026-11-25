@@ -30,7 +30,11 @@ Riff is a packet and traffic generator for Windows. It sends packets you build f
 2. Follow the wizard. No administrator rights are needed (Riff goes to `%LOCALAPPDATA%\Programs\Riff`).
 3. For USB Wi-Fi dongles, tick "Install usbipd-win" (an administrator prompt appears).
 
-To update, run the setup of the newer version the same way; settings are kept. If Riff is running, the setup offers to close it.
+**Updates**: when a new version is out, Riff says so at start ("Riff … is available"). **Update** downloads it, closes Riff, updates it and starts Riff again; settings are kept. After closing the message, the **Update** button at the bottom right of the window is still there.
+
+- **Help > Check for Updates** checks right away.
+- The check asks GitHub for the latest version number about once a day; nothing about you or the PC is sent. Turn it off with **Help > Check for Updates at Start**.
+- Running the setup of a newer version yourself updates Riff the same way.
 
 ### Warnings on first start
 
